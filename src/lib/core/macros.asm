@@ -264,12 +264,13 @@
 .equ LINK_INVALID, ERASED_WORD          @ Singed comparison to LINK_INVALD decides if link in search is ok or not
 
 .macro WORD flags, name, label
+.section .text
     .p2align 1                          @ Align before link
 link\@\():                              @ Label the link
-9:  .word 9f          				          @ Link (4 byte)
-    .byte \flags					              @ Flags (1 byte)
-    .byte 8f - 7f     				          @ Length (1 byte)
-7:  .ascii "\name"    				          @ Name (cstring)
+9:  .word 9f                                  @ Link (4 byte)
+    .byte \flags                                  @ Flags (1 byte)
+    .byte 8f - 7f                             @ Length (1 byte)
+7:  .ascii "\name"                            @ Name (cstring)
 8:  .p2align 1                          @ Align before code
 .ifnb \label                            @ Label for code (use name if label wasn't defined)
 .type \label, %function
@@ -278,14 +279,16 @@ link\@\():                              @ Label the link
 .type \name, %function
 \name\():
 .endif
+.section .text
 .endm
 
 @ Last word of core dictionary
 .macro WORD_TAIL flags, name, label
+.section .data
     .p2align 1
 link\@\():
 9:  .word FLASH_START                   @ Last link in core dictionary points to user flash
-	.byte \flags
+    .byte \flags
     .byte 8f - 7f
 7:  .ascii "\name"
 8:  .p2align 1                          @ Align before code
@@ -296,6 +299,7 @@ link\@\():
 .type \name, %function
 \name\():
 .endif
+.section .text
 .endm
 
 /***************************************************************************//**

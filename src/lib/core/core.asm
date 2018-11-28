@@ -47,8 +47,9 @@ p_structure:                            @ Inside loop: points to leave addresses
 
 /***************************************************************************//**
 @ Contains address of link of the last definition
-@ l_mem has to point to the first definition in flash, so that the very first
-@ definition that gets created in ram has an actual link back to flash.
+@ l_mem initially has to point to the first definition in flash, so that the
+@ very first definition that gets created in ram has an actual link back to
+@ flash.
  ******************************************************************************/
 l_mem:                                  @ Last link
     .word _s_shi_dict
@@ -1445,7 +1446,7 @@ WORD FLAG_INTERPRET, "create"
 @ r1    p_mem_ram
 1:  ldr r0, =p_mem_ram
     ldr r1, [r0]
-    str r1, [r0, #4]
+    str r1, [r0, #4]                    @ Store beginning of new definition
 
 @ Take account of link and flags
     TWO_DROP                            @ ( token-addr 0 -- )
@@ -1650,7 +1651,7 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     nop // TODO P2ALIGN4
     .endif
     adds r4, r2, r3
-    str r4, [r0]
+    str r4, [r0]                        @ Store aligned length in p_mem_ram
     cmp r3, #8
     blo 6f
 

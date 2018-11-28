@@ -21,7 +21,7 @@
 @ Register mapping
  ******************************************************************************/
 @ Map top of stack and pointer to registers
-@ (hardwired, better don't change it)
+@ (hardwired, can not be changed)
 tos .req r6                             @ Top of stack
 dsp .req r7                             @ Data-stack pointer
 lfp .req r8                             @ Literal-folding pointer
@@ -50,8 +50,8 @@ _s_shi_dict:                            @ Start of dictionaty
 .include "number.asm"
 .include "extension.asm"
 
-WORD_TAIL   FLAG_SKIP, "_e_shi"
 _e_shi_dict:                            @ End of dictionary
+WORD_TAIL   FLAG_SKIP, "_e_shi"
 
 /***************************************************************************//**
 @ Initialize shi
@@ -61,16 +61,22 @@ _e_shi_dict:                            @ End of dictionary
 shi_init:
     push {r4-r9, lr}
 
+@ Store ram addresses ----------------------------------------------------------
+    ldr r2, =p_mem_ram                  @ Store ram start address
+    str r0, [r2]
+    ldr r2, =p_variable                 @ Store ram end address
+    str r1, [r2]
+
 @ Fill ram ---------------------------------------------------------------------
-    bl shi_fill_ram
+    bl fill_ram
 
 @ Set memory-space pointers ----------------------------------------------------
 
 @ Flash
-    bl shi_set_memory_space_pointer_flash
+    bl set_memory_space_pointer_flash
 
 @ Reserve ram ------------------------------------------------------------------
-    bl shi_reserve_ram
+    bl reserve_ram
 
 @ Set tos dsp and lfp ----------------------------------------------------------
     movs lfp, #0                        @ Put zero into lfp...
@@ -82,16 +88,12 @@ shi_init:
     pop {r4-r9, pc}
 
 /***************************************************************************//**
-@ shi fill ram
+@ Fill ram
  ******************************************************************************/
-shi_fill_ram:
+fill_ram:
 @ r0    ram start address
 @ r1    ram end address
 @ r2    erased word
-    ldr r2, =p_mem_ram                  @ Store ram start address
-    str r0, [r2]
-    ldr r2, =p_variable                 @ Store ram end address
-    str r1, [r2]
     movs r2, #ERASED_WORD
 1:  cmp r0, r1
     beq 2f                              @ Goto set memory-space pointers
@@ -102,10 +104,10 @@ shi_fill_ram:
 2:  bx lr
 
 /***************************************************************************//**
-@ shi set memory-space pointer for flash
+@ Set memory-space pointer for flash
 @ Search flash from end to start to find first free flash address
  ******************************************************************************/
-shi_set_memory_space_pointer_flash:
+set_memory_space_pointer_flash:
 @ r0    flash start address
 @ r1    flash end address
 @ r2    flash content
@@ -155,11 +157,11 @@ shi_set_memory_space_pointer_flash:
 3:  bx lr
 
 /***************************************************************************//**
-@ shi reserve ram
+@ Reserve ram
 @ Search through flash dictionary to look for definitions which need to reserve
 @ ram.
  ******************************************************************************/
-shi_reserve_ram:
+reserve_ram:
 @ r0    link
 @ r1    copy of link
 @ r2    flags
