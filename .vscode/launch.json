@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "gdb",
+      "request": "launch",
+      "name": "Debug test",
+      "target": "/home/vinci/Develop/VSCode/Shi/build/test/test.elf",
+      "cwd": "${workspaceFolder}",
+      "gdbpath": "/usr/bin/arm-none-eabi-gdb",
+      "autorun": [
+        "file /home/vinci/Develop/VSCode/Shi/build/test/test.elf",
+        "target remote :1234",
+        "thb main",
+        "c"
+      ],
+      "preLaunchTask": "Run qemu"
+    }
+  ]
+}
