@@ -26,8 +26,8 @@
 /// Des User Dictionary im RAM wird von hinten nach vorne durchsucht. Das heißt
 /// die Reihenfolge is:
 /// - User RAM -> Core FLASH -> User FLASH
-/// Die Suche nach Eintraegen beginnt IMMER mit "l_mem". l_mem wird auch nur
-/// geupdatet wenn ein Eintrag ins RAM gschrieben wird. l_mem is somit quasi
+/// Die Suche nach Eintraegen beginnt IMMER mit "link". link wird auch nur
+/// geupdatet wenn ein Eintrag ins RAM gschrieben wird. link is somit quasi
 /// immer des Ende vom Faden wo ma zu Suchen beginnt.
 ///
 /// Was wuerde eine externe Flash-Write Funktion brauchen?
@@ -58,7 +58,7 @@
 /// | ram_end         | Used for reserving ram for variables                                               |
 /// | csp             | Inside loop: points to leave addresses from the current loop on the stack <br><!-- |
 /// |                 | --> Inside case: points to end of addresses from the current case on the stack     |
-/// | l_mem           | Contains address of link of the last definition                                    |
+/// | link            | Contains address of link of the last definition                                    |
 /// | status          | Current state (state is taken as word) <br><!--                                    |
 /// |                 | --> false: interpret, true: compile                                                |
 /// | status_compiler | Current compiler state <br><!--                                                    |

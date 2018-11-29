@@ -12,6 +12,8 @@
 .global _e_shi_dstack
 .global _s_shi_context
 
+.extern extern_flash_write
+
 .section .data
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Core variables @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -44,16 +46,16 @@ flash_begin:                            @ Pointer to flash
 flash_end:
     .word 0
 
+@ Control-stack pointer
 csp:                                    @ Inside loop: points to leave addresses from the current loop on the stack
     .word _s_shi_dstack                 @ Inside case: points to endof addresses from the current case on the stack
 
 /***************************************************************************//**
 @ Contains address of link of the last definition
-@ l_mem initially has to point to the first definition in flash, so that the
-@ very first definition that gets created in ram has an actual link back to
-@ flash.
+@ link initially has to point to the first definition in flash, so that the very
+@ first definition that gets created in ram has an actual link back to flash.
  ******************************************************************************/
-l_mem:                                  @ Last link
+link:                                   @ Last link
     .word _s_shi_dict
 
 /***************************************************************************//**
@@ -1616,161 +1618,34 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
 @ end:; ram --------------------------------------------------------------------
 @ tos   flags
 @ r0    ram_begin_def address
-@ r1    ram_begin
-@ r2    ram_begin_def
-@ r3    l_mem address
-@ r4    l_mem
+@ r1    ram_begin_def
+@ r2    ram_begin
+@ r3    link address
+@ r4    link
 1:  DROP                                @ ( false -- )
     ldr r0, =ram_begin_def
-    ldmia r0, {r2, r1}
-    ldr r3, =l_mem
+    ldmia r0, {r1, r2}
+    ldr r3, =link
     ldr r4, [r3]
-    str r2, [r3]                        @ Update last link
-    str r4, [r2], #4                    @ Write link
-    strb tos, [r2]                      @ Write flags
+    str r1, [r3]                        @ Update last link
+    str r4, [r1], #4                    @ Write link
+    strb tos, [r1]                      @ Write flags
     b 6f                                @ Goto return
 
 @ end:; flash ------------------------------------------------------------------
-@ Align the length of the definition to 8-bytes
-@ r0    ram_begin address
+@ tos   flags
+@ r0    ram_begin_def
 @ r1    ram_begin
-@ r2    ram_begin_def
-@ r3    length | aligned length
-@ r4    scratch
-2:  DROP                                @ ( true -- )
-    ldr r0, =ram_begin_def
-    ldr r2, [r0]
-    ldr r0, =ram_begin
-    ldr r1, [r0]
-    subs r3, r1, r2                     @ ram_begin - ram_begin_def
-    .if !(FLASH_WRITE_SIZE - 1)
-    nop
-    .elseif !(FLASH_WRITE_SIZE - 2)
-    P2ALIGN1 align=r3, scratch=r4
-    .elseif !(FLASH_WRITE_SIZE - 4)
-    P2ALIGN2 align=r3, scratch=r4
-    .elseif !(FLASH_WRITE_SIZE - 8)
-    P2ALIGN3 align=r3, scratch=r4
-    .elseif !(FLASH_WRITE_SIZE - 16)
-    nop // TODO P2ALIGN4
-    .endif
-    adds r4, r2, r3
-    str r4, [r0]                        @ Store aligned length in ram_begin
-    cmp r3, #8
-    blo 6f
-
-@ Write link and flags
-@ r0    flash_begin address
-@ r1    flash_begin
-@ r2    ram_begin_def
-@ r3    aligned length
-@ r4    next link
-    ldr r0, =flash_begin
-    ldr r1, [r0]
-    adds r4, r1, r3
-    str r4, [r2]                        @ Write next link
-    strb tos, [r2, #4]                  @ Write flags
-
-@ Unlocking the flash memory
-@ r0    FLASH_KEYR register address
-@ r3    FLASH_KEY1 | FLASH_KEY2
-    ldr r0, =FLASH_KEYR
-    ldr r3, =FLASH_KEY1
-    str r3, [r0]
-    ldr r3, =FLASH_KEY2
-    str r3, [r0]
-
-@ Check that no flash main memory operation is ongoing by checking the BSY bit
-@ in FLASH_SR
-@ r0    FLASH_SR register address
-@ r3    FLASH_SR register
-@ r5    scratch
-    ldr r0, =FLASH_SR
-1:  ldr r3, [r0]
-    ands r5, r3, #FLASH_SR_BSY
-    bne 1b
-
-@ Check and clear all error programming flags due to a previous programming
-@ If not, PGSERR is set
-@ r0    FLASH_SR register address
-@ r3    FLASH_SR register
-@ r5    scratch
-1:  ands r5, r3, #FLASH_SR_PGS_ERR
-    beq 1f
-        ands r3, #!FLASH_SR_OPTV_ERR
-        ands r3, #!FLASH_SR_RD_ERR
-        ands r3, #!FLASH_SR_FAST_ERR
-        ands r3, #!FLASH_SR_MISS_ERR
-        ands r3, #!FLASH_SR_PGS_ERR
-        ands r3, #!FLASH_SR_SIZ_ERR
-        ands r3, #!FLASH_SR_PGA_ERR
-        ands r3, #!FLASH_SR_WRP_ERR
-        ands r3, #!FLASH_SR_PROG_ERR
-        ands r3, #!FLASH_SR_OP_ERR
-        str r3, [r0]
-        ldr r3, [r0]
-        b 1b
-
-@ Set the PG bit in FLASH_CR
-@ r0    FLASH_CR register address
-@ r3    FLASH_CR
-1:  ldr r0, =FLASH_CR
-    ldr r3, [r0]
-    orrs r3, #FLASH_CR_PG
-    str r3, [r0]
-
-@ Copy definition from ram to flash
-@ r0    FLASH_SR register address | flash_begin address
-@ r1    flash_begin
-@ r2    ram_begin_def
-@ r3    first word | scratch
-@ r4    next link
-@ r5    second word
-    ldr r0, =FLASH_SR
-1:  ldr r3, [r2], #4                    @ DO NOT use ldm, there is no guarantee that r2 is aligned!
-    ldr r5, [r2], #4
-    str r3, [r1], #4                    @ Write first word
-    str r5, [r1], #4                    @ Write second word
-
-2:  ldr r3, [r0]                        @ Wait until the BSY bit is cleared
-    ands r5, r3, #FLASH_SR_BSY
-    bne 2b
-
-    cmp r1, r4                          @ Check if we're done
-    blo 1b
-
-    ldr r0, =flash_begin                @ Update flash_begin
-    str r1, [r0]
-
-@ Clear the PG bit in the FLASH_SR register if there are no more programming
-@ requests
-@ r0    FLASH_CR register address
-@ r3    scratch
-    ldr r0, =FLASH_CR
-    ldr r3, [r0]
-    ands r3, #!FLASH_CR_PG
-    str r3, [r0]
-
-@ Locking the flash memory
-@ r0    FLASH_CR register address
-@ r3    scratch
-    ldr r0, =FLASH_CR
-    ldr r3, [r0]
-    orrs r3, #FLASH_CR_LOCK
-    str r3, [r0]
-
-@ Clear definition from ram
-@ r0    ram_begin address
-@ r1    ram_begin
-@ r2    ram_begin_def
-@ r3    erased word
-    ldr r0, =ram_begin
-    ldmia r0, {r1, r2}
-    movs r3, #ERASED_WORD
-1:  str r3, [r1], #-4
-    cmp r1, r2
-    bhs 1b
-    str r2, [r0]
+@ r2    flash_begin
+2:  DROP                                @ ( false -- )
+    ldr r2, =ram_begin_def
+    ldmia r2, {r0, r1}
+    strb tos, [r0, #4]!                 @ Write flags
+    ldr r2, =flash_begin
+    ldr r2, [r2]
+    bl extern_flash_write
+    @TODO retval is new flash value... :p?
+    b 6f                                @ Goto return
 
 @ Return -----------------------------------------------------------------------
 6:  DROP                                @ ( flags -- )
@@ -1862,7 +1737,7 @@ WORD FLAG_INTERPRET_COMPILE, "find"
 @ r5    token-addr incremented
 @ r9    character
 @ r12   character
-    ldr r1, =l_mem                      @ Begin search at latest link
+    ldr r1, =link                       @ Begin search at latest link
     POP_REGS r0                         @ ( token-u -- )
 
 @ Search -----------------------------------------------------------------------
@@ -3196,9 +3071,9 @@ WORD FLAG_SKIP, "unused"
     subs tos, r0
 
 @ unused flash -----------------------------------------------------------------
-@ tos   FLASH_END
+@ tos   flash_end
 @ r0    flash_begin
-2:  ldr tos, =FLASH_END
+2:  ldr tos, =flash_end
     ldr r0, =flash_begin
     ldr r0, [r0]
     subs tos, r0

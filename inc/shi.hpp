@@ -26,7 +26,10 @@ namespace shi {
 /// \section section_stack_notation Stack notation
 /// blabla
 
-void init(uint32_t const ram_begin, uint32_t const ram_end);
+void init(uint32_t const ram_begin,
+          uint32_t const ram_end,
+          uint32_t const flash_begin,
+          uint32_t const flash_end);
 void clear();
 bool empty();
 size_t size();
@@ -109,7 +112,10 @@ template<>
 void push<float>(float const cell);
 
 // ASM prototypes
-extern "C" void shi_init(uint32_t, uint32_t);
+extern "C" void shi_init(uint32_t const ram_begin,
+                         uint32_t const ram_end,
+                         uint32_t const flash_begin,
+                         uint32_t const flash_end);
 extern "C" void shi_c_variable(char const* name, size_t len);
 extern "C" void shi_evaluate(char const* str, size_t len);
 

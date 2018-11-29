@@ -50,29 +50,31 @@ _s_shi_dict:                            @ Start of dictionaty
 .include "number.asm"
 .include "extension.asm"
 
+.section .data
+
 _e_shi_dict:                            @ End of dictionary
 WORD_TAIL   FLAG_SKIP, "_e_shi"
+
+.section .text
 
 /***************************************************************************//**
 @ Initialize shi
 @ r0    ram start address
 @ r1    ram end address
+@ r2    flash start address
+@ r3    flash end address
  ******************************************************************************/
 shi_init:
     push {r4-r9, lr}
 
-@ Store ram addresses ----------------------------------------------------------
-    ldr r2, =ram_begin                  @ Store ram start address
-    str r0, [r2]
-    ldr r2, =ram_end                    @ Store ram end address
-    str r1, [r2]
+@ Store addresses --------------------------------------------------------------
+    ldr r4, =ram_begin                  @ Store addresses
+    stmia r4, {r0, r1, r2, r3}
 
 @ Fill ram ---------------------------------------------------------------------
     bl fill_ram
 
-@ Set memory-space pointers ----------------------------------------------------
-
-@ Flash
+@ Set memory-space pointer -----------------------------------------------------
     bl set_memory_space_pointer_flash
 
 @ Reserve ram ------------------------------------------------------------------
@@ -94,6 +96,8 @@ fill_ram:
 @ r0    ram start address
 @ r1    ram end address
 @ r2    erased word
+    ldr r2, =ram_begin
+    ldmia r2, {r0, r1}
     movs r2, #ERASED_WORD
 1:  cmp r0, r1
     beq 2f                              @ Goto set memory-space pointers
@@ -111,50 +115,20 @@ set_memory_space_pointer_flash:
 @ r0    flash start address
 @ r1    flash end address
 @ r2    flash content
-    ldr r0, =FLASH_START
-    ldr r1, =FLASH_END
+    ldr r2, =flash_begin
+    ldmia r2, {r0, r1}
+    ldr r2, =_e_shi_dict                @ Set last link of core to user dictionary
+    str r0, [r2]
 1:  cmp r0, r1
-    bhi 2f
+    bhi 1f
         ldr r2, [r1, #-4]!
         cmp r2, #ERASED_WORD            @ Flash content - erased word
         beq 1b
-            adds r1, #4                 @ Written content found, add #4 to account for it then align
-            cmp r0, r1
-            bne 1f
-                TRACE_WRITE "'shi' flash is full, could not set memory-space pointer >>>shi_set_memory_space_pointer_flash<<<"
-                b 3f
-1:          .if !(FLASH_WRITE_SIZE - 1)
-            nop
-            .elseif !(FLASH_WRITE_SIZE - 2)
-            P2ALIGN1 align=r1, scratch=r2
-            .elseif !(FLASH_WRITE_SIZE - 4)
-            P2ALIGN2 align=r1, scratch=r2
-            .elseif !(FLASH_WRITE_SIZE - 8)
-            P2ALIGN3 align=r1, scratch=r2
-            .elseif !(FLASH_WRITE_SIZE - 16)
-            nop // TODO P2ALIGN4
-            .endif
-            ldr r0, =flash_begin        @ Store aligned first free flash address
-            str r1, [r0]
-            b 3f
-
-@ Whole searched flash area was empty, align FLASH_START and store it
-2:  .if !(FLASH_WRITE_SIZE - 1)
-    nop
-    .elseif !(FLASH_WRITE_SIZE - 2)
-    P2ALIGN1 align=r0, scratch=r2
-    .elseif !(FLASH_WRITE_SIZE - 4)
-    P2ALIGN2 align=r0, scratch=r2
-    .elseif !(FLASH_WRITE_SIZE - 8)
-    P2ALIGN3 align=r0, scratch=r2
-    .elseif !(FLASH_WRITE_SIZE - 16)
-    nop // TODO P2ALIGN4
-    .endif
-    ldr r1, =flash_begin                @ Store aligned first free flash address
-    str r0, [r1]
+            adds r1, #4                 @ Written content found, add #4 to account for it
+            str r1, [r0]                @ Store first free flash address
 
 @ Return -----------------------------------------------------------------------
-3:  bx lr
+1:  bx lr
 
 /***************************************************************************//**
 @ Reserve ram

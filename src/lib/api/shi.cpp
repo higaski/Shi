@@ -9,8 +9,11 @@
 namespace shi {
 
 /// Initialize
-void init(uint32_t const ram_begin, uint32_t const ram_end) {
-  shi_init(ram_begin, ram_end);
+void init(uint32_t const ram_begin,
+          uint32_t const ram_end,
+          uint32_t const flash_begin,
+          uint32_t const flash_end) {
+  shi_init(ram_begin, ram_end, flash_begin, flash_end);
 }
 
 /// Clear stack

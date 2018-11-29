@@ -8,22 +8,6 @@
  ******************************************************************************/
 
 /***************************************************************************//**
-@ Addresses
- ******************************************************************************/
-@ Memory addresses -------------------------------------------------------------
-.equ FLASH_END, 0x08000000 + FLASH_SIZE
-.equ FLASH_START, FLASH_END - 0x8000    @ 32K
-
-/***************************************************************************//**
-@ Configuration
- ******************************************************************************/
-@ Flash write size in bytes ----------------------------------------------------
-.equ FLASH_WRITE_SIZE, 8
-
-@ Flash maximum size of a dictionary entry in flash ----------------------------
-.equ FLASH_WORD_MAX_SIZE, 8192
-
-/***************************************************************************//**
 @ Common
  ******************************************************************************/
 .macro SET_IN val
@@ -264,7 +248,6 @@
 .equ LINK_INVALID, ERASED_WORD          @ Singed comparison to LINK_INVALD decides if link in search is ok or not
 
 .macro WORD flags, name, label
-.section .text
     .p2align 1                          @ Align before link
 link\@\():                              @ Label the link
 9:  .word 9f                                  @ Link (4 byte)
@@ -279,15 +262,13 @@ link\@\():                              @ Label the link
 .type \name, %function
 \name\():
 .endif
-.section .text
 .endm
 
 @ Last word of core dictionary
 .macro WORD_TAIL flags, name, label
-.section .data
     .p2align 1
 link\@\():
-9:  .word FLASH_START                   @ Last link in core dictionary points to user flash
+9:  .word ERASED_WORD                   @ Last link in core dictionary points to user flash
     .byte \flags
     .byte 8f - 7f
 7:  .ascii "\name"
@@ -299,7 +280,6 @@ link\@\():
 .type \name, %function
 \name\():
 .endif
-.section .text
 .endm
 
 /***************************************************************************//**
