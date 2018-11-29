@@ -32,17 +32,19 @@ _e_forth_context:
 @ Memory-space pointers
  ******************************************************************************/
      .p2align 2
-p_mem_ram:                              @ Pointer to ram
+ram_begin_def:                          @ Beginning of current definition
     .word 0
-    .word 0                             @ Beginning of current definition
-
-p_mem_flash:                            @ Pointer to flash
+ram_begin:                              @ Pointer to ram
     .word 0
-
-p_variable:                             @ Used for reserving ram for variables
+ram_end:                                @ Used for reserving ram for variables
     .word 0
 
-p_structure:                            @ Inside loop: points to leave addresses from the current loop on the stack
+flash_begin:                            @ Pointer to flash
+    .word 0
+flash_end:
+    .word 0
+
+csp:                                    @ Inside loop: points to leave addresses from the current loop on the stack
     .word _s_shi_dstack                 @ Inside case: points to endof addresses from the current case on the stack
 
 /***************************************************************************//**
@@ -261,10 +263,10 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
 @ is not aligned prior to execution of ,.
  ******************************************************************************/
 WORD FLAG_SKIP, ",", comma
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     ldr r1, [r0]
-    str tos, [r1], #4                   @ Write x to address in p_mem_ram
-    str r1, [r0]                        @ Update address in p_mem_ram
+    str tos, [r1], #4                   @ Write x to address in ram_begin
+    str r1, [r0]                        @ Update address in ram_begin
     DROP                                @ ( x -- )
     bx lr
 .ltorg
@@ -623,7 +625,7 @@ WORD FLAG_SKIP, "accept"
 @ If the memory-space pointer is not aligned, align it to 2-bytes.
  ******************************************************************************/
 WORD FLAG_INTERPRET_COMPILE, "align2"
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     ldr r1, [r0]
     P2ALIGN1 align=r1, scratch=r12
     str r1, [r0]
@@ -635,7 +637,7 @@ WORD FLAG_INTERPRET_COMPILE, "align2"
 @ If the memory-space pointer is not aligned, align it to 4-bytes.
  ******************************************************************************/
 WORD FLAG_INTERPRET_COMPILE, "align4"
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     ldr r1, [r0]
     P2ALIGN2 align=r1, scratch=r12
     str r1, [r0]
@@ -647,7 +649,7 @@ WORD FLAG_INTERPRET_COMPILE, "align4"
 @ If the memory-space pointer is not aligned, align it to 8-bytes.
  ******************************************************************************/
 WORD FLAG_INTERPRET_COMPILE, "align8"
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     ldr r1, [r0]
     P2ALIGN3 align=r1, scratch=r12
     str r1, [r0]
@@ -694,7 +696,7 @@ WORD FLAG_INTERPRET_COMPILE, "aligned8"
 @ aligned when allot finishes execution.
  ******************************************************************************/
 WORD FLAG_INTERPRET_COMPILE, "allot"
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     ldr r1, [r0]
     adds r1, tos
     str r1, [r0]
@@ -737,26 +739,26 @@ WORD FLAG_SKIP, "b,", b_comma
 
 1:  ldr r2, =16777214
     cmp r1, r2                          @ pc-relative address - 16777214
-    ble 1f                              @ Goto temporarily set p_mem_ram to orig if necessary
+    ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
         DROP                            @ ( orig -- )
         TRACE_WRITE "'shi' branch offset too far positive >>>b,<<<"
         b 6f                            @ Goto return
 
-@ Temporarily set p_mem_ram to orig if necessary -------------------------------
+@ Temporarily set ram_begin to orig if necessary -------------------------------
 @ tos   orig
 @ r0    dest
-@ r2    p_mem_ram address
-@ r3    p_mem_ram
-@ r4    flag to indicate whether p_mem_ram is overwritten or not
+@ r2    ram_begin address
+@ r3    ram_begin
+@ r4    flag to indicate whether ram_begin is overwritten or not
 1:  movs r4, #0                         @ Reset flag
-    ldr r2, =p_mem_ram
+    ldr r2, =ram_begin
     ldr r3, [r2]
     cmp tos, r3
     bhs 1f
         movs r4, #1                     @ Set flag
-        str tos, [r2]                   @ Temporarily store orig as p_mem_ram
+        str tos, [r2]                   @ Temporarily store orig as ram_begin
         movs tos, r3
-        PUSH_TOS                        @ ( -- p_mem_ram )
+        PUSH_TOS                        @ ( -- ram_begin )
 
 @ b ----------------------------------------------------------------------------
 @ tos   opcode
@@ -798,19 +800,19 @@ WORD FLAG_SKIP, "b,", b_comma
     ands r2, r1                         @ imm10
     orrs tos, tos, r2, lsl #16          @ Or imm10 into template
 
-@ Write opcode, do not reset p_mem_ram -----------------------------------------
-@ r4    flag to indicate whether p_mem_ram is overwritten or not
+@ Write opcode, do not reset ram_begin -----------------------------------------
+@ r4    flag to indicate whether ram_begin is overwritten or not
     cmp r4, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
 
-@ Write opcode and reset p_mem_ram ---------------------------------------------
-@ r0    p_mem_ram address
+@ Write opcode and reset ram_begin ---------------------------------------------
+@ r0    ram_begin address
 1:  bl rev_comma                        @ Write opcode
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     str tos, [r0]
-    DROP                                @ ( p_mem_ram -- )
+    DROP                                @ ( ram_begin -- )
 
 @ Return -----------------------------------------------------------------------
 6:  pop {pc}
@@ -870,26 +872,26 @@ WORD FLAG_SKIP, "beq,", beq_comma
 
 1:  ldr r2, =1048574
     cmp r1, r2                          @ pc-relative address - 1048574
-    ble 1f                              @ Goto temporarily set p_mem_ram to orig if necessary
+    ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
         DROP                            @ ( orig -- )
         TRACE_WRITE "'shi' conditional branch offset too far positive >>>beq,<<<"
         b 6f                            @ Goto return
 
-@ Temporarily set p_mem_ram to orig if necessary -------------------------------
+@ Temporarily set ram_begin to orig if necessary -------------------------------
 @ tos   orig
 @ r0    dest
-@ r2    p_mem_ram address
-@ r3    p_mem_ram
-@ r4    flag to indicate whether p_mem_ram is overwritten or not
+@ r2    ram_begin address
+@ r3    ram_begin
+@ r4    flag to indicate whether ram_begin is overwritten or not
 1:  movs r4, #0                         @ Reset flag
-    ldr r2, =p_mem_ram
+    ldr r2, =ram_begin
     ldr r3, [r2]
     cmp tos, r3
     bhs 1f
         movs r4, #1                     @ Set flag
-        str tos, [r2]                   @ Temporarily store orig as p_mem_ram
+        str tos, [r2]                   @ Temporarily store orig as ram_begin
         movs tos, r3
-        PUSH_TOS                        @ ( -- p_mem_ram)
+        PUSH_TOS                        @ ( -- ram_begin)
 
 @ beq --------------------------------------------------------------------------
 @ tos   opcode
@@ -918,19 +920,19 @@ WORD FLAG_SKIP, "beq,", beq_comma
     ands r2, r1, #0x3F                  @ Mask for imm6
     orrs tos, tos, r2, lsl #16          @ Or imm6 into template
 
-@ Write opcode, do not reset p_mem_ram -----------------------------------------
-@ r4    flag to indicate whether p_mem_ram is overwritten or not
+@ Write opcode, do not reset ram_begin -----------------------------------------
+@ r4    flag to indicate whether ram_begin is overwritten or not
     cmp r4, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
 
-@ Write opcode and reset p_mem_ram ---------------------------------------------
-@ r0    p_mem_ram address
+@ Write opcode and reset ram_begin ---------------------------------------------
+@ r0    ram_begin address
 1:  bl rev_comma                        @ Write opcode
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     str tos, [r0]
-    DROP                                @ ( p_mem_ram -- )
+    DROP                                @ ( ram_begin -- )
 
 @ Return -----------------------------------------------------------------------
 6:  pop {pc}
@@ -977,26 +979,26 @@ WORD FLAG_SKIP, "blt,", blt_comma
 
 1:  ldr r2, =1048574
     cmp r1, r2                          @ pc-relative address - 1048574
-    ble 1f                              @ Goto temporarily set p_mem_ram to orig if necessary
+    ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
         DROP                            @ ( orig -- )
         TRACE_WRITE "'shi' conditional branch offset too far positive >>>blt,<<<"
         b 6f                            @ Goto return
 
-@ Temporarily set p_mem_ram to orig if necessary -------------------------------
+@ Temporarily set ram_begin to orig if necessary -------------------------------
 @ tos   orig
 @ r0    dest
-@ r2    p_mem_ram address
-@ r3    p_mem_ram
-@ r4    flag to indicate whether p_mem_ram is overwritten or not
+@ r2    ram_begin address
+@ r3    ram_begin
+@ r4    flag to indicate whether ram_begin is overwritten or not
 1:  movs r4, #0                         @ Reset flag
-    ldr r2, =p_mem_ram
+    ldr r2, =ram_begin
     ldr r3, [r2]
     cmp tos, r3
     bhs 1f
         movs r4, #1                     @ Set flag
-        str tos, [r2]                   @ Temporarily store orig as p_mem_ram
+        str tos, [r2]                   @ Temporarily store orig as ram_begin
         movs tos, r3
-        PUSH_TOS                        @ ( -- p_mem_ram)
+        PUSH_TOS                        @ ( -- ram_begin)
 
 @ blt --------------------------------------------------------------------------
 @ tos   opcode
@@ -1025,19 +1027,19 @@ WORD FLAG_SKIP, "blt,", blt_comma
     ands r2, r1, #0x3F                  @ Mask for imm6
     orrs tos, tos, r2, lsl #16          @ Or imm6 into template
 
-@ Write opcode, do not reset p_mem_ram -----------------------------------------
-@ r4    flag to indicate whether p_mem_ram is overwritten or not
+@ Write opcode, do not reset ram_begin -----------------------------------------
+@ r4    flag to indicate whether ram_begin is overwritten or not
     cmp r4, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
 
-@ Write opcode and reset p_mem_ram ---------------------------------------------
-@ r0    p_mem_ram address
+@ Write opcode and reset ram_begin ---------------------------------------------
+@ r0    ram_begin address
 1:  bl rev_comma                        @ Write opcode
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     str tos, [r0]
-    DROP                                @ ( p_mem_ram -- )
+    DROP                                @ ( ram_begin -- )
 
 @ Return -----------------------------------------------------------------------
 6:  pop {pc}
@@ -1059,14 +1061,14 @@ WORD FLAG_SKIP, "bl,", bl_comma
         b 2f                            @ Goto bl, flash
 
 @ bl, ram ----------------------------------------------------------------------
-@ tos   p_mem_ram
+@ tos   ram_begin
 @ r0    pc-relative address
 @ r2    xt
 1:  DROP                                @ ( false -- )
-    bl here                             @ ( -- p_mem_ram )
-    SWAP                                @ ( xt p_mem_ram -- p_mem_ram xt )
+    bl here                             @ ( -- ram_begin )
+    SWAP                                @ ( xt ram_begin -- ram_begin xt )
     POP_REGS r2                         @ ( xt -- )
-    subs r0, r2, tos                    @ xt - p_mem_ram
+    subs r0, r2, tos                    @ xt - ram_begin
     subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
     b 1f                                @ Goto range check for bl
 
@@ -1075,10 +1077,10 @@ WORD FLAG_SKIP, "bl,", bl_comma
 @ r0    pc-relative address
 @ r2    xt
 2:  DROP                                @ ( true -- )
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     ldmia r0, {r1, r2}
     subs r1, r2                         @ Length of current definition
-    ldr r0, =p_mem_flash
+    ldr r0, =flash_begin
     ldr r0, [r0]                        @ Beginning of current definition in flash
     adds r0, r1                         @ Address current definition would have in flash so far
     subs r0, tos, r0                    @ pc-relative address
@@ -1218,26 +1220,26 @@ WORD FLAG_SKIP, "bne,", bne_comma
 
 1:  ldr r2, =1048574
     cmp r1, r2                          @ pc-relative address - 1048574
-    ble 1f                              @ Goto temporarily set p_mem_ram to orig if necessary
+    ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
         DROP                            @ ( orig -- )
         TRACE_WRITE "'shi' conditional branch offset too far positive >>>bne,<<<"
         b 6f                            @ Goto return
 
-@ Temporarily set p_mem_ram to orig if necessary -------------------------------
+@ Temporarily set ram_begin to orig if necessary -------------------------------
 @ tos   orig
 @ r0    dest
-@ r2    p_mem_ram address
-@ r3    p_mem_ram
-@ r4    flag to indicate whether p_mem_ram is overwritten or not
+@ r2    ram_begin address
+@ r3    ram_begin
+@ r4    flag to indicate whether ram_begin is overwritten or not
 1:  movs r4, #0                         @ Reset flag
-    ldr r2, =p_mem_ram
+    ldr r2, =ram_begin
     ldr r3, [r2]
     cmp tos, r3
     bhs 1f
         movs r4, #1                     @ Set flag
-        str tos, [r2]                   @ Temporarily store orig as p_mem_ram
+        str tos, [r2]                   @ Temporarily store orig as ram_begin
         movs tos, r3
-        PUSH_TOS                        @ ( -- p_mem_ram)
+        PUSH_TOS                        @ ( -- ram_begin)
 
 @ bne --------------------------------------------------------------------------
 @ tos   opcode
@@ -1266,19 +1268,19 @@ WORD FLAG_SKIP, "bne,", bne_comma
     ands r2, r1, #0x3F                  @ Mask for imm6
     orrs tos, tos, r2, lsl #16          @ Or imm6 into template
 
-@ Write opcode, do not reset p_mem_ram -----------------------------------------
-@ r4    flag to indicate whether p_mem_ram is overwritten or not
+@ Write opcode, do not reset ram_begin -----------------------------------------
+@ r4    flag to indicate whether ram_begin is overwritten or not
     cmp r4, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
 
-@ Write opcode and reset p_mem_ram ---------------------------------------------
-@ r0    p_mem_ram address
+@ Write opcode and reset ram_begin ---------------------------------------------
+@ r0    ram_begin address
 1:  bl rev_comma                        @ Write opcode
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     str tos, [r0]
-    DROP                                @ ( p_mem_ram -- )
+    DROP                                @ ( ram_begin -- )
 
 @ Return -----------------------------------------------------------------------
 6:  pop {pc}
@@ -1298,10 +1300,10 @@ WORD FLAG_SKIP, "c!", c_store
 @ character-aligned prior to execution of c,.
  ******************************************************************************/
 WORD FLAG_SKIP, "c,", c_comma
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     ldr r1, [r0]
-    strb tos, [r1], #1                  @ Write char to address in p_mem_ram
-    str r1, [r0]                        @ Update address in p_mem_ram
+    strb tos, [r1], #1                  @ Write char to address in ram_begin
+    str r1, [r0]                        @ Update address in ram_begin
     DROP                                @ ( char -- )
     bx lr
 
@@ -1442,11 +1444,11 @@ WORD FLAG_INTERPRET, "create"
 
 @ Create -----------------------------------------------------------------------
 @ Mark beginning of new definition
-@ r0    p_mem_ram address
-@ r1    p_mem_ram
-1:  ldr r0, =p_mem_ram
+@ r0    ram_begin address
+@ r1    ram_begin
+1:  ldr r0, =ram_begin
     ldr r1, [r0]
-    str r1, [r0, #4]                    @ Store beginning of new definition
+    str r1, [r0, #-4]                   @ Store beginning of new definition in ram_begin_def
 
 @ Take account of link and flags
     TWO_DROP                            @ ( token-addr 0 -- )
@@ -1462,7 +1464,7 @@ WORD FLAG_INTERPRET, "create"
     POP_REGS top=r1, to=r0
     adds r1, r1, r0
 1:  cmp r1, r0                          @ token-addr + token-u - token-addr
-    bls 1f                              @ Goto align p_mem_ram
+    bls 1f                              @ Goto align ram_begin
         PUSH_TOS
         ldrb tos, [r0], #1              @ character
         push {r0, r1}
@@ -1470,7 +1472,7 @@ WORD FLAG_INTERPRET, "create"
         pop {r0, r1}
         b 1b
 
-@ Align p_mem_ram
+@ Align ram_begin
 @ Name could have been any length and screw with alignment
 1:  bl align2
 
@@ -1613,14 +1615,14 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
 
 @ end:; ram --------------------------------------------------------------------
 @ tos   flags
-@ r0    p_mem_ram address
-@ r1    p_mem_ram
-@ r2    p_mem_ram+4
+@ r0    ram_begin_def address
+@ r1    ram_begin
+@ r2    ram_begin_def
 @ r3    l_mem address
 @ r4    l_mem
 1:  DROP                                @ ( false -- )
-    ldr r0, =p_mem_ram
-    ldmia r0, {r1, r2}
+    ldr r0, =ram_begin_def
+    ldmia r0, {r2, r1}
     ldr r3, =l_mem
     ldr r4, [r3]
     str r2, [r3]                        @ Update last link
@@ -1630,15 +1632,17 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
 
 @ end:; flash ------------------------------------------------------------------
 @ Align the length of the definition to 8-bytes
-@ r0    p_mem_ram address
-@ r1    p_mem_ram
-@ r2    p_mem_ram+4
+@ r0    ram_begin address
+@ r1    ram_begin
+@ r2    ram_begin_def
 @ r3    length | aligned length
 @ r4    scratch
 2:  DROP                                @ ( true -- )
-    ldr r0, =p_mem_ram
-    ldmia r0, {r1, r2}
-    subs r3, r1, r2                     @ p_mem_ram - p_mem_ram+4
+    ldr r0, =ram_begin_def
+    ldr r2, [r0]
+    ldr r0, =ram_begin
+    ldr r1, [r0]
+    subs r3, r1, r2                     @ ram_begin - ram_begin_def
     .if !(FLASH_WRITE_SIZE - 1)
     nop
     .elseif !(FLASH_WRITE_SIZE - 2)
@@ -1651,17 +1655,17 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     nop // TODO P2ALIGN4
     .endif
     adds r4, r2, r3
-    str r4, [r0]                        @ Store aligned length in p_mem_ram
+    str r4, [r0]                        @ Store aligned length in ram_begin
     cmp r3, #8
     blo 6f
 
 @ Write link and flags
-@ r0    p_mem_flash address
-@ r1    p_mem_flash
-@ r2    p_mem_ram+4
+@ r0    flash_begin address
+@ r1    flash_begin
+@ r2    ram_begin_def
 @ r3    aligned length
 @ r4    next link
-    ldr r0, =p_mem_flash
+    ldr r0, =flash_begin
     ldr r1, [r0]
     adds r4, r1, r3
     str r4, [r2]                        @ Write next link
@@ -1716,9 +1720,9 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     str r3, [r0]
 
 @ Copy definition from ram to flash
-@ r0    FLASH_SR register address | p_mem_flash address
-@ r1    p_mem_flash
-@ r2    p_mem_ram+4
+@ r0    FLASH_SR register address | flash_begin address
+@ r1    flash_begin
+@ r2    ram_begin_def
 @ r3    first word | scratch
 @ r4    next link
 @ r5    second word
@@ -1735,7 +1739,7 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     cmp r1, r4                          @ Check if we're done
     blo 1b
 
-    ldr r0, =p_mem_flash                @ Update p_mem_flash
+    ldr r0, =flash_begin                @ Update flash_begin
     str r1, [r0]
 
 @ Clear the PG bit in the FLASH_SR register if there are no more programming
@@ -1756,11 +1760,11 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     str r3, [r0]
 
 @ Clear definition from ram
-@ r0    p_mem_ram address
-@ r1    p_mem_ram
-@ r2    p_mem_ram+4
+@ r0    ram_begin address
+@ r1    ram_begin
+@ r2    ram_begin_def
 @ r3    erased word
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     ldmia r0, {r1, r2}
     movs r3, #ERASED_WORD
 1:  str r3, [r1], #-4
@@ -1927,10 +1931,10 @@ WORD FLAG_SKIP, "fm/mod", fm_div_mod
 @ memory-space pointer is not aligned prior to execution of h,.
  ******************************************************************************/
 WORD FLAG_SKIP, "h,", h_comma
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     ldr r1, [r0]
-    strh tos, [r1], #2                  @ Write h to address in p_mem_ram
-    str r1, [r0]                        @ Update address in p_mem_ram
+    strh tos, [r1], #2                  @ Write h to address in ram_begin
+    str r1, [r0]                        @ Update address in ram_begin
     DROP                                @ ( h -- )
     bx lr
 
@@ -1941,7 +1945,7 @@ WORD FLAG_SKIP, "h,", h_comma
  ******************************************************************************/
 WORD FLAG_SKIP, "here"
     PUSH_TOS
-    ldr tos, =p_mem_ram
+    ldr tos, =ram_begin
     ldr tos, [tos]
     bx lr
 
@@ -2102,9 +2106,9 @@ WORD FLAG_COMPILE_IMMEDIATE, "leave"
     bl allot
 
 @ Reverse push orig onto the stack ---------------------------------------------
-@ r0    p_structure address
-@ r1    p_structure
-    ldr r0, =p_structure
+@ r0    csp address
+@ r1    csp
+    ldr r0, =csp
     ldr r1, [r0]
     stmia r1!, {tos}
     str r1, [r0]
@@ -2153,25 +2157,25 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
     bl blt_comma
 
 @ Leave ------------------------------------------------------------------------
-@ r0    p_structure address
-@ r1    p_structure
+@ r0    csp address
+@ r1    csp
 @ r2    stack address
-    ldr r0, =p_structure
+    ldr r0, =csp
     ldr r1, [r0]
     ldr r2, =_s_shi_dstack
     cmp r1, r2
     beq 6f
 
-@ Check if p_structure and dsp clash
-@ r1    p_structure
+@ Check if csp and dsp clash
+@ r1    csp
     cmp r1, dsp
     blo 1f
         TRACE_WRITE "'shi' stack overflow >>>leave<<<"
         b 6f
 
 @ Take care of leave(s)
-@ r0    p_structure address
-@ r1    p_structure
+@ r0    csp address
+@ r1    csp
 @ r2    orig
 @ r3    scratch
 1:  ldr r2, [r1, #-4]
@@ -2334,13 +2338,13 @@ WORD FLAG_COMPILE_IMMEDIATE, "repeat"
 @ memory-space pointer is not aligned prior to execution of r,.
  ******************************************************************************/
 WORD FLAG_SKIP, "rev,", rev_comma
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     ldr r1, [r0]
     movs r2, tos
     lsrs tos, #16
-    strh tos, [r1], #2                  @ Write x to address in p_mem_ram
-    strh r2, [r1], #2                   @ Write x to address in p_mem_ram
-    str r1, [r0]                        @ Update address in p_mem_ram
+    strh tos, [r1], #2                  @ Write x to address in ram_begin
+    strh r2, [r1], #2                   @ Write x to address in ram_begin
+    str r1, [r0]                        @ Update address in ram_begin
     DROP                                @ ( x -- )
     bx lr
 
@@ -2557,7 +2561,7 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
     bl create
 
 @ Write literal with the reserved cells address --------------------------------
-    ldr r0, =p_variable
+    ldr r0, =ram_end
     ldr r1, [r0]
     movs r2, #0                         @ Zero initialize cell
     str r2, [r1]
@@ -2851,25 +2855,25 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
     bl h_comma
 
 @ Resolve branch(es) from endof(s) ---------------------------------------------
-@ r0    p_structure address
-@ r1    p_structure
+@ r0    csp address
+@ r1    csp
 @ r2    stack address
-    ldr r0, =p_structure
+    ldr r0, =csp
     ldr r1, [r0]
     ldr r2, =_s_shi_dstack
     cmp r1, r2
     beq 6f
 
-@ Check if p_structure and dsp clash
-@ r1    p_structure
+@ Check if csp and dsp clash
+@ r1    csp
     cmp r1, dsp
     blo 1f
         TRACE_WRITE "'shi' stack overflow >>>endcase<<<"
         b 6f
 
 @ Take care of endof(s)
-@ r0    p_structure address
-@ r1    p_structure
+@ r0    csp address
+@ r1    csp
 @ r2    scratch
 1:  ldr r2, [r1, #-4]
     PUSH_REGS r2                        @ ( -- orig )
@@ -2903,10 +2907,10 @@ WORD FLAG_COMPILE_IMMEDIATE, "endof"
     push {lr}
 
 @ Reverse push orig onto the stack ---------------------------------------------
-@ r0    p_structure address
-@ r1    p_structure
+@ r0    csp address
+@ r1    csp
     bl here                             @ ( -- orig )
-    ldr r0, =p_structure
+    ldr r0, =csp
     ldr r1, [r0]
     stmia r1!, {tos}
     str r1, [r0]
@@ -3183,19 +3187,19 @@ WORD FLAG_SKIP, "unused"
         b 2f                            @ Goto end:; flash
 
 @ unused ram -------------------------------------------------------------------
-@ tos   p_variable
-@ r0    p_mem_ram
-1:  ldr tos, =p_variable
+@ tos   ram_end
+@ r0    ram_begin
+1:  ldr tos, =ram_end
     ldr tos, [tos]
-    ldr r0, =p_mem_ram
+    ldr r0, =ram_begin
     ldr r0, [r0]
     subs tos, r0
 
 @ unused flash -----------------------------------------------------------------
 @ tos   FLASH_END
-@ r0    p_mem_flash
+@ r0    flash_begin
 2:  ldr tos, =FLASH_END
-    ldr r0, =p_mem_flash
+    ldr r0, =flash_begin
     ldr r0, [r0]
     subs tos, r0
 

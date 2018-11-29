@@ -1,4 +1,8 @@
 /// \page page_todo TODO
+///
+/// Data-stack -> Selbst gemanaged via tos und dsp, normal im RAM<br>
+/// Return-stack -> ECHTER "C" stack managed via sp... (so DONT FUCK THAT UP)
+///
 /// RAM und FLASH Bereiche sollen vom User festgelegt wern
 ///
 /// Die Funktion "shi_set_memory_space_pointer_flash" wird aber weiterhin
@@ -31,14 +35,11 @@
 /// - Laenge der Definition im RAM
 /// - Flags fuer die Definition
 /// - Link der letzten Definition
-/// Und als return wuerde sich wohl ein Update von p_mem_flash anbieten?
+/// Und als return wuerde sich wohl ein Update von flash_begin anbieten?
 ///
 /// Folgende Reihenfolge beim Flash-Write aktuell:
 /// -# Laenge der Definition wird aligned
-/// -# Jene Laenge wird zu p_mem_ram dazu addiert und wieder gespeichert (in
-///    p_mem_ram+4 steht der Beginn der aktuellen Definition der waehrend
-///    "create" gesetzt wird!) und an jener Stelle muss I anmerken, des verdient
-///    a eigenes Symbol!!!
+/// -# Jene Laenge wird zu ram_begin dazu addiert und wieder gespeichert
 /// -# Link und Flags werden noch ins RAM geschrieben
 /// -# Dann folgt der elends lange Flash Schaß
 /// -# Dann wird bis zum Beginn der aktuellen Definition des RAM wieder geleert
@@ -52,10 +53,10 @@
 /// | _e_shi_dstack   | Symbol at end of stack                                                             |
 /// | _s_shi_context  | Symbol at start of context (tos, dsp and lfp)                                      |
 /// | _s_shi_context  | Symbol at end of context                                                           |
-/// | p_mem_ram       | Pointer to ram (and beginning of current definition)                               |
-/// | p_mem_flash     | Pointer to flash                                                                   |
-/// | p_variable      | Used for reserving ram for variables                                               |
-/// | p_structure     | Inside loop: points to leave addresses from the current loop on the stack <br><!-- |
+/// | ram_begin       | Pointer to ram (and beginning of current definition)                               |
+/// | flash_begin     | Pointer to flash                                                                   |
+/// | ram_end         | Used for reserving ram for variables                                               |
+/// | csp             | Inside loop: points to leave addresses from the current loop on the stack <br><!-- |
 /// |                 | --> Inside case: points to end of addresses from the current case on the stack     |
 /// | l_mem           | Contains address of link of the last definition                                    |
 /// | status          | Current state (state is taken as word) <br><!--                                    |
@@ -67,3 +68,10 @@
 /// | radix           | Determine current numerical base (base is taken as word)                           |
 // clang-format on
 /// \page page_todo TODO
+///
+/// csp<br>
+/// csp is im Prinzip ein Stackpointer... Im Gegensatz zum normalen Stackpointer
+/// (dsp) wächst der aber nicht nach unten in den Stack sondern fängt unten an
+/// und wächst nach oben. Von der Richtung her wird "Struktur" Info am Stack
+/// abgelegt, wie mas zum Beispiel für "leave" (break aus loop) oder "endcase"
+/// (break aus switch-case) braucht

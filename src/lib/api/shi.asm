@@ -20,8 +20,8 @@
 /***************************************************************************//**
 @ Register mapping
  ******************************************************************************/
-@ Map top of stack and pointer to registers
-@ (hardwired, can not be changed)
+@ Map top of stack and stackpointer to last low registers and literal-folding
+@ pointer to first high register (hardwired, can not be changed)
 tos .req r6                             @ Top of stack
 dsp .req r7                             @ Data-stack pointer
 lfp .req r8                             @ Literal-folding pointer
@@ -62,9 +62,9 @@ shi_init:
     push {r4-r9, lr}
 
 @ Store ram addresses ----------------------------------------------------------
-    ldr r2, =p_mem_ram                  @ Store ram start address
+    ldr r2, =ram_begin                  @ Store ram start address
     str r0, [r2]
-    ldr r2, =p_variable                 @ Store ram end address
+    ldr r2, =ram_end                    @ Store ram end address
     str r1, [r2]
 
 @ Fill ram ---------------------------------------------------------------------
@@ -134,7 +134,7 @@ set_memory_space_pointer_flash:
             .elseif !(FLASH_WRITE_SIZE - 16)
             nop // TODO P2ALIGN4
             .endif
-            ldr r0, =p_mem_flash        @ Store aligned first free flash address
+            ldr r0, =flash_begin        @ Store aligned first free flash address
             str r1, [r0]
             b 3f
 
@@ -150,7 +150,7 @@ set_memory_space_pointer_flash:
     .elseif !(FLASH_WRITE_SIZE - 16)
     nop // TODO P2ALIGN4
     .endif
-    ldr r1, =p_mem_flash                @ Store aligned first free flash address
+    ldr r1, =flash_begin                @ Store aligned first free flash address
     str r0, [r1]
 
 @ Return -----------------------------------------------------------------------
@@ -165,22 +165,22 @@ reserve_ram:
 @ r0    link
 @ r1    copy of link
 @ r2    flags
-@ r3    p_variable address
-@ r4    p_variable
+@ r3    ram_end address
+@ r4    ram_end
     ldr r0, =_s_shi_dict
-    ldr r3, =p_variable
+    ldr r3, =ram_end
     ldr r4, [r3]
     movs r1, r0
 1:  ldrb r2, [r0, #4]                   @ Flags
     mvns r2, r2                         @ Invert flags
     ands r2, r2, #BIT_RESERVE_RAM       @ Extract reserve ram bits from flags
-    subs r4, r2                         @ If bits are set subtract amount of bytes from p_variable
+    subs r4, r2                         @ If bits are set subtract amount of bytes from ram_end
     ldr r0, [r0]                        @ Link
     cmp r0, #LINK_INVALID               @ End of dictionary?
     itt ne
     movne r1, r0
     bne 1b                              @ Goto search
-        str r4, [r3]                    @ Store p_variable
+        str r4, [r3]                    @ Store ram_end
 
 @ Return -----------------------------------------------------------------------
     bx lr
