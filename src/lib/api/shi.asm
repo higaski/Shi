@@ -59,10 +59,10 @@ WORD_TAIL   FLAG_SKIP, "_e_shi"
 
 /***************************************************************************//**
 @ Initialize shi
-@ r0    ram start address
-@ r1    ram end address
-@ r2    flash start address
-@ r3    flash end address
+@ r0    ram_begin
+@ r1    ram_end
+@ r2    flash_begin
+@ r3    flash_end
  ******************************************************************************/
 shi_init:
     push {r4-r9, lr}
@@ -93,8 +93,8 @@ shi_init:
 @ Fill ram
  ******************************************************************************/
 fill_ram:
-@ r0    ram start address
-@ r1    ram end address
+@ r0    ram_begin
+@ r1    ram_end
 @ r2    erased word
     ldr r2, =ram_begin
     ldmia r2, {r0, r1}
@@ -113,19 +113,20 @@ fill_ram:
  ******************************************************************************/
 set_memory_space_pointer_flash:
 @ r0    flash start address
-@ r1    flash end address
-@ r2    flash content
-    ldr r2, =flash_begin
-    ldmia r2, {r0, r1}
-    ldr r2, =_e_shi_dict                @ Set last link of core to user dictionary
-    str r0, [r2]
-1:  cmp r0, r1
+@ r1    flash_begin
+@ r2    flash_end
+@ r3    flash content
+    ldr r0, =flash_begin
+    ldmia r0, {r1, r2}
+    ldr r3, =_e_shi_dict                @ Set last link of core to user dictionary
+    str r1, [r3]
+1:  cmp r1, r2
     bhi 1f
-        ldr r2, [r1, #-4]!
-        cmp r2, #ERASED_WORD            @ Flash content - erased word
+        ldr r3, [r2, #-4]!
+        cmp r3, #ERASED_WORD            @ Flash content - erased word
         beq 1b
-            adds r1, #4                 @ Written content found, add #4 to account for it
-            str r1, [r0]                @ Store first free flash address
+            adds r2, #4                 @ Written content found, add #4 to account for it
+            str r2, [r0]                @ Store first free flash address
 
 @ Return -----------------------------------------------------------------------
 1:  bx lr

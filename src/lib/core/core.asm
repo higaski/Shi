@@ -1630,7 +1630,7 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     str r1, [r3]                        @ Update last link
     str r4, [r1], #4                    @ Write link
     strb tos, [r1]                      @ Write flags
-    b 6f                                @ Goto return
+    b 3f                                @ Goto return
 
 @ end:; flash ------------------------------------------------------------------
 @ tos   flags
@@ -1644,11 +1644,25 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     ldr r2, =flash_begin
     ldr r2, [r2]
     bl extern_flash_write
-    @TODO retval is new flash value... :p?
-    b 6f                                @ Goto return
+    ldr r1, =flash_begin                @ Update flash_begin
+    str r0, [r1]
+
+@ -----------------------
+@ r0    ram_begin_def address
+@ r1    ram_begin_def
+@ r2    ram_begin
+@ r3    erased word
+    ldr r0, =ram_begin_def
+    ldmia r0, {r1, r2}
+    P2ALIGN2 align=r2, scratch=r3
+    movs r3, #ERASED_WORD
+2:  str r3, [r2], #-4
+    cmp r1, r2
+    blo 2b
+    stmia r0, {r1, r2}
 
 @ Return -----------------------------------------------------------------------
-6:  DROP                                @ ( flags -- )
+3:  DROP                                @ ( flags -- )
     pop {pc}
 
 /*

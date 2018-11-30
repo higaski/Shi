@@ -25,6 +25,18 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifdef FILL_UNUSED_FLASH
+#  define FILL_FLASH                                                           \ 
+    .fill :                                                                    \
+    {                                                                          \
+      FILL(0xFF);                                                              \
+      . = ORIGIN(FLASH) + LENGTH(FLASH) - 1;                                   \
+      BYTE(0xFF)                                                               \
+    } >FLASH                                                           
+#else
+#  define FILL_FLASH
+#endif
+
 /*
  * Default linker script for Cortex-M (it includes specifics for 
  * STM32F[34]xx).
@@ -316,12 +328,7 @@ SECTIONS
     /* 
      * Fill unused flash
      */
-    .fill :
-    {
-      FILL(0xFF);
-      . = ORIGIN(FLASH) + LENGTH(FLASH) - 1;
-      BYTE(0xFF)
-    } >FLASH 
+    FILL_FLASH
 
     /*
      * The uninitialised data sections. NOLOAD is used to avoid
