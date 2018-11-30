@@ -26,7 +26,7 @@
  */
 
 #ifdef FILL_UNUSED_FLASH
-#  define FILL_FLASH                                                           \ 
+#  define FILL_FLASH                                                           \
     .fill :                                                                    \
     {                                                                          \
       FILL(0xFF);                                                              \

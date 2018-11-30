@@ -20,9 +20,9 @@ int main() {
             0x08000000 + 0x00040000 - 0x8000,
             0x08000000 + 0x00040000);
   asm volatile("nop");
-  //  shi_test();
+    shi_test();
   asm volatile("nop");
-  shi_test_compile_to_flash();
+//  shi_test_compile_to_flash();
 
   //  semihosting_io();
 
@@ -33,13 +33,13 @@ void shi_test_compile_to_flash() {
   asm volatile("nop");
 
   // Compile to FLASH
-  shi::evaluate(",toflash");
-  shi::evaluate(": p13 13 ;");
-  shi::evaluate(": p1314 p13 14 ;");
-  shi::stack_print(printf);  // Empty
-  shi::evaluate("p1314");    // 13 14
-  shi::stack_print(printf);
-  shi::evaluate(",toram");
+//  shi::evaluate(",toflash");
+//  shi::evaluate(": p13 13 ;");
+//  shi::evaluate(": p1314 p13 14 ;");
+//  shi::stack_print(printf);  // Empty
+//  shi::evaluate("p1314");    // 13 14
+//  shi::stack_print(printf);
+//  shi::evaluate(",toram");
 
   asm volatile("nop");
 }

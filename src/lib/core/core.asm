@@ -1079,12 +1079,12 @@ WORD FLAG_SKIP, "bl,", bl_comma
 @ r0    pc-relative address
 @ r2    xt
 2:  DROP                                @ ( true -- )
-    ldr r0, =ram_begin
+    ldr r0, =ram_begin_def
     ldmia r0, {r1, r2}
-    subs r1, r2                         @ Length of current definition
+    subs r2, r1                         @ Length of current definition
     ldr r0, =flash_begin
     ldr r0, [r0]                        @ Beginning of current definition in flash
-    adds r0, r1                         @ Address current definition would have in flash so far
+    adds r0, r2                         @ Address current definition would have in flash so far
     subs r0, tos, r0                    @ pc-relative address
     subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
     movs r2, tos                        @ Keep xt in r2 for later use
@@ -1647,7 +1647,7 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     ldr r1, =flash_begin                @ Update flash_begin
     str r0, [r1]
 
-@ -----------------------
+@ Clear definition from ram
 @ r0    ram_begin_def address
 @ r1    ram_begin_def
 @ r2    ram_begin
