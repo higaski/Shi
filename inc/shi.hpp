@@ -49,6 +49,12 @@ extern "C" void shi_init(uint32_t const ram_begin,
 extern "C" void shi_c_variable(char const* name, size_t len);
 extern "C" void shi_evaluate(char const* str, size_t len);
 
+inline void operator"" _fs(char const* str, size_t const len) {
+  evaluate(str, len);
+}
+
+
+
 template<typename T>
 void c_variable(char const* name, T adr) {
   static_assert(std::is_pointer_v<T>,

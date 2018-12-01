@@ -393,15 +393,25 @@ WORD FLAG_SKIP, "2!", two_store
     bx lr
 */
 
-/*
-WORD FLAG_SKIP, "2*", two_times
+/***************************************************************************//**
+@ 2*
+@ ( x1 -- x2 )
+@ x2 is the result of shifting x1 one bit toward the most-significant bit,
+@ filling the vacated least-significant bit with zero.
+ ******************************************************************************/
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "2*", two_times
+    lsl tos, #1
     bx lr
-*/
 
-/*
-WORD FLAG_SKIP, "2/", two_div
+/***************************************************************************//**
+@ 2/
+@ ( x1 -- x2 )
+@ x2 is the result of shifting x1 one bit toward the least-significant bit,
+@ leaving the most-significant bit unchanged.
+ ******************************************************************************/
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "2/", two_div
+    asr tos, #1
     bx lr
-*/
 
 /*
 WORD FLAG_SKIP, "2@", two_fetch
@@ -3065,30 +3075,16 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u>", u_more
 @ u is the amount of space remaining in the region addressed by here, in address
 @ units.
  ******************************************************************************/
-WORD FLAG_SKIP, "unused"
+WORD FLAG_INTERPRET, "unused"
     push {lr}
 
 @ Ram or flash -----------------------------------------------------------------
     bl comma_q                          @ ( -- true | false )
     cmp tos, #0
-    beq 1f                              @ Goto end:; ram
-        b 2f                            @ Goto end:; flash
-
-@ unused ram -------------------------------------------------------------------
-@ tos   ram_end
-@ r0    ram_begin
-1:  ldr tos, =ram_end
-    ldr tos, [tos]
-    ldr r0, =ram_begin
-    ldr r0, [r0]
-    subs tos, r0
-
-@ unused flash -----------------------------------------------------------------
-@ tos   flash_end
-@ r0    flash_begin
-2:  ldr tos, =flash_end
-    ldr r0, =flash_begin
-    ldr r0, [r0]
+    ite eq
+    ldreq r0, =ram_begin
+    ldrne r0, =flash_begin
+    ldmia r0, {r0, tos}
     subs tos, r0
 
 @ Return -----------------------------------------------------------------------

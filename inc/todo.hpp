@@ -68,3 +68,5 @@
 // clang-format on
 /// \page page_todo TODO
 ///
+/// Bezüglich Nummern...<br>
+/// HEX wird AUSSCHLIESSLICH!!!! in Großbuchstaben unterstützt!!!
