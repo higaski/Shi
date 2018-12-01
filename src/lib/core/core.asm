@@ -12,7 +12,7 @@
 .global _e_shi_dstack
 .global _s_shi_context
 
-.extern extern_flash_write
+.extern shi_write_flash
 
 .section .data
 
@@ -1643,7 +1643,7 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     strb tos, [r0, #4]!                 @ Write flags
     ldr r2, =flash_begin
     ldr r2, [r2]
-    bl extern_flash_write
+    bl shi_write_flash
     ldr r1, =flash_begin                @ Update flash_begin
     str r0, [r1]
 
@@ -2453,9 +2453,8 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
     ldr r0, =ram_end
     ldr r1, [r0]
     movs r2, #0                         @ Zero initialize cell
-    str r2, [r1]
+    str r2, [r1, #-4]!
     PUSH_REGS r1
-    subs r1, #4
     str r1, [r0]
     bl literal
 

@@ -30,20 +30,19 @@
 /// geupdatet wenn ein Eintrag ins RAM gschrieben wird. link is somit quasi
 /// immer des Ende vom Faden wo ma zu Suchen beginnt.
 ///
-/// Was wuerde eine externe Flash-Write Funktion brauchen?
-/// - Pointer zum Beginn der Definition im RAM
-/// - Laenge der Definition im RAM
-/// - Flags fuer die Definition
-/// - Link der letzten Definition
-/// Und als return wuerde sich wohl ein Update von flash_begin anbieten?
 ///
-/// Folgende Reihenfolge beim Flash-Write aktuell:
-/// -# Laenge der Definition wird aligned
-/// -# Jene Laenge wird zu ram_begin dazu addiert und wieder gespeichert
-/// -# Link und Flags werden noch ins RAM geschrieben
-/// -# Dann folgt der elends lange Flash Schaß
-/// -# Dann wird bis zum Beginn der aktuellen Definition des RAM wieder geleert
-///    (0xFF)
+/// reverse_ram<br>
+/// Bei da Init wird die Funktion reserve_ram aufgerufen. Die rennt das ganze
+/// Dictionary durch und prüft ob Einträge RAM reservieren müssen wie es zum
+/// Beispiel das Wort "variable" tut. Jener RAM wird hinten vom übergebenen RAM
+/// Bereich genommen! Und nacher wird ram_end entsprechend angepasst.
+///
+/// csp<br>
+/// csp is im Prinzip ein Stackpointer... Im Gegensatz zum normalen Stackpointer
+/// (dsp) wächst der aber nicht nach unten in den Stack sondern fängt unten an
+/// und wächst nach oben. Von der Richtung her wird "Struktur" Info am Stack
+/// abgelegt, wie mas zum Beispiel für "leave" (break aus loop) oder "endcase"
+/// (break aus switch-case) braucht
 ///
 // clang-format off
 /// \page page_todo TODO
@@ -69,9 +68,3 @@
 // clang-format on
 /// \page page_todo TODO
 ///
-/// csp<br>
-/// csp is im Prinzip ein Stackpointer... Im Gegensatz zum normalen Stackpointer
-/// (dsp) wächst der aber nicht nach unten in den Stack sondern fängt unten an
-/// und wächst nach oben. Von der Richtung her wird "Struktur" Info am Stack
-/// abgelegt, wie mas zum Beispiel für "leave" (break aus loop) oder "endcase"
-/// (break aus switch-case) braucht

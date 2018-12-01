@@ -106,27 +106,32 @@ size_t depth() {
   return size;
 }
 
-/// Add data to the top of the stack
+/// Returns the number of elements on the stack
 ///
-/// \param  cell    Value to push
-template<>
-void push<float>(float const cell) {
-  // TODO currently NO!!! FP support in QEMU
-  // asm volatile("ldr r0, =_s_shi_context"
-  //              "\n\t"
-  //              "ldmia r0, {r1, r2}"
-  //              "\n\t"
-  //              "str r1, [r2, #-4]!"
-  //              "\n\t"
-  //              "vmov r1, %[cell]"
-  //              "\n\t"
-  //              "stmia r0, {r1, r2}"
-  //              "\n\t"
-  //              ".ltorg"
-  //              "\n\t"
-  //              :
-  //              : [cell] "t"(cell)
-  //              : "cc", "r0", "r1", "r2");
+/// \return Number of elements on stack
+size_t size() {
+  return depth();
+}
+
+/// Add element to the top of the stack
+///
+/// \param    cell    Value to push
+void push(int32_t const cell) {
+  asm volatile("ldr r0, =_s_shi_context"
+               "\n\t"
+               "ldmia r0, {r1, r2}"
+               "\n\t"
+               "str r1, [r2, #-4]!"
+               "\n\t"
+               "movs r1, %[cell]"
+               "\n\t"
+               "stmia r0, {r1, r2}"
+               "\n\t"
+               ".ltorg"
+               "\n\t"
+               :
+               : [cell] "r"(cell)
+               : "cc", "r0", "r1", "r2");
 }
 
 /// Removes first element
@@ -144,6 +149,43 @@ void pop() {
                :
                :
                : "cc", "r0", "r1", "r2");
+}
+
+int32_t top(int32_t const offset) {
+  int32_t cell;
+
+  asm volatile("ldr r7, =_s_shi_context"
+               "\n\t"
+               "ldmia r7, {%[cell], r7}"
+               "\n\t"
+
+               "cmp %[offset], #0"
+               "\n\t"
+               "beq 1f"
+               "\n\t"
+
+               "itee ge"
+               "\n\t"
+               "subge %[offset], #1"
+               "\n\t"
+               "addlt %[offset], #1"
+               "\n\t"
+               "neglt %[offset], %[offset]"
+               "\n\t"
+
+               "ldr %[cell], [r7, %[offset], lsl #2]"
+               "\n\t"
+
+               "1:"
+               "\n\t"
+
+               ".ltorg"
+               "\n\t"
+               : [cell] "=&r"(cell)
+               : [offset] "r"(offset)
+               : "cc", "r7");
+
+  return cell;
 }
 
 /// Call of word evaluate

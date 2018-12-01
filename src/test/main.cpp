@@ -2,11 +2,264 @@
 #include "shi.hpp"
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
+#include "unity.h"
 
 void shi_test();
 void shi_test_compile_to_flash();
 void SystemClock_Config();
 void _Error_Handler(char* file, int line);
+
+#define TEST(name) void name()
+
+TEST(number) {
+  shi::evaluate("13");
+  TEST_ASSERT_EQUAL_INT(1, shi::size());
+  TEST_ASSERT_EQUAL_INT(13, shi::top());
+
+  shi::clear();
+}
+
+TEST(number_hex) {
+  shi::evaluate("$21");
+  TEST_ASSERT_EQUAL_INT(0x21, shi::top());
+  TEST_ASSERT_EQUAL_INT(1, shi::size());
+
+  shi::clear();
+}
+
+TEST(number_bin) {
+  shi::evaluate("%00011101");
+  TEST_ASSERT_EQUAL_INT(1, shi::size());
+  TEST_ASSERT_EQUAL_INT(0b0001'1101, shi::top());
+
+  shi::clear();
+}
+
+TEST(top) {
+  shi::evaluate("13");
+  TEST_ASSERT_EQUAL_INT(1, shi::size());
+  TEST_ASSERT_EQUAL_INT(13, shi::top());
+
+  shi::evaluate("170");
+  TEST_ASSERT_EQUAL_INT(2, shi::size());
+  TEST_ASSERT_EQUAL_INT(170, shi::top());
+  TEST_ASSERT_EQUAL_INT(13, shi::top(1));
+  TEST_ASSERT_EQUAL_INT(13, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(2, shi::size());
+
+  shi::evaluate("38");
+  TEST_ASSERT_EQUAL_INT(3, shi::size());
+  TEST_ASSERT_EQUAL_INT(38, shi::top());
+  TEST_ASSERT_EQUAL_INT(170, shi::top(1));
+  TEST_ASSERT_EQUAL_INT(170, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(13, shi::top(2));
+  TEST_ASSERT_EQUAL_INT(13, shi::top(-2));
+
+  shi::clear();
+}
+
+TEST(if_else_then) {
+  shi::evaluate(": gi2 if 123 else 234 then ;");
+  TEST_ASSERT_EQUAL_INT(0, shi::size());
+  TEST_ASSERT_TRUE(shi::empty());
+
+  shi::evaluate("-1 gi2");
+  TEST_ASSERT_EQUAL_INT(1, shi::size());
+  TEST_ASSERT_EQUAL_INT(123, shi::top());
+
+  shi::evaluate("1 gi2");
+  TEST_ASSERT_EQUAL_INT(2, shi::size());
+  TEST_ASSERT_EQUAL_INT(123, shi::top());
+  TEST_ASSERT_EQUAL_INT(123, shi::top(-1));
+
+  shi::evaluate("0 gi2");
+  TEST_ASSERT_EQUAL_INT(3, shi::size());
+  TEST_ASSERT_EQUAL_INT(234, shi::top());
+  TEST_ASSERT_EQUAL_INT(123, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(123, shi::top(-2));
+
+  shi::evaluate(": melse if 1 else 2 else 3 else 4 else 5 then ;");
+
+  shi::evaluate("false melse");
+  TEST_ASSERT_EQUAL_INT(5, shi::size());
+  TEST_ASSERT_EQUAL_INT(4, shi::top());
+  TEST_ASSERT_EQUAL_INT(2, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(234, shi::top(-2));
+  TEST_ASSERT_EQUAL_INT(123, shi::top(-3));
+  TEST_ASSERT_EQUAL_INT(123, shi::top(-4));
+
+  shi::evaluate("true melse");
+  TEST_ASSERT_EQUAL_INT(8, shi::size());
+  TEST_ASSERT_EQUAL_INT(5, shi::top());
+  TEST_ASSERT_EQUAL_INT(3, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(1, shi::top(-2));
+  TEST_ASSERT_EQUAL_INT(4, shi::top(-3));
+  TEST_ASSERT_EQUAL_INT(2, shi::top(-4));
+  TEST_ASSERT_EQUAL_INT(234, shi::top(-5));
+  TEST_ASSERT_EQUAL_INT(123, shi::top(-6));
+  TEST_ASSERT_EQUAL_INT(123, shi::top(-7));
+
+  shi::clear();
+}
+
+TEST(loop) {
+  shi::evaluate(": gd1 do i loop ;");
+  TEST_ASSERT_TRUE(shi::empty());
+
+  shi::evaluate("4 1 gd1");
+  TEST_ASSERT_EQUAL_INT(3, shi::size());
+  TEST_ASSERT_EQUAL_INT(3, shi::top());
+  TEST_ASSERT_EQUAL_INT(2, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(1, shi::top(-2));
+
+  shi::evaluate("2 -1 gd1");
+  TEST_ASSERT_EQUAL_INT(6, shi::size());
+  TEST_ASSERT_EQUAL_INT(1, shi::top(0));
+  TEST_ASSERT_EQUAL_INT(0, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(-1, shi::top(-2));
+  TEST_ASSERT_EQUAL_INT(3, shi::top(-3));
+  TEST_ASSERT_EQUAL_INT(2, shi::top(-4));
+  TEST_ASSERT_EQUAL_INT(1, shi::top(-5));
+
+  shi::clear();
+}
+
+TEST(leave) {
+  shi::evaluate(": gd5 123 swap 0 do i 4 > if drop 234 leave then loop ;");
+  TEST_ASSERT_TRUE(shi::empty());
+
+  shi::evaluate("1 gd5");
+  TEST_ASSERT_EQUAL_INT(1, shi::size());
+  TEST_ASSERT_EQUAL_INT(123, shi::top());
+
+  shi::evaluate("5 gd5");
+  TEST_ASSERT_EQUAL_INT(2, shi::size());
+  TEST_ASSERT_EQUAL_INT(123, shi::top());
+  TEST_ASSERT_EQUAL_INT(123, shi::top(-1));
+
+  shi::evaluate("6 gd5");
+  TEST_ASSERT_EQUAL_INT(3, shi::size());
+  TEST_ASSERT_EQUAL_INT(234, shi::top());
+  TEST_ASSERT_EQUAL_INT(123, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(123, shi::top(-2));
+
+  shi::clear();
+}
+
+TEST(case_) {
+  shi::evaluate(": cs1 case 1 of 111 endof 2 of 222 endof 3 of 333 endof >r "
+                "999 r> endcase ;");
+  TEST_ASSERT_TRUE(shi::empty());
+
+  shi::evaluate("1 cs1");  // 111
+  TEST_ASSERT_EQUAL_INT(1, shi::size());
+  TEST_ASSERT_EQUAL_INT(111, shi::top());
+
+  shi::evaluate("2 cs1");  // 222
+  TEST_ASSERT_EQUAL_INT(2, shi::size());
+  TEST_ASSERT_EQUAL_INT(222, shi::top());
+  TEST_ASSERT_EQUAL_INT(111, shi::top(-1));
+
+  shi::evaluate("3 cs1");  // 333
+  TEST_ASSERT_EQUAL_INT(3, shi::size());
+  TEST_ASSERT_EQUAL_INT(333, shi::top());
+  TEST_ASSERT_EQUAL_INT(222, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(111, shi::top(-2));
+
+  shi::evaluate("4 cs1");  // 999
+  TEST_ASSERT_EQUAL_INT(4, shi::size());
+  TEST_ASSERT_EQUAL_INT(999, shi::top());
+  TEST_ASSERT_EQUAL_INT(333, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(222, shi::top(-2));
+  TEST_ASSERT_EQUAL_INT(111, shi::top(-3));
+
+  shi::evaluate(": cs2 >r case -1 of case r@ 1 of 100 endof 2 of 200 endof "
+                ">r -300 r> endcase endof -2 of case r@ 1 of -99 endof >r "
+                "-199 r> endcase endof >r 299 r> endcase r> drop ;");
+  TEST_ASSERT_EQUAL_INT(4, shi::size());
+
+  shi::evaluate("-1 1 cs2");  // 100
+  TEST_ASSERT_EQUAL_INT(5, shi::size());
+  TEST_ASSERT_EQUAL_INT(100, shi::top());
+  TEST_ASSERT_EQUAL_INT(999, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(333, shi::top(-2));
+  TEST_ASSERT_EQUAL_INT(222, shi::top(-3));
+  TEST_ASSERT_EQUAL_INT(111, shi::top(-4));
+
+  shi::evaluate("-1 2 cs2");  // 200
+  TEST_ASSERT_EQUAL_INT(6, shi::size());
+  TEST_ASSERT_EQUAL_INT(200, shi::top());
+  TEST_ASSERT_EQUAL_INT(100, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(999, shi::top(-2));
+  TEST_ASSERT_EQUAL_INT(333, shi::top(-3));
+  TEST_ASSERT_EQUAL_INT(222, shi::top(-4));
+  TEST_ASSERT_EQUAL_INT(111, shi::top(-5));
+
+  shi::evaluate("-1 3 cs2");  // -300
+  TEST_ASSERT_EQUAL_INT(7, shi::size());
+  TEST_ASSERT_EQUAL_INT(-300, shi::top());
+  TEST_ASSERT_EQUAL_INT(200, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(100, shi::top(-2));
+  TEST_ASSERT_EQUAL_INT(999, shi::top(-3));
+  TEST_ASSERT_EQUAL_INT(333, shi::top(-4));
+  TEST_ASSERT_EQUAL_INT(222, shi::top(-5));
+  TEST_ASSERT_EQUAL_INT(111, shi::top(-6));
+
+  shi::evaluate("-2 1 cs2");  // -99
+  TEST_ASSERT_EQUAL_INT(8, shi::size());
+  TEST_ASSERT_EQUAL_INT(-99, shi::top());
+  TEST_ASSERT_EQUAL_INT(-300, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(200, shi::top(-2));
+  TEST_ASSERT_EQUAL_INT(100, shi::top(-3));
+  TEST_ASSERT_EQUAL_INT(999, shi::top(-4));
+  TEST_ASSERT_EQUAL_INT(333, shi::top(-5));
+  TEST_ASSERT_EQUAL_INT(222, shi::top(-6));
+  TEST_ASSERT_EQUAL_INT(111, shi::top(-7));
+
+  shi::evaluate("-2 2 cs2");  // -199
+  TEST_ASSERT_EQUAL_INT(9, shi::size());
+  TEST_ASSERT_EQUAL_INT(-199, shi::top());
+  TEST_ASSERT_EQUAL_INT(-99, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(-300, shi::top(-2));
+  TEST_ASSERT_EQUAL_INT(200, shi::top(-3));
+  TEST_ASSERT_EQUAL_INT(100, shi::top(-4));
+  TEST_ASSERT_EQUAL_INT(999, shi::top(-5));
+  TEST_ASSERT_EQUAL_INT(333, shi::top(-6));
+  TEST_ASSERT_EQUAL_INT(222, shi::top(-7));
+  TEST_ASSERT_EQUAL_INT(111, shi::top(-8));
+
+  shi::evaluate("0 2 cs2");  // 299
+  TEST_ASSERT_EQUAL_INT(10, shi::size());
+  TEST_ASSERT_EQUAL_INT(299, shi::top());
+  TEST_ASSERT_EQUAL_INT(-199, shi::top(-1));
+  TEST_ASSERT_EQUAL_INT(-99, shi::top(-2));
+  TEST_ASSERT_EQUAL_INT(-300, shi::top(-3));
+  TEST_ASSERT_EQUAL_INT(200, shi::top(-4));
+  TEST_ASSERT_EQUAL_INT(100, shi::top(-5));
+  TEST_ASSERT_EQUAL_INT(999, shi::top(-6));
+  TEST_ASSERT_EQUAL_INT(333, shi::top(-7));
+  TEST_ASSERT_EQUAL_INT(222, shi::top(-8));
+  TEST_ASSERT_EQUAL_INT(111, shi::top(-9));
+
+  shi::clear();
+}
+
+TEST(variable) {
+  shi::evaluate("variable v1");
+  TEST_ASSERT_TRUE(shi::empty());
+
+  shi::evaluate("123 v1 !");
+  TEST_ASSERT_TRUE(shi::empty());
+
+  shi::evaluate("v1 @");  // 123
+  TEST_ASSERT_EQUAL_INT(1, shi::size());
+  TEST_ASSERT_EQUAL_INT(123, shi::top());
+
+  shi::clear();
+}
+
+// This looks super promising for writing flash memory stuff @ QEMU...
+// https://dangokyo.me/2018/03/27/qemu-internal-memory-region-address-space-and-qemu-io/#more-1697
 
 int main() {
   // Reset of all peripherals, Initializes the Flash interface and the Systick
@@ -19,119 +272,44 @@ int main() {
             0x20004000 + 0x00004000,
             0x08000000 + 0x00040000 - 0x8000,
             0x08000000 + 0x00040000);
-  asm volatile("nop");
-    shi_test();
-  asm volatile("nop");
-//  shi_test_compile_to_flash();
+  //  asm volatile("nop");
+  //  shi_test();
+  //  asm volatile("nop");
+  //  shi_test_compile_to_flash();
 
   //  semihosting_io();
 
-  return 42;
+  UNITY_BEGIN();
+
+  RUN_TEST(number);
+  RUN_TEST(number_hex);
+  RUN_TEST(number_bin);
+  RUN_TEST(top);
+  RUN_TEST(if_else_then);
+  RUN_TEST(loop);
+  RUN_TEST(leave);
+  RUN_TEST(case_);
+  RUN_TEST(variable);
+
+  return UNITY_END();
 }
 
 void shi_test_compile_to_flash() {
   asm volatile("nop");
 
   // Compile to FLASH
-//  shi::evaluate(",toflash");
-//  shi::evaluate(": p13 13 ;");
-//  shi::evaluate(": p1314 p13 14 ;");
-//  shi::stack_print(printf);  // Empty
-//  shi::evaluate("p1314");    // 13 14
-//  shi::stack_print(printf);
-//  shi::evaluate(",toram");
+  //  shi::evaluate(",toflash");
+  //  shi::evaluate(": p13 13 ;");
+  //  shi::evaluate(": p1314 p13 14 ;");
+  //  shi::stack_print(printf);  // Empty
+  //  shi::evaluate("p1314");    // 13 14
+  //  shi::stack_print(printf);
+  //  shi::evaluate(",toram");
 
   asm volatile("nop");
 }
 
 void shi_test() {
-  // Stack empty
-  printf("Forth stack empty? is %s\n", shi::empty() == true ? "true" : "false");
-
-  asm volatile("nop");
-
-  // Numbers
-  shi::evaluate("13");
-  shi::stack_print(printf);
-  shi::evaluate("$21");
-  shi::stack_print(printf);
-  shi::evaluate("%00011101");
-  shi::stack_print(printf);
-  shi::clear();
-
-  // If-structure
-  asm volatile("nop");
-  shi::evaluate(": gi2 if 123 else 234 then ;");
-  shi::stack_print(printf);
-  shi::evaluate("-1 gi2");  // 123
-  shi::stack_print(printf);
-  shi::evaluate("1 gi2");  // 123
-  shi::stack_print(printf);
-  shi::evaluate("0 gi2");  // 234
-  shi::stack_print(printf);
-  shi::evaluate(": melse if 1 else 2 else 3 else 4 else 5 then ;");
-  shi::stack_print(printf);
-  shi::evaluate("false melse");  // 2 4
-  shi::stack_print(printf);
-  shi::evaluate("true melse");  // 1 3 5
-  shi::stack_print(printf);
-  shi::clear();
-
-  // Loop
-  asm volatile("nop");
-  shi::evaluate(": gd1 do i loop ;");
-  asm volatile("nop");
-  shi::stack_print(printf);
-  asm volatile("nop");
-  shi::evaluate("4 1 gd1");  //  1 2 3
-  shi::stack_print(printf);
-  shi::evaluate("2 -1 gd1");  // -1 0 1
-  shi::stack_print(printf);
-  shi::clear();
-
-  // Leave
-  asm volatile("nop");
-  shi::evaluate(": gd5 123 swap 0 do i 4 > if drop 234 leave then loop ;");
-  shi::stack_print(printf);
-  shi::evaluate("1 gd5");  // 123
-  shi::stack_print(printf);
-  shi::evaluate("5 gd5");  // 123
-  shi::stack_print(printf);
-  shi::evaluate("6 gd5");  // 234
-  shi::stack_print(printf);
-  shi::clear();
-
-  // Case
-  asm volatile("nop");
-  shi::evaluate(": cs1 case 1 of 111 endof 2 of 222 endof 3 of 333 endof >r "
-                "999 r> endcase ;");
-  shi::stack_print(printf);
-  shi::evaluate("1 cs1");  // 111
-  shi::stack_print(printf);
-  shi::evaluate("2 cs1");  // 222
-  shi::stack_print(printf);
-  shi::evaluate("3 cs1");  // 333
-  shi::stack_print(printf);
-  shi::evaluate("4 cs1");  // 999
-  shi::stack_print(printf);
-  shi::evaluate(": cs2 >r case -1 of case r@ 1 of 100 endof 2 of 200 endof "
-                ">r -300 r> endcase endof -2 of case r@ 1 of -99 endof >r "
-                "-199 r> endcase endof >r 299 r> endcase r> drop ;");
-  shi::stack_print(printf);
-  shi::evaluate("-1 1 cs2");  // 100
-  shi::stack_print(printf);
-  shi::evaluate("-1 2 cs2");  // 200
-  shi::stack_print(printf);
-  shi::evaluate("-1 3 cs2");  // -300
-  shi::stack_print(printf);
-  shi::evaluate("-2 1 cs2");  // -99
-  shi::stack_print(printf);
-  shi::evaluate("-2 2 cs2");  // -199
-  shi::stack_print(printf);
-  shi::evaluate("0 2 cs2");  // 299
-  shi::stack_print(printf);
-  shi::clear();
-
   // Tick (returns xt of definition)
   shi::evaluate("' cs1");  // some ... ram address
   shi::stack_print(printf);
@@ -172,16 +350,6 @@ void shi_test() {
   shi::clear();
   asm volatile("nop");
 
-  // Variable
-  asm volatile("nop");
-  shi::evaluate("variable v1");
-  shi::stack_print(printf);
-  shi::evaluate("123 v1 !");
-  shi::stack_print(printf);
-  shi::evaluate("v1 @");  // 123
-  shi::stack_print(printf);
-  shi::clear();
-
   // Constant
   asm volatile("nop");
   shi::evaluate("123 constant x123");
@@ -219,8 +387,8 @@ void shi_test() {
   int32 = shi::top();  // Read integer
   shi::push(32.4f);    // Push float
   shi::stack_print(printf);
-  f32_1 = shi::top<float>();  // Read float
-  shi::top(f32_2);            // Read float another (safer) way
+  //  f32_1 = shi::top<float>();  // Read float
+  //  shi::top(f32_2);            // Read float another (safer) way
   shi::clear();
 
   asm volatile("nop");

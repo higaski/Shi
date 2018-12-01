@@ -11,9 +11,9 @@ size_t align(size_t const alignment, size_t const value) {
   return value + (alignment - value % alignment) % alignment;
 }
 
-extern "C" uint32_t extern_flash_write(uint8_t* def_begin,
-                                       uint8_t* def_end,
-                                       uint8_t* flash_begin) {
+extern "C" uint32_t shi_write_flash(uint8_t* def_begin,
+                                    uint8_t* def_end,
+                                    uint8_t* flash_begin) {
   asm volatile("nop");
 
   // size of definition to write
@@ -22,7 +22,8 @@ extern "C" uint32_t extern_flash_write(uint8_t* def_begin,
 
   // link equals flash_begin + def_size and maybe some alignment?
   // also same as retval?
-  uint32_t link = align(4, reinterpret_cast<size_t>(flash_begin + def_size + 4));
+  uint32_t link =
+      align(4, reinterpret_cast<size_t>(flash_begin + def_size + 4));
 
   HAL_FLASH_Unlock();
 
