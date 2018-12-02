@@ -14,19 +14,13 @@
       "label": "Run qemu",
       "type": "shell",
       "isBackground": true,
-      "options": {
-        "cwd": "/opt/gnu-mcu-eclipse/qemu/2.8.0-3-20180523-0703"
-      },
-      "command": "bin/qemu-system-gnuarmeclipse -S -s -verbose -semihosting-config enable=on,target=native -mcu STM32F407VG --image /home/vinci/Develop/VSCode/Shi/build/test/test.elf"
+      "command": "${workspaceFolder}/qemu/2.8.0-3-20180523-0703/bin/qemu-system-gnuarmeclipse -S -s -verbose -semihosting-config enable=on,target=native -mcu STM32F407VG --image ${workspaceFolder}/build/test/test.elf"
     },
     {
       "label": "Run qemu2",
       "type": "shell",
       "isBackground": true,
-      "options": {
-        "cwd": "/opt/gnu-mcu-eclipse/qemu/2.8.0-3-20180523-0703"
-      },
-      "command": "bin/qemu-system-gnuarmeclipse -verbose -mcu STM32F407VG --image /home/vinci/Develop/VSCode/Shi/build/test/test.elf"
-    }    
+      "command": "${workspaceFolder}/qemu/2.8.0-3-20180523-0703/bin/qemu-system-gnuarmeclipse -verbose -mcu STM32F407VG --image ${workspaceFolder}/build/test/test.elf"
+    }
   ]
 }

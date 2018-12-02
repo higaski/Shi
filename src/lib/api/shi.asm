@@ -37,6 +37,7 @@ lfp .req r8                             @ Literal-folding pointer
 .equ NUMBER_PREFIX, SHI_NUMBER_PREFIX
 .equ TRACE_ENABLED, SHI_TRACE_ENABLED
 
+.include "data.asm"
 .include "stm32l431.asm"
 .include "macros.asm"
 
@@ -67,25 +68,25 @@ WORD_TAIL   FLAG_SKIP, "_e_shi"
 shi_init:
     push {r4-r9, lr}
 
-@ Store addresses --------------------------------------------------------------
+@ Store addresses
     ldr r4, =ram_begin                  @ Store addresses
     stmia r4, {r0, r1, r2, r3}
 
-@ Fill ram ---------------------------------------------------------------------
+@ Fill ram
     bl fill_ram
 
-@ Set memory-space pointer -----------------------------------------------------
+@ Set memory-space pointer
     bl set_memory_space_pointer_flash
 
-@ Reserve ram ------------------------------------------------------------------
+@ Reserve ram
     bl reserve_ram
 
-@ Set tos dsp and lfp ----------------------------------------------------------
+@ Set tos dsp and lfp
     movs lfp, #0                        @ Put zero into lfp...
     movs tos, #'*'                      @ Put stars onto tos ;)
     ldr dsp, =_e_shi_dstack             @ Reset data-stack pointer
 
-@ Return -----------------------------------------------------------------------
+@ Return
     EXIT                                @ Store context
     pop {r4-r9, pc}
 
@@ -104,7 +105,7 @@ fill_ram:
         str r2, [r0], #4
         b 1b
 
-@ Return -----------------------------------------------------------------------
+@ Return
 2:  bx lr
 
 /***************************************************************************//**
@@ -128,7 +129,7 @@ set_memory_space_pointer_flash:
             adds r2, #4                 @ Written content found, add #4 to account for it
             str r2, [r0]                @ Store first free flash address
 
-@ Return -----------------------------------------------------------------------
+@ Return
 1:  bx lr
 
 /***************************************************************************//**
@@ -157,7 +158,7 @@ reserve_ram:
     bne 1b                              @ Goto search
         str r4, [r3]                    @ Store ram_end
 
-@ Return -----------------------------------------------------------------------
+@ Return
     bx lr
 
 /***************************************************************************//**
@@ -168,29 +169,29 @@ reserve_ram:
 shi_c_variable:
     push {r4-r9, lr}
 
-@ Check if string length is reasonable (>0) ------------------------------------
+@ Check if string length is reasonable (>0)
     cmp r1, #0
     bne 1f                              @ Goto enter forth
         TRACE_WRITE "'shi' attempt to evaluate zero-length string >>>shi_c_variable<<<"
         b 2f                            @ Goto return
 
-@ Enter forth ------------------------------------------------------------------
+@ Enter forth
 1:  ENTRY                               @ Restore context
 
-@ Store source -----------------------------------------------------------------
+@ Store source
     ldr r2, =src
     stmia r2, {r0, r1}
 
-@ Set >IN 0 --------------------------------------------------------------------
+@ Set >IN 0
     SET_IN #0                           @ Set >in zero
 
-@ C variable -------------------------------------------------------------------
+@ C variable
     bl c_variable
 
-@ Leave forth ------------------------------------------------------------------
+@ Leave forth
     EXIT                                @ Store context
 
-@ Return -----------------------------------------------------------------------
+@ Return
 2:  pop {r4-r9, pc}
 
 /***************************************************************************//**
@@ -201,23 +202,23 @@ shi_c_variable:
 shi_evaluate:
     push {r4-r9, lr}
 
-@ Check if string length is reasonable (>0) ------------------------------------
+@ Check if string length is reasonable (>0)
     cmp r1, #0
     bne 1f                              @ Goto enter forth
         TRACE_WRITE "'shi' attempt to evaluate zero-length string >>>shi_evaluate<<<"
         b 2f                            @ Goto return
 
-@ Enter forth ------------------------------------------------------------------
+@ Enter forth
 1:  ENTRY                               @ Restore context
 
-@ Call evaluate ----------------------------------------------------------------
+@ Call evaluate
     PUSH_REGS top=r1, from=r0           @ ( -- c-addr u )
     bl evaluate
 
-@ Leave forth ------------------------------------------------------------------
+@ Leave forth
     EXIT                                @ Store context
 
-@ Return -----------------------------------------------------------------------
+@ Return
 2:  pop {r4-r9, pc}
 
 /***************************************************************************//**
@@ -236,7 +237,7 @@ clear:
         str tos, [r0], #4
         b 1b
 
-@ Return -----------------------------------------------------------------------
+@ Return
 2:  movs tos, #'*'
     bx lr
 
@@ -252,7 +253,6 @@ trace_write_itm:
 @ r1    ITM_PORT register address
 @ r2    ITM_PORT
 @ r3    character
-
     ldrb r0, [lr, #-1]                  @ u
     adds r0, r0, lr                     @ c-addr + u
     movs r1, #ITM_PORT                  @ ITM port

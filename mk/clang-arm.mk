@@ -10,7 +10,8 @@ SIZE = arm-none-eabi-size
 # Manually add arm-none-eabi include folders
 INC_DIRS += /usr/arm-none-eabi/include
 INC_DIRS += /usr/arm-none-eabi/include/c++/8.2.0
-INC_DIRS += /usr/arm-none-eabi/include/c++/8.2.0/arm-none-eabi/thumb/v7e-m+fp/hard/
+INC_DIRS += /usr/arm-none-eabi/include/c++/8.2.0/arm-none-eabi/thumb/v7e-m/nofp
+#INC_DIRS += /usr/arm-none-eabi/include/c++/8.2.0/arm-none-eabi/thumb/v7e-m+fp/hard/
 INC_DIRS += /usr/arm-none-eabi/include/c++/8.2.0/backward
 INC_DIRS += /usr/lib/gcc/arm-none-eabi/8.2.0/include
 INC_DIRS += /usr/lib/gcc/arm-none-eabi/8.2.0/include-fixed
@@ -60,7 +61,8 @@ CPPFLAGS += -D__WINT_TYPE__="unsigned int"
 
 # Common flags
 FLAGS += $(VFLAG)
-FLAGS += --target=arm-none-eabi -march=armv7e-m -mcpu=cortex-m4 -mthumb -mlittle-endian -mfloat-abi=hard -mfpu=fpv4-sp-d16
+FLAGS += --target=arm-none-eabi -march=armv7e-m -mcpu=cortex-m4 -mthumb -mlittle-endian
+#FLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 FLAGS += -fmessage-length=0 -fsigned-char
 FLAGS += --sysroot=/usr/arm-none-eabi/
 FLAGS += $(OPTFLAGS)
@@ -86,10 +88,16 @@ LDFLAGS += -nostartfiles
 LDFLAGS += -nostdlib
 LDFLAGS += -Wl,--gc-sections,-Map=$(MAP) 
 LDFLAGS += /usr/arm-none-eabi/lib/crt0.o
-LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m+fp/hard/crti.o
-LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m+fp/hard/crtbegin.o
-LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m+fp/hard/crtn.o
-LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m+fp/hard/crtend.o
-LDFLAGS += -L"/usr/arm-none-eabi/lib/thumb/v7e-m+fp/hard/"
-LDFLAGS += -L"/usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m+fp/hard/"
+#LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m+fp/hard/crti.o
+#LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m+fp/hard/crtbegin.o
+#LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m+fp/hard/crtn.o
+#LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m+fp/hard/crtend.o
+#LDFLAGS += -L"/usr/arm-none-eabi/lib/thumb/v7e-m+fp/hard/"
+#LDFLAGS += -L"/usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m+fp/hard/"
+LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m/nofp/crti.o
+LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m/nofp/crtbegin.o
+LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m/nofp/crtn.o
+LDFLAGS += /usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m/nofp/crtend.o
+LDFLAGS += -L"/usr/arm-none-eabi/lib/thumb/v7e-m/nofp/"
+LDFLAGS += -L"/usr/lib/gcc/arm-none-eabi/8.2.0/thumb/v7e-m/nofp/"
 LDLIBS += -lstdc++_nano -lm -lgcc -lc_nano

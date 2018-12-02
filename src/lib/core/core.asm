@@ -1,11 +1,8 @@
-/***************************************************************************//**
- *  @brief      Core word set
- *
- *  @file       core.asm
- *  @version    0.1
- *  @author     Vincent Hamp
- *  @date       27/07/2016
- ******************************************************************************/
+@ Core word set
+@
+@ \file   core.asm
+@ \author Vincent Hamp
+@ \date   27/07/2016
 
 @ C/C++ interface
 .global _s_shi_dstack
@@ -14,73 +11,8 @@
 
 .extern shi_write_flash
 
-.section .data
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Core variables @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-/***************************************************************************//**
-@ Stack
- ******************************************************************************/
-    .p2align 2                          @ Make sure the stack is 4-byte aligned (ldm and stm operations need 4-byte alignment)
-_s_shi_dstack:                          @ Data-stack start
-    .space DSTACK_SIZE                  @ Data-stack size in bytes
-_e_shi_dstack:                          @ Data-stack end
-
-    .p2align 2
-_s_shi_context:                         @ Used to store the forth context
-    .space 12                           @ Save tos, dsp and lfp
-_e_forth_context:
-
-/***************************************************************************//**
-@ Memory-space pointers
- ******************************************************************************/
-     .p2align 2
-ram_begin_def:                          @ Beginning of current definition
-    .word 0
-ram_begin:                              @ Pointer to ram
-    .word 0
-ram_end:                                @ Used for reserving ram for variables
-    .word 0
-
-flash_begin:                            @ Pointer to flash
-    .word 0
-flash_end:
-    .word 0
-
-@ Control-stack pointer
-csp:                                    @ Inside loop: points to leave addresses from the current loop on the stack
-    .word _s_shi_dstack                 @ Inside case: points to endof addresses from the current case on the stack
-
-/***************************************************************************//**
-@ Contains address of link of the last definition
-@ link initially has to point to the first definition in flash, so that the very
-@ first definition that gets created in ram has an actual link back to flash.
- ******************************************************************************/
-link:                                   @ Last link
-    .word _s_shi_dict
-
-/***************************************************************************//**
-@ Core variables
- ******************************************************************************/
-status:                                 @ Current state (state is taken as word)
-    .word 0                             @ false: interpret, true: compile
-
-status_compiler:                        @ Current compiler state
-    .word 0                             @ false: compile to ram, true: compile to flash
-
-    .p2align 2                          @ Make sure src is 4-byte aligned
-src:                                    @ Source
-    .word 0                             @ c-addr
-    .word 0                             @ u
-
-in:                                     @ Index in terminal input buffer
-    .word 0
-
-radix:                                  @ Determine current numerical base (base is taken as word)
-    .word 10
-
 .section .text
 
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Core words @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 /***************************************************************************//**
 @ !
 @ ( x a-addr -- )
@@ -118,7 +50,7 @@ WORD FLAG_SKIP, "#s", num_s
 WORD FLAG_INTERPRET, "'", tick
     push {lr}
 
-@ Parse ------------------------------------------------------------------------
+@ Parse
     bl source                           @ ( -- c-addr u )
     bl parse                            @ ( -- token-addr token-u )
     cmp tos, #0                         @ token-u - 0
@@ -127,7 +59,7 @@ WORD FLAG_INTERPRET, "'", tick
         TRACE_WRITE "'shi' attempt to use zero-length string as a name >>>'<<<"
         b 6f                            @ Goto return
 
-@ Find -------------------------------------------------------------------------
+@ Find
 1:  bl find                             @ ( -- token-addr 0 | xt flags )
     cmp tos, #0                         @ flags - 0
     bne 1f                              @ Goto xt
@@ -135,10 +67,10 @@ WORD FLAG_INTERPRET, "'", tick
         TRACE_WRITE "'shi' undefined word >>>'<<<"
         b 6f                            @ Goto return
 
-@ xt ---------------------------------------------------------------------------
+@ xt
 1:  DROP                                @ ( flags -- )
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 
 /*
@@ -179,10 +111,10 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "*/", times_div
     beq 1f                              @ Goto 32bit division
     // TODO 64bit division
 
-@ 32bit division ---------------------------------------------------------------
+@ 32bit division
 1:  sdiv tos, r3, r2
 
-@ Return -----------------------------------------------------------------------
+@ Return
     bx lr
 
 WORD FLAG_SKIP, "*/mod", times_div_mod
@@ -248,12 +180,12 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
     PUSH_REGS r0                        @ ( -- opcode )
     bl comma
 
-@ Call branch function ---------------------------------------------------------
+@ Call branch function
     bl here                             @ ( -- orig )
     SWAP
     bl blt_comma
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /***************************************************************************//**
@@ -472,17 +404,17 @@ WORD FLAG_INTERPRET, ":", colon
 
 // TODO check stack balance? (maybe even return stack?)
 
-@ Create -----------------------------------------------------------------------
+@ Create
     bl create
 
 @ push {lr}
     PUSH_INT16 #0xB500                  @ ( -- opcode )
     bl h_comma                          @ Write opcode
 
-@ Enter compilation state ------------------------------------------------------
+@ Enter compilation state
     bl bracket_right
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 .ltorg
 
@@ -499,17 +431,17 @@ WORD FLAG_COMPILE_IMMEDIATE, ";", semicolon
 
 // TODO check stack balance? (maybe even return stack?)
 
-@ Write return -----------------------------------------------------------------
+@ Write return
     bl exit
 
-@ End --------------------------------------------------------------------------
+@ End
     PUSH_INT8 #FLAG_INTERPRET_COMPILE   @ ( -- flags )
     bl end_colon_semicolon
 
-@ Enter interpretation state ---------------------------------------------------
+@ Enter interpretation state
     bl bracket_left
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /***************************************************************************//**
@@ -741,7 +673,7 @@ WORD FLAG_SKIP, "b,", b_comma
     subs r1, r0, tos                    @ dest - orig
     subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
 
-@ Range check for b ------------------------------------------------------------
+@ Range check for b
 @ r1    pc-relative address (dest - (orig + 4))
     cmp r1, #-16777216                  @ pc-relative address - -16777216
     bge 1f
@@ -756,7 +688,7 @@ WORD FLAG_SKIP, "b,", b_comma
         TRACE_WRITE "'shi' branch offset too far positive >>>b,<<<"
         b 6f                            @ Goto return
 
-@ Temporarily set ram_begin to orig if necessary -------------------------------
+@ Temporarily set ram_begin to orig if necessary
 @ tos   orig
 @ r0    dest
 @ r2    ram_begin address
@@ -772,7 +704,7 @@ WORD FLAG_SKIP, "b,", b_comma
         movs tos, r3
         PUSH_TOS                        @ ( -- ram_begin )
 
-@ b ----------------------------------------------------------------------------
+@ b
 @ tos   opcode
 @ r1    pc-relative address (dest - (orig + 4))
 @ r2    J1 | J2 | imm11 | imm10
@@ -812,21 +744,21 @@ WORD FLAG_SKIP, "b,", b_comma
     ands r2, r1                         @ imm10
     orrs tos, tos, r2, lsl #16          @ Or imm10 into template
 
-@ Write opcode, do not reset ram_begin -----------------------------------------
+@ Write opcode, do not reset ram_begin
 @ r4    flag to indicate whether ram_begin is overwritten or not
     cmp r4, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
 
-@ Write opcode and reset ram_begin ---------------------------------------------
+@ Write opcode and reset ram_begin
 @ r0    ram_begin address
 1:  bl rev_comma                        @ Write opcode
     ldr r0, =ram_begin
     str tos, [r0]
     DROP                                @ ( ram_begin -- )
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 
 /***************************************************************************//**
@@ -852,10 +784,10 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "base"
 WORD FLAG_COMPILE_IMMEDIATE, "begin"
     push {lr}
 
-@ Destination for branch -------------------------------------------------------
+@ Destination for branch
     bl here                             @ ( -- dest )
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /***************************************************************************//**
@@ -874,7 +806,7 @@ WORD FLAG_SKIP, "beq,", beq_comma
     subs r1, r0, tos                    @ dest - orig
     subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
 
-@ Range check for beq ----------------------------------------------------------
+@ Range check for beq
 @ r1    pc-relative address (dest - (orig + 4))
     cmp r1, #-1048576                   @ pc-relative address - -1048576
     bge 1f
@@ -889,7 +821,7 @@ WORD FLAG_SKIP, "beq,", beq_comma
         TRACE_WRITE "'shi' conditional branch offset too far positive >>>beq,<<<"
         b 6f                            @ Goto return
 
-@ Temporarily set ram_begin to orig if necessary -------------------------------
+@ Temporarily set ram_begin to orig if necessary
 @ tos   orig
 @ r0    dest
 @ r2    ram_begin address
@@ -905,7 +837,7 @@ WORD FLAG_SKIP, "beq,", beq_comma
         movs tos, r3
         PUSH_TOS                        @ ( -- ram_begin)
 
-@ beq --------------------------------------------------------------------------
+@ beq
 @ tos   opcode
 @ r1    pc-relative address (dest - (orig + 4))
 @ r2    J2 | J1 | imm11| imm6
@@ -932,21 +864,21 @@ WORD FLAG_SKIP, "beq,", beq_comma
     ands r2, r1, #0x3F                  @ Mask for imm6
     orrs tos, tos, r2, lsl #16          @ Or imm6 into template
 
-@ Write opcode, do not reset ram_begin -----------------------------------------
+@ Write opcode, do not reset ram_begin
 @ r4    flag to indicate whether ram_begin is overwritten or not
     cmp r4, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
 
-@ Write opcode and reset ram_begin ---------------------------------------------
+@ Write opcode and reset ram_begin
 @ r0    ram_begin address
 1:  bl rev_comma                        @ Write opcode
     ldr r0, =ram_begin
     str tos, [r0]
     DROP                                @ ( ram_begin -- )
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 
 /***************************************************************************//**
@@ -981,7 +913,7 @@ WORD FLAG_SKIP, "blt,", blt_comma
     subs r1, r0, tos                    @ dest - orig
     subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
 
-@ Range check for blt ----------------------------------------------------------
+@ Range check for blt
 @ r1    pc-relative address (dest - (orig + 4))
     cmp r1, #-1048576                   @ pc-relative address - -1048576
     bge 1f
@@ -996,7 +928,7 @@ WORD FLAG_SKIP, "blt,", blt_comma
         TRACE_WRITE "'shi' conditional branch offset too far positive >>>blt,<<<"
         b 6f                            @ Goto return
 
-@ Temporarily set ram_begin to orig if necessary -------------------------------
+@ Temporarily set ram_begin to orig if necessary
 @ tos   orig
 @ r0    dest
 @ r2    ram_begin address
@@ -1012,7 +944,7 @@ WORD FLAG_SKIP, "blt,", blt_comma
         movs tos, r3
         PUSH_TOS                        @ ( -- ram_begin)
 
-@ blt --------------------------------------------------------------------------
+@ blt
 @ tos   opcode
 @ r1    pc-relative address (dest - (orig + 4))
 @ r2    J2 | J1 | imm11| imm6
@@ -1039,21 +971,21 @@ WORD FLAG_SKIP, "blt,", blt_comma
     ands r2, r1, #0x3F                  @ Mask for imm6
     orrs tos, tos, r2, lsl #16          @ Or imm6 into template
 
-@ Write opcode, do not reset ram_begin -----------------------------------------
+@ Write opcode, do not reset ram_begin
 @ r4    flag to indicate whether ram_begin is overwritten or not
     cmp r4, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
 
-@ Write opcode and reset ram_begin ---------------------------------------------
+@ Write opcode and reset ram_begin
 @ r0    ram_begin address
 1:  bl rev_comma                        @ Write opcode
     ldr r0, =ram_begin
     str tos, [r0]
     DROP                                @ ( ram_begin -- )
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 
 /***************************************************************************//**
@@ -1066,13 +998,13 @@ WORD FLAG_SKIP, "blt,", blt_comma
 WORD FLAG_SKIP, "bl,", bl_comma
     push {lr}
 
-@ Ram or flash -----------------------------------------------------------------
+@ Ram or flash
     bl comma_q                          @ ( -- true | false )
     cmp tos, #0
     beq 1f                              @ Goto bl, ram
         b 2f                            @ Goto bl, flash
 
-@ bl, ram ----------------------------------------------------------------------
+@ bl, ram
 @ tos   ram_begin
 @ r0    pc-relative address
 @ r2    xt
@@ -1084,7 +1016,7 @@ WORD FLAG_SKIP, "bl,", bl_comma
     subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
     b 1f                                @ Goto range check for bl
 
-@ bl, flash --------------------------------------------------------------------
+@ bl, flash
 @ tos   xt
 @ r0    pc-relative address
 @ r2    xt
@@ -1099,7 +1031,7 @@ WORD FLAG_SKIP, "bl,", bl_comma
     subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
     movs r2, tos                        @ Keep xt in r2 for later use
 
-@ Range check for bl -----------------------------------------------------------
+@ Range check for bl
 @ r0    pc-relative address
 1:  cmp r0, #-16777216                  @ pc-relative address - -16777216
     blt 3f                              @ Goto movw movt blx
@@ -1108,7 +1040,7 @@ WORD FLAG_SKIP, "bl,", bl_comma
     cmp r0, r1                          @ pc-relative address - 16777214
     bgt 3f                              @ Goto movw movt blx
 
-@ bl ---------------------------------------------------------------------------
+@ bl
 @ tos   opcode
 @ r0    pc-relative address (xt - (memory-space pointer + 4))
 @ r1    J1 | J2 | imm11 | imm10
@@ -1151,7 +1083,7 @@ WORD FLAG_SKIP, "bl,", bl_comma
     bl rev_comma                        @ Write opcode
         b 6f                            @ Goto return
 
-@ movw movt blx ----------------------------------------------------------------
+@ movw movt blx
 @ bl coudln't cover our range, do movw movt blx
 @ tos   opcode
 @ r0    bottom | top
@@ -1222,7 +1154,7 @@ WORD FLAG_SKIP, "bne,", bne_comma
     subs r1, r0, tos                    @ dest - orig
     subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
 
-@ Range check for bne ----------------------------------------------------------
+@ Range check for bne
 @ r1    pc-relative address (dest - (orig + 4))
     cmp r1, #-1048576                   @ pc-relative address - -1048576
     bge 1f
@@ -1237,7 +1169,7 @@ WORD FLAG_SKIP, "bne,", bne_comma
         TRACE_WRITE "'shi' conditional branch offset too far positive >>>bne,<<<"
         b 6f                            @ Goto return
 
-@ Temporarily set ram_begin to orig if necessary -------------------------------
+@ Temporarily set ram_begin to orig if necessary
 @ tos   orig
 @ r0    dest
 @ r2    ram_begin address
@@ -1253,7 +1185,7 @@ WORD FLAG_SKIP, "bne,", bne_comma
         movs tos, r3
         PUSH_TOS                        @ ( -- ram_begin)
 
-@ bne --------------------------------------------------------------------------
+@ bne
 @ tos   opcode
 @ r1    pc-relative address (dest - (orig + 4))
 @ r2    J2 | J1 | imm11| imm6
@@ -1280,21 +1212,21 @@ WORD FLAG_SKIP, "bne,", bne_comma
     ands r2, r1, #0x3F                  @ Mask for imm6
     orrs tos, tos, r2, lsl #16          @ Or imm6 into template
 
-@ Write opcode, do not reset ram_begin -----------------------------------------
+@ Write opcode, do not reset ram_begin
 @ r4    flag to indicate whether ram_begin is overwritten or not
     cmp r4, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
 
-@ Write opcode and reset ram_begin ---------------------------------------------
+@ Write opcode and reset ram_begin
 @ r0    ram_begin address
 1:  bl rev_comma                        @ Write opcode
     ldr r0, =ram_begin
     str tos, [r0]
     DROP                                @ ( ram_begin -- )
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 
 /*
@@ -1332,21 +1264,21 @@ WORD FLAG_SKIP, "c,", c_comma
 WORD FLAG_INTERPRET_COMPILE, "c-variable", c_variable
     push {lr}
 
-@ Create -----------------------------------------------------------------------
+@ Create
     bl create
 
-@ Write literal with the C variables address -----------------------------------
+@ Write literal with the C variables address
     bl literal
 
 @ bx lr
     PUSH_INT16 #0x4770
     bl h_comma
 
-@ End --------------------------------------------------------------------------
+@ End
     PUSH_INT8 #FLAG_INTERPRET_COMPILE   @ ( -- flags )
     bl end_colon_semicolon
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /*
@@ -1393,21 +1325,21 @@ WORD FLAG_SKIP, "chars"
 WORD FLAG_INTERPRET_COMPILE, "constant"
     push {lr}
 
-@ Create -----------------------------------------------------------------------
+@ Create
     bl create
 
-@ Write literal ----------------------------------------------------------------
+@ Write literal
     bl literal
 
 @ bx lr
     PUSH_INT16 #0x4770
     bl h_comma
 
-@ End --------------------------------------------------------------------------
+@ End
     PUSH_INT8 #FLAG_INTERPRET_COMPILE   @ ( -- flags )
     bl end_colon_semicolon
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /*
@@ -1431,7 +1363,7 @@ WORD FLAG_SKIP, "cr"
 WORD FLAG_INTERPRET, "create"
     push {lr}
 
-@ Parse ------------------------------------------------------------------------
+@ Parse
     bl source                           @ ( -- c-addr u )
     bl parse                            @ ( -- token-addr token-u )
     cmp tos, #0                         @ token-u - 0
@@ -1440,7 +1372,7 @@ WORD FLAG_INTERPRET, "create"
         TRACE_WRITE "'shi' attempt to use zero-length string as a name >>>create<<<"
         b 6f                            @ Goto return
 
-@ Find -------------------------------------------------------------------------
+@ Find
 1:  TWO_DUP                             @ ( -- token-addr token-u token-addr token-u )
     bl find                             @ ( -- token-addr 0 | xt flags )
     // TODO maybe write a "create" which doesn't check for redefinition?
@@ -1454,7 +1386,7 @@ WORD FLAG_INTERPRET, "create"
         // leave evaluate?
         b 6f                            @ Goto return
 
-@ Create -----------------------------------------------------------------------
+@ Create
 @ Mark beginning of new definition
 @ r0    ram_begin address
 @ r1    ram_begin
@@ -1488,7 +1420,7 @@ WORD FLAG_INTERPRET, "create"
 @ Name could have been any length and screw with alignment
 1:  bl align2
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 
 /***************************************************************************//**
@@ -1529,7 +1461,7 @@ WORD FLAG_INTERPRET_COMPILE, "depth"
 WORD FLAG_COMPILE_IMMEDIATE, "do"
     push {lr}
 
-@ Do consumes n1 and n2 and pushes it onto the return stack --------------------
+@ Do consumes n1 and n2 and pushes it onto the return stack
 @ movs r0, tos
 @ ldmia dsp!, {r1, tos}
     ldr r0, =0xCF420030
@@ -1540,11 +1472,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
     PUSH_INT16 #0xB403                  @ ( -- opcode )
     bl h_comma
 
-@ Do-sys -----------------------------------------------------------------------
+@ Do-sys
     bl here                             @ ( -- do-sys )
 
-@ Return -----------------------------------------------------------------------
-    pop {pc}                            @ return
+@ Return
+    pop {pc}                          
 
 /*
 WORD FLAG_SKIP, "does>", does
@@ -1584,12 +1516,12 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "dup"
 WORD FLAG_COMPILE_IMMEDIATE, "else"
     push {lr}
 
-@ Reserve space for orig2 ------------------------------------------------------
+@ Reserve space for orig2
     bl here                             @ ( -- orig2)
     PUSH_INT8 #4
     bl allot
 
-@ Resolve branch from pointer from if or else ----------------------------------
+@ Resolve branch from pointer from if or else
 @ tos   dest
 @ r0    fp-to-branch1
 @ r1    dest
@@ -1602,7 +1534,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "else"
     PUSH_REGS top=r1, from="r2-r4"      @ ( -- orig2 fp-to-branch2 orig1 dest )
     blx r0
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /*
@@ -1619,13 +1551,13 @@ WORD FLAG_SKIP, "emit"
 WORD FLAG_SKIP, "end:;", end_colon_semicolon
     push {lr}
 
-@ Ram or flash -----------------------------------------------------------------
+@ Ram or flash
     bl comma_q                          @ ( -- true | false )
     cmp tos, #0
     beq 1f                              @ Goto end:; ram
         b 2f                            @ Goto end:; flash
 
-@ end:; ram --------------------------------------------------------------------
+@ end:; ram
 @ tos   flags
 @ r0    ram_begin_def address
 @ r1    ram_begin_def
@@ -1642,7 +1574,7 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     strb tos, [r1]                      @ Write flags
     b 3f                                @ Goto return
 
-@ end:; flash ------------------------------------------------------------------
+@ end:; flash
 @ tos   flags
 @ r0    ram_begin_def
 @ r1    ram_begin
@@ -1671,7 +1603,7 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     blo 2b
     stmia r0, {r1, r2}
 
-@ Return -----------------------------------------------------------------------
+@ Return
 3:  DROP                                @ ( flags -- )
     pop {pc}
 
@@ -1692,7 +1624,7 @@ WORD FLAG_SKIP, "environment?", environment_q
 WORD FLAG_INTERPRET_COMPILE, "evaluate"
     push {lr}
 
-@ Store source -----------------------------------------------------------------
+@ Store source
 @ tos   u
 @ r0    c-addr
 @ r1    src address
@@ -1701,13 +1633,13 @@ WORD FLAG_INTERPRET_COMPILE, "evaluate"
     stmia r1, {r0, tos}
     TWO_DROP                            @ ( c-addr u -- )
 
-@ Set >IN 0 --------------------------------------------------------------------
+@ Set >IN 0
     SET_IN #0                           @ Set >in zero
 
-@ Interpret --------------------------------------------------------------------
+@ Interpret
     bl interpret                        @ Start interpreter
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /***************************************************************************//**
@@ -1735,7 +1667,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "exit"
     PUSH_INT16 #0xBD00                  @ ( -- opcode )
     bl h_comma                          @ Write opcode
 
-@ return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /*
@@ -1764,7 +1696,7 @@ WORD FLAG_INTERPRET_COMPILE, "find"
     ldr r1, =link                       @ Begin search at latest link
     POP_REGS r0                         @ ( token-u -- )
 
-@ Search -----------------------------------------------------------------------
+@ Search
 1:  ldr r1, [r1]                        @ Link
     cmp r1, #LINK_INVALID               @ link - LINK_INVALID
     beq 4f                              @ Goto found nothing
@@ -1803,7 +1735,7 @@ WORD FLAG_INTERPRET_COMPILE, "find"
                 bhi 2b                  @ Goto bytewise compare
                     b 5f                @ Goto found something
 
-@ Found nothing ----------------------------------------------------------------
+@ Found nothing
 4:  PUSH_INT8 #0                        @ ( -- 0 )
     b 6f                                @ Goto return
 
@@ -1813,7 +1745,7 @@ WORD FLAG_INTERPRET_COMPILE, "find"
     DROP                                @ ( token-addr -- )
     PUSH_REGS top=r2, from=r4           @ ( -- xt flags )
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  bx lr
 
 /*
@@ -1872,7 +1804,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "i"
     PUSH_INT16 #0x9E00
     bl h_comma
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /***************************************************************************//**
@@ -1890,7 +1822,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "i"
 WORD FLAG_COMPILE_IMMEDIATE, "if"
     push {lr}
 
-@ If needs to consume its own flag ---------------------------------------------
+@ If needs to consume its own flag
 @ movs r0, tos
 @ ldmia dsp!, {tos}
     ldr r0, =0xCF400030
@@ -1901,16 +1833,16 @@ WORD FLAG_COMPILE_IMMEDIATE, "if"
     PUSH_INT16 #0x2800                  @ ( -- opcode )
     bl h_comma
 
-@ Orig and pointer to branch function ------------------------------------------
+@ Orig and pointer to branch function
     bl here                             @ ( -- orig )
     ldr r0, =beq_comma
     PUSH_REGS r0                        @ ( -- fp-to-branch)
 
-@ Reserve space for orig -------------------------------------------------------
+@ Reserve space for orig
     PUSH_INT8 #4                        @ Reserve space for branch instruction
     bl allot
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 .ltorg
 
@@ -1927,7 +1859,7 @@ WORD FLAG_SKIP, "immediate"
 WORD FLAG_SKIP, "inline,", inline_comma
     push {lr}
 
-@ Copy opcodes from xt ---------------------------------------------------------
+@ Copy opcodes from xt
 @ r0    xt
 @ r1    opcode bx lr
 @ r2    hword
@@ -1944,7 +1876,7 @@ WORD FLAG_SKIP, "inline,", inline_comma
     pop {r0, r1}
     b 1b
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 
 /***************************************************************************//**
@@ -1975,7 +1907,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "j"
     PUSH_INT16 #0x9E02
     bl h_comma
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /*
@@ -1994,17 +1926,17 @@ WORD FLAG_SKIP, "key"
 WORD FLAG_COMPILE_IMMEDIATE, "leave"
     push {lr}
 
-@ Unloop -----------------------------------------------------------------------
+@ Unloop
     bl unloop
 
-@ Orig -------------------------------------------------------------------------
+@ Orig
     bl here                             @ ( -- orig )
 
-@ Reserve space for orig -------------------------------------------------------
+@ Reserve space for orig
     PUSH_INT8 #4                        @ Reserve space for branch instruction
     bl allot
 
-@ Reverse push orig onto the stack ---------------------------------------------
+@ Reverse push orig onto the stack
 @ r0    csp address
 @ r1    csp
     ldr r0, =csp
@@ -2013,7 +1945,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "leave"
     str r1, [r0]
     DROP                                @ ( orig -- )
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /***************************************************************************//**
@@ -2050,12 +1982,12 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
     PUSH_INT16 #0xB403                  @ ( -- opcode )
     bl h_comma
 
-@ Call branch function ---------------------------------------------------------
+@ Call branch function
     bl here                             @ ( -- orig )
     SWAP
     bl blt_comma
 
-@ Leave ------------------------------------------------------------------------
+@ Leave
 @ r0    csp address
 @ r1    csp
 @ r2    stack address
@@ -2085,7 +2017,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
     bl here                             @ ( -- dest )
     bl b_comma
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 
 /***************************************************************************//**
@@ -2216,16 +2148,16 @@ WORD FLAG_SKIP, "recurse"
 WORD FLAG_COMPILE_IMMEDIATE, "repeat"
     push {lr}
 
-@ Resolve branch to begin ------------------------------------------------------
+@ Resolve branch to begin
     bl here                             @ ( -- orig )
     SWAP
     bl b_comma
 
-@ Resolve branch from while ----------------------------------------------------
+@ Resolve branch from while
     bl here                             @ ( -- dest )
     bl beq_comma
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /***************************************************************************//**
@@ -2346,17 +2278,17 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "swap"
 WORD FLAG_COMPILE_IMMEDIATE, "then"
     push {lr}
 
-@ Destination for branch -------------------------------------------------------
+@ Destination for branch
     bl here                             @ ( -- dest )
 
-@ Resolve branch from pointer from if or else ----------------------------------
+@ Resolve branch from pointer from if or else
 @ r0    fp-to-branch
 @ r1    dest
     POP_REGS top=r1, to=r0              @ ( orig fp-to-branch dest -- )
     PUSH_REGS r1
     blx r0
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /*
@@ -2407,7 +2339,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "unloop"
     PUSH_INT16 #0xBC03
     bl h_comma
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /***************************************************************************//**
@@ -2423,7 +2355,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "unloop"
 WORD FLAG_COMPILE_IMMEDIATE, "until"
     push {lr}
 
-@ Until needs to consume its own flag ------------------------------------------
+@ Until needs to consume its own flag
 @ movs r0, tos
 @ ldmia dsp!, {tos}
     ldr r0, =0xCF400030
@@ -2434,12 +2366,12 @@ WORD FLAG_COMPILE_IMMEDIATE, "until"
     PUSH_INT16 #0x2800                  @ ( -- opcode )
     bl h_comma
 
-@ Resolve branch to begin ------------------------------------------------------
+@ Resolve branch to begin
     bl here                             @ ( -- orig )
     SWAP
     bl beq_comma
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /***************************************************************************//**
@@ -2456,10 +2388,10 @@ WORD FLAG_COMPILE_IMMEDIATE, "until"
 WORD FLAG_INTERPRET_COMPILE, "variable"
     push {lr}
 
-@ Create -----------------------------------------------------------------------
+@ Create
     bl create
 
-@ Write literal with the reserved cells address --------------------------------
+@ Write literal with the reserved cells address
     ldr r0, =ram_end
     ldr r1, [r0]
     movs r2, #0                         @ Zero initialize cell
@@ -2472,11 +2404,11 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
     PUSH_INT16 #0x4770
     bl h_comma
 
-@ End --------------------------------------------------------------------------
+@ End
     PUSH_INT8 #FLAG_INTERPRET_COMPILE & RESERVE_1CELL   @ ( -- flags )
     bl end_colon_semicolon
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /***************************************************************************//**
@@ -2494,7 +2426,7 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
 WORD FLAG_COMPILE_IMMEDIATE, "while"
     push {lr}
 
-@ While needs to consume its own flag ------------------------------------------
+@ While needs to consume its own flag
 @ movs r0, tos
 @ ldmia dsp!, {tos}
     ldr r0, =0xCF400030
@@ -2505,13 +2437,13 @@ WORD FLAG_COMPILE_IMMEDIATE, "while"
     PUSH_INT16 #0x2800                  @ ( -- opcode )
     bl h_comma
 
-@ Reserve space for orig -------------------------------------------------------
+@ Reserve space for orig
     bl here                             @ ( -- orig )
     SWAP
     PUSH_INT8 #4                        @ Reserve space for branch instruction
     bl allot
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /*
@@ -2555,11 +2487,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "[", bracket_left
 WORD FLAG_COMPILE_IMMEDIATE, "[']", bracket_tick
     push {lr}
 
-@ ' ----------------------------------------------------------------------------
+@ '
     bl tick                             @ ( -- xt )
     bl literal                          @ ( xt -- )
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 
 /*
@@ -2688,12 +2620,12 @@ WORD FLAG_SKIP, "action-of", action_of
 WORD FLAG_COMPILE_IMMEDIATE, "again"
     push {lr}
 
-@ Resolve branch to begin ------------------------------------------------------
+@ Resolve branch to begin
     bl here                             @ ( -- orig )
     SWAP
     bl b_comma
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /*
@@ -2746,13 +2678,13 @@ WORD FLAG_SKIP, "defer@", defer_fetch
 WORD FLAG_COMPILE_IMMEDIATE, "endcase"
     push {lr}
 
-@ If the case selector never matched, discard it now ---------------------------
+@ If the case selector never matched, discard it now
 @ before we resolve the branch(es) from endof(s)
 @ ldmia dsp!, {tos}
     PUSH_INT16 #0xCF40
     bl h_comma
 
-@ Resolve branch(es) from endof(s) ---------------------------------------------
+@ Resolve branch(es) from endof(s)
 @ r0    csp address
 @ r1    csp
 @ r2    stack address
@@ -2787,7 +2719,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
     bhi 1b
     str r2, [r0]
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 
 /***************************************************************************//**
@@ -2804,7 +2736,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 WORD FLAG_COMPILE_IMMEDIATE, "endof"
     push {lr}
 
-@ Reverse push orig onto the stack ---------------------------------------------
+@ Reverse push orig onto the stack
 @ r0    csp address
 @ r1    csp
     bl here                             @ ( -- orig )
@@ -2814,15 +2746,15 @@ WORD FLAG_COMPILE_IMMEDIATE, "endof"
     str r1, [r0]
     DROP                                @ ( orig -- )
 
-@ Reserve space for orig -------------------------------------------------------
+@ Reserve space for orig
     PUSH_INT8 #4
     bl allot
 
-@ Resolve branch from of -------------------------------------------------------
+@ Resolve branch from of
     bl here                             @ ( -- dest )
     bl bne_comma
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /*
@@ -2901,7 +2833,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "of"
     PUSH_INT16 #0x42B0
     bl h_comma
 
-@ of-sys -----------------------------------------------------------------------
+@ of-sys
     bl here                             @ ( -- of-sys )
     PUSH_INT8 #4
     bl allot
@@ -2910,7 +2842,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "of"
     PUSH_INT16 #0xCF40
     bl h_comma
 
-@ Return -----------------------------------------------------------------------
+@ Return
     pop {pc}
 
 /*
@@ -2945,7 +2877,7 @@ WORD FLAG_INTERPRET_COMPILE, "parse"
     adds tos, tos, r2                   @ c-addr + >in
     movs r0, tos                        @ Keep start address
 
-@ Skip leading spaces ----------------------------------------------------------
+@ Skip leading spaces
 1:  cmp r1, r0                          @ (c-addr + u) - (c-addr + >in)
     bls 3f                              @ Goto out of characters
         ldrb r3, [r0], #1               @ Get character and increment c-addr + >in
@@ -2978,7 +2910,7 @@ WORD FLAG_INTERPRET_COMPILE, "parse"
     str r2, [r1]
     PUSH_REGS r0
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  bx lr
 
 /*
@@ -3077,8 +3009,6 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u>", u_more
  ******************************************************************************/
 WORD FLAG_INTERPRET, "unused"
     push {lr}
-
-@ Ram or flash -----------------------------------------------------------------
     bl comma_q                          @ ( -- true | false )
     cmp tos, #0
     ite eq
@@ -3086,8 +3016,6 @@ WORD FLAG_INTERPRET, "unused"
     ldrne r0, =flash_begin
     ldmia r0, {r0, tos}
     subs tos, r0
-
-@ Return -----------------------------------------------------------------------
     pop {pc}
 
 /*
@@ -3120,7 +3048,7 @@ WORD FLAG_INTERPRET_COMPILE, "interpret"
 
 // TODO maybe check for stackoverflow or underflow here?
 
-@ Parse ------------------------------------------------------------------------
+@ Parse
 interpret_parse:
     bl source                           @ ( -- c-addr u )
     bl parse                            @ Parse string
@@ -3130,7 +3058,7 @@ interpret_parse:
         TRACE_WRITE "'shi' attempt to parse zero-length string >>>interpret<<<"
         b interpret_return              @ Goto return
 
-@ Find -------------------------------------------------------------------------
+@ Find
 interpret_find:
     SWAP                                @ ( token-addr token-u -- token-u token-addr )
     OVER                                @ ( token-u token-addr -- token-u token-addr token-u )
@@ -3138,7 +3066,7 @@ interpret_find:
     cmp tos, #0                         @ flags - 0
     bne interpret_state                 @ Goto state check
 
-@ Number -----------------------------------------------------------------------
+@ Number
 interpret_number:
     DROP                                @ ( false -- )
     SWAP                                @ ( token-u token-addr -- token-addr token-u )
@@ -3149,14 +3077,14 @@ interpret_number:
     TRACE_WRITE "'shi' undefined word >>>interpret<<<"
         b interpret_return              @ Goto return
 
-@ Set literal-folding pointer --------------------------------------------------
+@ Set literal-folding pointer
 interpret_set_lfp:
     cmp lfp, #0                         @ Save stackpointer in case literal-folding pointer is still zero
     it eq
     movseq lfp, dsp
     b interpret_done                    @ Goto done
 
-@ State check ------------------------------------------------------------------
+@ State check
 @ Decide whether to interpret or to compile
 @ r0    status
 interpret_state:
@@ -3168,7 +3096,7 @@ interpret_state:
     cmp r0, #0                          @ status - 0
     bne interpret_compile               @ Goto compile
 
-@ Interpret --------------------------------------------------------------------
+@ Interpret
 interpret_interpret:
     ands tos, #~FLAG_INTERPRET
     beq 1f                              @ Goto execute
@@ -3181,7 +3109,7 @@ interpret_interpret:
     bl execute                          @ Execute xt
         b interpret_done                @ Goto done
 
-@ Compile ----------------------------------------------------------------------
+@ Compile
 interpret_compile:
     ands r0, tos, #~FLAG_COMPILE
     beq 1f                              @ Goto continue
@@ -3247,7 +3175,7 @@ interpret_compile:
         b interpret_done                @ Goto done
 5:  bl bl_comma
 
-@ Done -------------------------------------------------------------------------
+@ Done
 @ tos   >in address
 @ r0    c-addr
 @ r1    u
@@ -3262,7 +3190,7 @@ interpret_done:
     bls interpret_return                @ Goto return
         b interpret_parse               @ Goto parse
 
-@ Return -----------------------------------------------------------------------
+@ Return
 interpret_return:
     SET_SOURCE #0, #0                   @ Clear source
     pop {pc}

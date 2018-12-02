@@ -1,13 +1,11 @@
-/***************************************************************************//**
- *  @brief      Number word set
- *
- *  @file       number.asm
- *  @version    0.1
- *  @author     Vincent Hamp
- *  @date       08/08/2016
- ******************************************************************************/
+@ Number word set
+@
+@ \file   number.asm
+@ \author Vincent Hamp
+@ \date   27/07/2016
 
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Number words @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+.section .text
+
 /***************************************************************************//**
 @ number
 @ ( token-addr token-u -- n true | false )
@@ -27,7 +25,7 @@ WORD FLAG_INTERPRET_COMPILE, "number"
     POP_REGS r1
     adds r0, tos, r1                    @ Get token-addr + token-u
 
-@ Check if prefix overwrites base ($, # or %) ----------------------------------
+@ Check if prefix overwrites base ($, # or %)
 .ifdef NUMBER_PREFIX
     ldrb r3, [tos]
     cmp r3, #'#'
@@ -52,7 +50,7 @@ WORD FLAG_INTERPRET_COMPILE, "number"
         b 2f                            @ Goto check sign
 .endif
 
-@ Get or set base --------------------------------------------------------------
+@ Get or set base
 1:  ldr r2, =radix
     ldr r2, [r2]
 
@@ -63,7 +61,7 @@ WORD FLAG_INTERPRET_COMPILE, "number"
 
 1:  ldr r4, =cstring2num_base_10        @ Load pointer to base <=10 conversion (by default)
 
-@ Check and set sign -----------------------------------------------------------
+@ Check and set sign
 2:  movs r5, #1
     ldrb r3, [tos]
     cmp r3, #'-'
@@ -71,10 +69,10 @@ WORD FLAG_INTERPRET_COMPILE, "number"
         movs r5, #-1                    @ Negative sign
         adds tos, #1                    @ Increment token-addr
 
-@ Conversion -------------------------------------------------------------------
+@ Conversion
 1:  blx r4                              @ Call actual conversion
 
-@ Result -----------------------------------------------------------------------
+@ Result
     cmp r4, #0                          @ flag - 0
     bne 1f
         movs tos, #0                    @ Ascii character was not in range, return false
@@ -82,7 +80,7 @@ WORD FLAG_INTERPRET_COMPILE, "number"
 1:  mul tos, r1, r5                     @ Multiply result with sign to tos
     PUSH_REGS #-1                       @ return ( -- n true )
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 
 /***************************************************************************//**
@@ -103,7 +101,7 @@ cstring2num_base_10:
     movs r1, #0                         @ Make room for result
     movs r4, #-1                        @ Set flag true
 
-@ Bytewise conversion ----------------------------------------------------------
+@ Bytewise conversion
 1:  cmp r0, tos                         @ (token-addr + token-u) - token-addr
     bls 6f                              @ Goto return
     ldrb r3, [tos], #1
@@ -120,7 +118,7 @@ cstring2num_base_10:
     adds r1, r3
     b 1b                                @ Goto bytewise conversion
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  bx lr
 
 /***************************************************************************//**
@@ -141,7 +139,7 @@ cstring2num_base_36:
     movs r1, #0                         @ Make room for result
     movs r4, #-1                        @ Set flag true
 
-@ Bytewise conversion ----------------------------------------------------------
+@ Bytewise conversion
 1:  cmp r0, tos                         @ (token-addr + token-u) - token-addr
     bls 6f                              @ Goto return
     ldrb r3, [tos], #1
@@ -170,7 +168,7 @@ cstring2num_base_36:
     adds r1, r3
     b 1b                                @ Goto bytewise conversion
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  bx lr
 
 /***************************************************************************//**
@@ -192,7 +190,7 @@ WORD FLAG_SKIP, "literal", literal
     ldr tos, =0xF8476D04                @ PUSH_TOS opcode
     bl rev_comma                        @ Write opcode
 
-@ movs (t1) --------------------------------------------------------------------
+@ movs (t1)
 @ tos   x
     cmp tos, #0xFF
     bhi 1f                              @ Goto movs (t2)
@@ -200,7 +198,7 @@ WORD FLAG_SKIP, "literal", literal
         bl h_comma                      @ Write opcode
             b 6f                        @ Goto return
 
-@ movs (t2) --------------------------------------------------------------------
+@ movs (t2)
 @ Pattern 0x00XY00XY
 @ tos   x
 @ r0    bottom
@@ -325,12 +323,11 @@ WORD FLAG_SKIP, "literal", literal
 
 // TODO ev. noch mvn checkn?
 
-@ movw movt --------------------------------------------------------------------
+@ movw movt
 @ tos   opcode
 @ r0    bottom | top
 @ r1    intermediate
 @ r2    x
-
 1:  movs r2, tos
 
 @ movw
@@ -373,6 +370,6 @@ WORD FLAG_SKIP, "literal", literal
 
     bl rev_comma                        @ Write opcode
 
-@ Return -----------------------------------------------------------------------
+@ Return
 6:  pop {pc}
 .ltorg
