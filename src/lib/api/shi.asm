@@ -35,10 +35,9 @@ lfp .req r8                             @ Literal-folding pointer
 .equ DSTACK_SIZE, SHI_DSTACK_SIZE
 .equ ERASED_WORD, SHI_ERASED_WORD
 .equ NUMBER_PREFIX, SHI_NUMBER_PREFIX
-.equ TRACE_ENABLED, SHI_TRACE_ENABLED
+.equ PRINT_ENABLED, SHI_PRINT_ENABLED
 
 .include "data.asm"
-.include "stm32l431.asm"
 .include "macros.asm"
 
 /***************************************************************************//**
@@ -172,7 +171,7 @@ shi_c_variable:
 @ Check if string length is reasonable (>0)
     cmp r1, #0
     bne 1f                              @ Goto enter forth
-        TRACE_WRITE "'shi' attempt to evaluate zero-length string >>>shi_c_variable<<<"
+        PRINT "'shi' attempt to evaluate zero-length string >>>shi_c_variable<<<"
         b 2f                            @ Goto return
 
 @ Enter forth
@@ -205,7 +204,7 @@ shi_evaluate:
 @ Check if string length is reasonable (>0)
     cmp r1, #0
     bne 1f                              @ Goto enter forth
-        TRACE_WRITE "'shi' attempt to evaluate zero-length string >>>shi_evaluate<<<"
+        PRINT "'shi' attempt to evaluate zero-length string >>>shi_evaluate<<<"
         b 2f                            @ Goto return
 
 @ Enter forth
@@ -239,34 +238,5 @@ clear:
 
 @ Return
 2:  movs tos, #'*'
-    bx lr
-
-/***************************************************************************//**
-@ trace_write_itm
-@ lr    cstring
-@       The rather strange way of passing a cstring by lr was necessary because
-@       the first implementation, which was relying on numbered macro labels
-@       (\@), kept screwing with the way local labels (1, 2, etc.) worked.
- ******************************************************************************/
-trace_write_itm:
-@ r0    c-addr + u
-@ r1    ITM_PORT register address
-@ r2    ITM_PORT
-@ r3    character
-    ldrb r0, [lr, #-1]                  @ u
-    adds r0, r0, lr                     @ c-addr + u
-    movs r1, #ITM_PORT                  @ ITM port
-
-1:  cmp lr, r0                          @ c-addr - (c-addr + u)
-    beq 3f                              @ Goto return
-2:      ldr r2, [r1]
-        cmp r2, #0                      @ ITM port - 0
-        beq 2b
-            ldrb r3, [lr], #1           @ Load char from string
-            strb r3, [r1]               @ Write char to ITM
-            b 1b
-
-3:  P2ALIGN1 lr
-    adds lr, #1                         @ Ensure thumb mode (LSB of lr must be set)
     bx lr
 .ltorg

@@ -4,6 +4,8 @@
 @ \author Vincent Hamp
 @ \date   27/07/2016
 
+.extern shi_printf
+
 .section .text
 
 /***************************************************************************//**
@@ -343,13 +345,14 @@ link\@\():
 .equ RESERVE_3CELL, ~3 << 2
 
 /***************************************************************************//**
-@ Trace write messages (requires a working ITM port)
+@ Print messages
  ******************************************************************************/
-.macro TRACE_WRITE msg
-    .ifdef TRACE_ENABLED
-    bl trace_write_itm
-    .byte 8f - 7f
-7:  .ascii "\msg\n"
-8:  .p2align 1
-    .endif
+.macro PRINT msg
+.ifdef PRINT_ENABLED
+    mov r0, pc
+    b 8f
+7:  .ascii "\msg\n\0"
+    .p2align 1
+8:  bl shi_printf
+.endif
 .endm

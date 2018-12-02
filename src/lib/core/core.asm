@@ -56,7 +56,7 @@ WORD FLAG_INTERPRET, "'", tick
     cmp tos, #0                         @ token-u - 0
     bne 1f                              @ Goto find
         TWO_DROP                        @ ( token-addr false -- )
-        TRACE_WRITE "'shi' attempt to use zero-length string as a name >>>'<<<"
+        PRINT "'shi' attempt to use zero-length string as a name >>>'<<<"
         b 6f                            @ Goto return
 
 @ Find
@@ -64,7 +64,7 @@ WORD FLAG_INTERPRET, "'", tick
     cmp tos, #0                         @ flags - 0
     bne 1f                              @ Goto xt
         TWO_DROP                        @ ( token-addr 0 -- )
-        TRACE_WRITE "'shi' undefined word >>>'<<<"
+        PRINT "'shi' undefined word >>>'<<<"
         b 6f                            @ Goto return
 
 @ xt
@@ -678,14 +678,14 @@ WORD FLAG_SKIP, "b,", b_comma
     cmp r1, #-16777216                  @ pc-relative address - -16777216
     bge 1f
         DROP                            @ ( orig -- )
-        TRACE_WRITE "'shi' branch offset too far negative >>>b,<<<"
+        PRINT "'shi' branch offset too far negative >>>b,<<<"
         b 6f                            @ Goto return
 
 1:  ldr r2, =16777214
     cmp r1, r2                          @ pc-relative address - 16777214
     ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
         DROP                            @ ( orig -- )
-        TRACE_WRITE "'shi' branch offset too far positive >>>b,<<<"
+        PRINT "'shi' branch offset too far positive >>>b,<<<"
         b 6f                            @ Goto return
 
 @ Temporarily set ram_begin to orig if necessary
@@ -811,14 +811,14 @@ WORD FLAG_SKIP, "beq,", beq_comma
     cmp r1, #-1048576                   @ pc-relative address - -1048576
     bge 1f
         DROP                            @ ( orig -- )
-        TRACE_WRITE "'shi' conditional branch offset too far negative >>>beq,<<<"
+        PRINT "'shi' conditional branch offset too far negative >>>beq,<<<"
         b 6f                            @ Goto return
 
 1:  ldr r2, =1048574
     cmp r1, r2                          @ pc-relative address - 1048574
     ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
         DROP                            @ ( orig -- )
-        TRACE_WRITE "'shi' conditional branch offset too far positive >>>beq,<<<"
+        PRINT "'shi' conditional branch offset too far positive >>>beq,<<<"
         b 6f                            @ Goto return
 
 @ Temporarily set ram_begin to orig if necessary
@@ -918,14 +918,14 @@ WORD FLAG_SKIP, "blt,", blt_comma
     cmp r1, #-1048576                   @ pc-relative address - -1048576
     bge 1f
         DROP                            @ ( orig -- )
-        TRACE_WRITE "'shi' conditional branch offset too far negative >>>blt,<<<"
+        PRINT "'shi' conditional branch offset too far negative >>>blt,<<<"
         b 6f                            @ Goto return
 
 1:  ldr r2, =1048574
     cmp r1, r2                          @ pc-relative address - 1048574
     ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
         DROP                            @ ( orig -- )
-        TRACE_WRITE "'shi' conditional branch offset too far positive >>>blt,<<<"
+        PRINT "'shi' conditional branch offset too far positive >>>blt,<<<"
         b 6f                            @ Goto return
 
 @ Temporarily set ram_begin to orig if necessary
@@ -1159,14 +1159,14 @@ WORD FLAG_SKIP, "bne,", bne_comma
     cmp r1, #-1048576                   @ pc-relative address - -1048576
     bge 1f
         DROP                            @ ( orig -- )
-        TRACE_WRITE "'shi' conditional branch offset too far negative >>>bne,<<<"
+        PRINT "'shi' conditional branch offset too far negative >>>bne,<<<"
         b 6f                            @ Goto return
 
 1:  ldr r2, =1048574
     cmp r1, r2                          @ pc-relative address - 1048574
     ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
         DROP                            @ ( orig -- )
-        TRACE_WRITE "'shi' conditional branch offset too far positive >>>bne,<<<"
+        PRINT "'shi' conditional branch offset too far positive >>>bne,<<<"
         b 6f                            @ Goto return
 
 @ Temporarily set ram_begin to orig if necessary
@@ -1369,7 +1369,7 @@ WORD FLAG_INTERPRET, "create"
     cmp tos, #0                         @ token-u - 0
     bne 1f                              @ Goto find
         TWO_DROP                        @ ( token-addr false -- )
-        TRACE_WRITE "'shi' attempt to use zero-length string as a name >>>create<<<"
+        PRINT "'shi' attempt to use zero-length string as a name >>>create<<<"
         b 6f                            @ Goto return
 
 @ Find
@@ -1380,7 +1380,7 @@ WORD FLAG_INTERPRET, "create"
     beq 1f                              @ Goto create
         TWO_DROP                        @ ( xt flags -- )
         TWO_DROP                        @ ( token-addr token-u -- )
-        TRACE_WRITE "'shi' redefined word >>>create<<<"
+        PRINT "'shi' redefined word >>>create<<<"
         // TODO What should we do in case a word gets redefined?
         // Maybe src should be dropped, so that when we leave create we also
         // leave evaluate?
@@ -2001,7 +2001,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
 @ r1    csp
     cmp r1, dsp
     blo 1f
-        TRACE_WRITE "'shi' stack overflow >>>leave<<<"
+        PRINT "'shi' stack overflow >>>leave<<<"
         b 6f
 
 @ Take care of leave(s)
@@ -2698,7 +2698,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 @ r1    csp
     cmp r1, dsp
     blo 1f
-        TRACE_WRITE "'shi' stack overflow >>>endcase<<<"
+        PRINT "'shi' stack overflow >>>endcase<<<"
         b 6f
 
 @ Take care of endof(s)
@@ -3055,7 +3055,7 @@ interpret_parse:
     cmp tos, #0                         @ token-u - 0
     bne interpret_find                  @ Goto find
         TWO_DROP                        @ ( token-addr 0 -- )
-        TRACE_WRITE "'shi' attempt to parse zero-length string >>>interpret<<<"
+        PRINT "'shi' attempt to parse zero-length string >>>interpret<<<"
         b interpret_return              @ Goto return
 
 @ Find
@@ -3074,7 +3074,7 @@ interpret_number:
     POP_REGS r0                         @ ( flag -- )
     cmp r0, #0                          @ flag - 0
     bne interpret_set_lfp               @ Goto set literal-folding pointer
-    TRACE_WRITE "'shi' undefined word >>>interpret<<<"
+    PRINT "'shi' undefined word >>>interpret<<<"
         b interpret_return              @ Goto return
 
 @ Set literal-folding pointer
@@ -3100,7 +3100,7 @@ interpret_state:
 interpret_interpret:
     ands tos, #~FLAG_INTERPRET
     beq 1f                              @ Goto execute
-        TRACE_WRITE "'shi' interpreting a compile-only word >>>interpret<<<"
+        PRINT "'shi' interpreting a compile-only word >>>interpret<<<"
         b interpret_return              @ Goto return
 
 @ Execute
@@ -3113,7 +3113,7 @@ interpret_interpret:
 interpret_compile:
     ands r0, tos, #~FLAG_COMPILE
     beq 1f                              @ Goto continue
-        TRACE_WRITE "'shi' compiling an interpret-only word >>>interpret<<<"
+        PRINT "'shi' compiling an interpret-only word >>>interpret<<<"
         b interpret_return              @ Goto return
 
 @ Continue
