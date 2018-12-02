@@ -100,7 +100,7 @@ SECTIONS
         _edata = . ;
         __data_end__ = . ;
     } >RAM AT>FLASH
-   
+    .fill : { FILL(0xFF); . = ORIGIN(FLASH) + LENGTH(FLASH) - 1; BYTE(0xFF) } >FLASH
  .bss_CCMRAM (NOLOAD) : ALIGN(4)
  {
   *(.bss.CCMRAM .bss.CCMRAM.*)

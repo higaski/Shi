@@ -242,9 +242,9 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
     PUSH_REGS r0                        @ ( -- opcode )
     bl comma
 
-@ itt lt
+@ it lt
 @ pushlt {r0, r1}
-    ldr r0, =0xB403BFBC
+    ldr r0, =0xB403BFB8
     PUSH_REGS r0                        @ ( -- opcode )
     bl comma
 
@@ -2041,8 +2041,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
     bl comma
 
 @ cmp r0, r1
-@ itt lt
-    ldr r0, =0xBFBC4288
+@ it lt
+    ldr r0, =0xBFB84288
     PUSH_REGS r0                        @ ( -- opcode )
     bl comma
 

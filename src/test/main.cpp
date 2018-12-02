@@ -1156,7 +1156,7 @@ int main() {
   RUN_TEST(numeric_notation);
   //  RUN_TEST(top);
   //  RUN_TEST(if_else_then);
-  //  RUN_TEST(loop);
+  RUN_TEST(loop);
   //  RUN_TEST(leave);
   //  RUN_TEST(case_);
   //  RUN_TEST(variable);
