@@ -4,6 +4,9 @@
 @ \author Vincent Hamp
 @ \date   02/12/2018
 
+@ C/C++ interface
+.global _s_shi_dstack, _e_shi_dstack, _s_shi_context
+
 .section .data
 
 /***************************************************************************//**

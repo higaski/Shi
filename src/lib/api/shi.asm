@@ -8,14 +8,12 @@
 
 .syntax unified
 .thumb
-.arch armv7e-m
-
-.section .text
+.arch armv7-m
 
 @ C/C++ interface
-.global shi_init                        @ Initialize shi
-.global shi_c_variable                  @ shi c variable
-.global shi_evaluate                    @ shi evaluate
+.global shi_init, shi_c_variable, shi_evaluate
+
+.section .text
 
 /***************************************************************************//**
 @ Register mapping
@@ -37,13 +35,15 @@ lfp .req r8                             @ Literal-folding pointer
 .equ NUMBER_PREFIX, SHI_NUMBER_PREFIX
 .equ PRINT_ENABLED, SHI_PRINT_ENABLED
 
+.include "extern.asm"
 .include "data.asm"
 .include "macros.asm"
+.include "interpret.asm"
 
 /***************************************************************************//**
 @ Dictionary
  ******************************************************************************/
-WORD        FLAG_SKIP, "_s_shi"
+WORD FLAG_SKIP, "_s_shi"
 _s_shi_dict:                            @ Start of dictionaty
 
 .include "core.asm"
@@ -53,7 +53,7 @@ _s_shi_dict:                            @ Start of dictionaty
 .section .data
 
 _e_shi_dict:                            @ End of dictionary
-WORD_TAIL   FLAG_SKIP, "_e_shi"
+WORD_TAIL FLAG_SKIP, "_e_shi"
 
 .section .text
 
@@ -64,6 +64,7 @@ WORD_TAIL   FLAG_SKIP, "_e_shi"
 @ r2    flash_begin
 @ r3    flash_end
  ******************************************************************************/
+.thumb_func
 shi_init:
     push {r4-r9, lr}
 
@@ -92,6 +93,7 @@ shi_init:
 /***************************************************************************//**
 @ Fill ram
  ******************************************************************************/
+.thumb_func
 fill_ram:
 @ r0    ram_begin
 @ r1    ram_end
@@ -111,6 +113,7 @@ fill_ram:
 @ Set memory-space pointer for flash
 @ Search flash from end to start to find first free flash address
  ******************************************************************************/
+.thumb_func
 set_memory_space_pointer_flash:
 @ r0    flash start address
 @ r1    flash_begin
@@ -136,6 +139,7 @@ set_memory_space_pointer_flash:
 @ Search through flash dictionary to look for definitions which need to reserve
 @ ram.
  ******************************************************************************/
+.thumb_func
 reserve_ram:
 @ r0    link
 @ r1    copy of link
@@ -165,6 +169,7 @@ reserve_ram:
 @ r0    c-addr  (cstring address)
 @ r1    u       (cstring length)
  ******************************************************************************/
+.thumb_func
 shi_c_variable:
     push {r4-r9, lr}
 
@@ -198,6 +203,7 @@ shi_c_variable:
 @ r0    c-addr  (cstring address)
 @ r1    u       (cstring length)
  ******************************************************************************/
+.thumb_func
 shi_evaluate:
     push {r4-r9, lr}
 
@@ -223,6 +229,7 @@ shi_evaluate:
 /***************************************************************************//**
 @ Clear stack
  ******************************************************************************/
+.thumb_func
 clear:
 @ tos   0
 @ dsp   stack end address

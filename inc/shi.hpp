@@ -42,18 +42,20 @@ void evaluate(char const* str, size_t const len);
 int stack_print(int (*fp)(char const* const format, ...));
 
 // ASM prototypes
-extern "C" void shi_init(uint32_t const ram_begin,
-                         uint32_t const ram_end,
-                         uint32_t const flash_begin,
-                         uint32_t const flash_end);
-extern "C" void shi_c_variable(char const* name, size_t len);
-extern "C" void shi_evaluate(char const* str, size_t len);
+extern "C" {
+
+void shi_init(uint32_t const ram_begin,
+              uint32_t const ram_end,
+              uint32_t const flash_begin,
+              uint32_t const flash_end);
+void shi_c_variable(char const* name, size_t len);
+void shi_evaluate(char const* str, size_t len);
+
+}
 
 inline void operator"" _fs(char const* str, size_t const len) {
   evaluate(str, len);
 }
-
-
 
 template<typename T>
 void c_variable(char const* name, T adr) {

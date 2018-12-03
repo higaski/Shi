@@ -93,7 +93,7 @@ WORD FLAG_INTERPRET_COMPILE, "number"
 @       true:   conversion successful
 @       false:  conversion failed
  ******************************************************************************/
-.type cstring2num_base_10, %function
+.thumb_func
 cstring2num_base_10:
 
 @ r1    result
@@ -131,7 +131,7 @@ cstring2num_base_10:
 @       true:   conversion successful
 @       false:  conversion failed
  ******************************************************************************/
-.type cstring2num_base_36, %function
+.thumb_func
 cstring2num_base_36:
 
 @ r1    result

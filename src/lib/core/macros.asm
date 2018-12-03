@@ -4,8 +4,6 @@
 @ \author Vincent Hamp
 @ \date   27/07/2016
 
-.extern shi_printf
-
 .section .text
 
 /***************************************************************************//**
@@ -257,10 +255,10 @@ link\@\():                              @ Label the link
 7:  .ascii "\name"                            @ Name (cstring)
 8:  .p2align 1                          @ Align before code
 .ifnb \label                            @ Label for code (use name if label wasn't defined)
-.type \label, %function
+.thumb_func
 \label\():
 .else
-.type \name, %function
+.thumb_func
 \name\():
 .endif
 .endm
@@ -275,10 +273,10 @@ link\@\():
 7:  .ascii "\name"
 8:  .p2align 1                          @ Align before code
 .ifnb \label
-.type \label, %function
+.thumb_func
 \label\():
 .else
-.type \name, %function
+.thumb_func
 \name\():
 .endif
 .endm
@@ -351,7 +349,7 @@ link\@\():
 .ifdef PRINT_ENABLED
     mov r0, pc
     b 8f
-7:  .ascii "\msg\n\0"
+    .asciz "\msg\n"
     .p2align 1
 8:  bl shi_printf
 .endif

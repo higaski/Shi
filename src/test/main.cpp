@@ -274,6 +274,9 @@ int main() {
   asm volatile("nop");
   shi::init(SHI_RAM_START, SHI_RAM_END, SHI_FLASH_START, SHI_FLASH_END);
 
+//  ""_fs;
+//  "bla"_fs;
+
   //  semihosting_io();
 
   UNITY_BEGIN();
