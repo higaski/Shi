@@ -4,16 +4,13 @@
 /// \author Vincent Hamp
 /// \date   27/07/2016
 
-#include "shi.hpp"
+#include "shi.h"
 
 namespace shi {
 
 /// Initialize
-void init(uint32_t const ram_begin,
-          uint32_t const ram_end,
-          uint32_t const flash_begin,
-          uint32_t const flash_end) {
-  shi_init(ram_begin, ram_end, flash_begin, flash_end);
+void init(shi_init_t s) {
+  shi_init_asm(s.ram_begin, s.ram_end, s.flash_begin, s.flash_end);
 }
 
 /// Clear stack
@@ -116,7 +113,7 @@ size_t size() {
 /// Add element to the top of the stack
 ///
 /// \param    cell    Value to push
-void push(int32_t const cell) {
+void push(int32_t cell) {
   asm volatile("ldr r0, =_s_shi_context"
                "\n\t"
                "ldmia r0, {r1, r2}"
@@ -151,7 +148,7 @@ void pop() {
                : "cc", "r0", "r1", "r2");
 }
 
-int32_t top(int32_t const offset) {
+int32_t top(int32_t offset) {
   int32_t cell;
 
   asm volatile("ldr r7, =_s_shi_context"
@@ -294,15 +291,15 @@ int32_t top(int32_t const offset) {
 ///         }
 /// \enddot
 void evaluate(char const* str) {
-  shi_evaluate(str, std::strlen(str));
+  shi_evaluate_asm(str, strlen(str));
 }
 
 /// Call of word evaluate
 ///
 /// \param  str String address
 /// \param  len String length
-void evaluate(char const* str, size_t const len) {
-  shi_evaluate(str, len);
+void evaluate(char const* str, size_t len) {
+  shi_evaluate_asm(str, len);
 }
 
 /// Print stack elements with fp
@@ -310,7 +307,7 @@ void evaluate(char const* str, size_t const len) {
 /// \param  fp      Print function
 /// \return Number of characters written if successful or a negative value if an
 ///         error occurred
-int stack_print(int (*fp)(char const* const format, ...)) {
+int stack_print(int (*fp)(char const* format, ...)) {
   struct {
     float f;
     int32_t i;

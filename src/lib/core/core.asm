@@ -1471,10 +1471,23 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 @ Return
     pop {pc}                          
 
-/*
-WORD FLAG_SKIP, "does>", does
+/***************************************************************************//**
+@ does>
+@ ( colon-sys1 -- colon-sys2 )
+@ Append the run-time semantics below to the current definition. Whether or not
+@ the current definition is rendered findable in the dictionary by the
+@ compilation of does> is implementation defined. Consume colon-sys1 and produce
+@ colon-sys2. Append the initiation semantics given below to the current
+@ definition.
+@
+@ ( -- ) ( R: nest-sys1 -- )
+@ Replace the execution semantics of the most recent definition, referred to as
+@ name, with the name execution semantics given below. Return control to the
+@ calling definition specified by nest-sys1. An ambiguous condition exists if
+@ name was not defined with create or a user-defined word that calls create.
+ ******************************************************************************/
+WORD FLAG_COMPILE_IMMEDIATE, "does>", does
     bx lr
-*/
 
 /***************************************************************************//**
 @ drop
@@ -1565,7 +1578,7 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     str r1, [r3]                        @ Update last link
     str r4, [r1], #4                    @ Write link
     strb tos, [r1]                      @ Write flags
-    b 3f                                @ Goto return
+    b 6f                                @ Goto return
 
 @ end:; flash
 @ tos   flags
@@ -1597,7 +1610,7 @@ WORD FLAG_SKIP, "end:;", end_colon_semicolon
     stmia r0, {r1, r2}
 
 @ Return
-3:  DROP                                @ ( flags -- )
+6:  DROP                                @ ( flags -- )
     pop {pc}
 
 /*
@@ -2478,13 +2491,9 @@ WORD FLAG_COMPILE_IMMEDIATE, "[", bracket_left
  ******************************************************************************/
 WORD FLAG_COMPILE_IMMEDIATE, "[']", bracket_tick
     push {lr}
-
-@ '
     bl tick                             @ ( -- xt )
     bl literal                          @ ( xt -- )
-
-@ Return
-6:  pop {pc}
+    pop {pc}
 
 /*
 WORD FLAG_SKIP, "[char]", bracket_char

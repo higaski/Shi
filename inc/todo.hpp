@@ -70,3 +70,6 @@
 ///
 /// Bezüglich Nummern...<br>
 /// HEX wird AUSSCHLIESSLICH!!!! in Großbuchstaben unterstützt!!!
+///
+/// Alles was bestehende Words verändert wird NICHT unterstützt. Das betrifft
+/// zum Beispiel defer, is und defer!.

@@ -11,7 +11,7 @@
 .arch armv7-m
 
 @ C/C++ interface
-.global shi_init, shi_c_variable, shi_evaluate
+.global shi_init_asm, shi_c_variable_asm, shi_evaluate_asm
 
 .section .text
 
@@ -27,7 +27,7 @@ lfp .req r8                             @ Literal-folding pointer
 /***************************************************************************//**
 @ Common
  ******************************************************************************/
-#include "config.h"
+#include "shi.h"
 
 @ C -> assembler
 .equ DSTACK_SIZE, SHI_DSTACK_SIZE
@@ -65,7 +65,7 @@ WORD_TAIL FLAG_SKIP, "_e_shi"
 @ r3    flash_end
  ******************************************************************************/
 .thumb_func
-shi_init:
+shi_init_asm:
     push {r4-r9, lr}
 
 @ Store addresses
@@ -170,7 +170,7 @@ reserve_ram:
 @ r1    u       (cstring length)
  ******************************************************************************/
 .thumb_func
-shi_c_variable:
+shi_c_variable_asm:
     push {r4-r9, lr}
 
 @ Check if string length is reasonable (>0)
@@ -204,7 +204,7 @@ shi_c_variable:
 @ r1    u       (cstring length)
  ******************************************************************************/
 .thumb_func
-shi_evaluate:
+shi_evaluate_asm:
     push {r4-r9, lr}
 
 @ Check if string length is reasonable (>0)

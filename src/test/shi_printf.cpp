@@ -1,5 +1,5 @@
 #include <cstdio>
 
-extern "C" int shi_printf(const char* format) {
+extern "C" int shi_printf(char const* format) {
   return printf(format);
 }

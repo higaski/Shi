@@ -7,7 +7,7 @@
 /// \param  alignment Alignment
 /// \param  value     Value to align
 /// \return Aligned value
-size_t align(size_t const alignment, size_t const value) {
+size_t align(size_t alignment, size_t value) {
   return value + (alignment - value % alignment) % alignment;
 }
 

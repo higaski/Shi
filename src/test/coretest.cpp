@@ -1,4 +1,4 @@
-#include "shi.hpp"
+#include "shi.h"
 #include "test.hpp"
 
 using shi::operator""_fs;

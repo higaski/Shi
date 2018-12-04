@@ -1,5 +1,5 @@
 #include <cstdio>
-#include "shi.hpp"
+#include "shi.h"
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
 #include "test.hpp"
@@ -272,10 +272,13 @@ int main() {
   SystemClock_Config();
 
   asm volatile("nop");
-  shi::init(SHI_RAM_START, SHI_RAM_END, SHI_FLASH_START, SHI_FLASH_END);
+  shi::init({.ram_begin = SHI_RAM_START,
+             .ram_end = SHI_RAM_END,
+             .flash_begin = SHI_FLASH_START,
+             .flash_end = SHI_FLASH_END});
 
-//  ""_fs;
-//  "bla"_fs;
+  //  ""_fs;
+  //  "bla"_fs;
 
   //  semihosting_io();
 
@@ -391,7 +394,7 @@ void shi_test() {
   asm volatile("nop");
   volatile uint32_t stars = 42;
   // equal to push(&stars) and evaluate("c-variable stars");
-  shi::c_variable("stars", &stars);
+  shi::cvariable("stars", &stars);
   shi::stack_print(printf);
   shi::evaluate("stars @");
   shi::stack_print(printf);
