@@ -1353,7 +1353,7 @@ WORD FLAG_SKIP, "cr"
 @ The new memory-space pointer defines name's data field. Create does not
 @ allocate memory-space in name's data field.
  ******************************************************************************/
-WORD FLAG_INTERPRET, "create"
+WORD FLAG_INTERPRET_COMPILE, "create"
     push {lr}
 
 @ Parse
