@@ -891,104 +891,12 @@ WORD FLAG_SKIP, "bl"
 */
 
 /***************************************************************************//**
-@ blt,
-@ ( orig dest -- )
-@ Compile a conditional less-than jump from orig to dest. For future-proofness
-@ the 32bit encoding t3 is used as instruction.
- ******************************************************************************/
-WORD FLAG_SKIP, "blt,", blt_comma
-    push {lr}
-
-@ tos   orig
-@ r0    dest
-@ r1    pc-relative address (dest - (orig + 4))
-    POP_REGS r0                         @ ( dest -- )
-    subs r1, r0, tos                    @ dest - orig
-    subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
-
-@ Range check for blt
-@ r1    pc-relative address (dest - (orig + 4))
-    cmp r1, #-1048576                   @ pc-relative address - -1048576
-    bge 1f
-        DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far negative >>>blt,<<<"
-        b 6f                            @ Goto return
-
-1:  ldr r2, =1048574
-    cmp r1, r2                          @ pc-relative address - 1048574
-    ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
-        DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far positive >>>blt,<<<"
-        b 6f                            @ Goto return
-
-@ Temporarily set ram_begin to orig if necessary
-@ tos   orig
-@ r0    dest
-@ r2    ram_begin address
-@ r3    ram_begin
-@ r4    flag to indicate whether ram_begin is overwritten or not
-1:  movs r4, #0                         @ Reset flag
-    ldr r2, =ram_begin
-    ldr r3, [r2]
-    cmp tos, r3
-    bhs 1f
-        movs r4, #1                     @ Set flag
-        str tos, [r2]                   @ Temporarily store orig as ram_begin
-        movs tos, r3
-        PUSH_TOS                        @ ( -- ram_begin)
-
-@ blt
-@ tos   opcode
-@ r1    pc-relative address (dest - (orig + 4))
-@ r2    J2 | J1 | imm11| imm6
-1:  ldr tos, =0xF2C08000                @ Opcode template
-
-    cmp r1, #0
-    it lt
-    orrlt tos, #0x4000000               @ Set sign
-
-    ands r2, r1, #0x80000               @ J2
-    it ne
-    orrne tos, #0x800
-
-    ands r2, r1, #0x40000               @ J1
-    it ne
-    orrne tos, #0x2000
-
-    lsrs r1, #1
-    movw r2, #0x7FF                     @ Mask for imm11
-    ands r2, r1                         @ imm11
-    orrs tos, r2                        @ Or imm11 into template
-
-    lsrs r1, #11
-    ands r2, r1, #0x3F                  @ Mask for imm6
-    orrs tos, tos, r2, lsl #16          @ Or imm6 into template
-
-@ Write opcode, do not reset ram_begin
-@ r4    flag to indicate whether ram_begin is overwritten or not
-    cmp r4, #0
-    bne 1f
-        bl rev_comma                    @ Write opcode
-        b 6f
-
-@ Write opcode and reset ram_begin
-@ r0    ram_begin address
-1:  bl rev_comma                        @ Write opcode
-    ldr r0, =ram_begin
-    str tos, [r0]
-    DROP                                @ ( ram_begin -- )
-
-@ Return
-6:  pop {pc}
-
-/***************************************************************************//**
-@ bl,
+@ compile,
 @ ( xt -- )
-@ Compiles code for a call to xt in the memory-space. The call could either be:
-@ bl (4 bytes) pc-relative up to a range of -16777216 to 16777214 or
-@ movw movt blx (10 bytes) absolute 32bit
+@ Append the execution semantics of the definition represented by xt to the
+@ execution semantics of the current definition.
  ******************************************************************************/
-WORD FLAG_SKIP, "bl,", bl_comma
+WORD FLAG_COMPILE, "compile,", compile_comma
     push {lr}
 
 @ Ram or flash
@@ -1127,97 +1035,6 @@ WORD FLAG_SKIP, "bl,", bl_comma
 @ blx r0
     PUSH_INT16 #0x4780                  @ ( -- opcode )
     bl h_comma                          @ Write opcode
-
-@ Return
-6:  pop {pc}
-
-/***************************************************************************//**
-@ bne,
-@ ( orig dest -- )
-@ Compile a conditional not-equal jump from orig to dest. For future-proofness
-@ the 32bit encoding t3 is used as instruction.
- ******************************************************************************/
-WORD FLAG_SKIP, "bne,", bne_comma
-    push {lr}
-
-@ tos   orig
-@ r0    dest
-@ r1    pc-relative address (dest - (orig + 4))
-    POP_REGS r0                         @ ( dest -- )
-    subs r1, r0, tos                    @ dest - orig
-    subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
-
-@ Range check for bne
-@ r1    pc-relative address (dest - (orig + 4))
-    cmp r1, #-1048576                   @ pc-relative address - -1048576
-    bge 1f
-        DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far negative >>>bne,<<<"
-        b 6f                            @ Goto return
-
-1:  ldr r2, =1048574
-    cmp r1, r2                          @ pc-relative address - 1048574
-    ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
-        DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far positive >>>bne,<<<"
-        b 6f                            @ Goto return
-
-@ Temporarily set ram_begin to orig if necessary
-@ tos   orig
-@ r0    dest
-@ r2    ram_begin address
-@ r3    ram_begin
-@ r4    flag to indicate whether ram_begin is overwritten or not
-1:  movs r4, #0                         @ Reset flag
-    ldr r2, =ram_begin
-    ldr r3, [r2]
-    cmp tos, r3
-    bhs 1f
-        movs r4, #1                     @ Set flag
-        str tos, [r2]                   @ Temporarily store orig as ram_begin
-        movs tos, r3
-        PUSH_TOS                        @ ( -- ram_begin)
-
-@ bne
-@ tos   opcode
-@ r1    pc-relative address (dest - (orig + 4))
-@ r2    J2 | J1 | imm11| imm6
-1:  ldr tos, =0xF0408000                @ Opcode template
-
-    cmp r1, #0
-    it lt
-    orrlt tos, #0x4000000               @ Set sign
-
-    ands r2, r1, #0x80000               @ J2
-    it ne
-    orrne tos, #0x800
-
-    ands r2, r1, #0x40000               @ J1
-    it ne
-    orrne tos, #0x2000
-
-    lsrs r1, #1
-    movw r2, #0x7FF                     @ Mask for imm11
-    ands r2, r1                         @ imm11
-    orrs tos, r2                        @ Or imm11 into template
-
-    lsrs r1, #11
-    ands r2, r1, #0x3F                  @ Mask for imm6
-    orrs tos, tos, r2, lsl #16          @ Or imm6 into template
-
-@ Write opcode, do not reset ram_begin
-@ r4    flag to indicate whether ram_begin is overwritten or not
-    cmp r4, #0
-    bne 1f
-        bl rev_comma                    @ Write opcode
-        b 6f
-
-@ Write opcode and reset ram_begin
-@ r0    ram_begin address
-1:  bl rev_comma                        @ Write opcode
-    ldr r0, =ram_begin
-    str tos, [r0]
-    DROP                                @ ( ram_begin -- )
 
 @ Return
 6:  pop {pc}
@@ -1514,7 +1331,7 @@ WORD FLAG_COMPILE, "does>", does
     @ Also eigentlich genau dorthin wo ma hinwollen.
     @ Es erscheint also irgendwie logisch in die aktuelle Definition einfach:
     @ PUSH_REGS lr
-    @ bl bl_comma
+    @ bl compile_comma
     @ zu schreiben um eine Branch zum Code des define words zu erzeugen und an die Stelle
     @ hinter does> zu springen...
 
@@ -1530,7 +1347,7 @@ WORD FLAG_COMPILE, "does>", does
 
     @ bl, zum LR in die aktuelle definition screiben?
     @PUSH_REGS lr
-    @bl bl_comma
+    @bl compile_comma
     @nop
 
     @ und an exit brauchts vielleicht a?
@@ -1907,34 +1724,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "if"
 WORD FLAG_SKIP, "immediate"
     bx lr
 */
-
-/***************************************************************************//**
-@ inline,
-@ ( xt -- )
-@ Inlines code from xt in the memory-space.
- ******************************************************************************/
-WORD FLAG_SKIP, "inline,", inline_comma
-    push {lr}
-
-@ Copy opcodes from xt
-@ r0    xt
-@ r1    opcode bx lr
-@ r2    hword
-    POP_REGS r0
-    movw r1, #0x4770
-1:  ldrh r2, [r0], #2
-    cmp r2, r1                          @ End if opcode equals bx lr
-    beq 6f
-    cmp r2, #0xBD00                     @ or pop {pc}
-    beq 6f
-    PUSH_REGS r2
-    push {r0, r1}
-    bl h_comma
-    pop {r0, r1}
-    b 1b
-
-@ Return
-6:  pop {pc}
 
 /***************************************************************************//**
 @ invert

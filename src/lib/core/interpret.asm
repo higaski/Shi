@@ -127,7 +127,7 @@ interpret_compile:
     bl execute
         b interpret_done                @ Goto done
 
-@ Call, or inline,?
+@ compile, or inline,?
 @ r0    xt
 @ r1    flags
 4:  PUSH_REGS r0                        @ ( -- xt )
@@ -135,7 +135,7 @@ interpret_compile:
     bne 5f
         bl inline_comma
         b interpret_done                @ Goto done
-5:  bl bl_comma
+5:  bl compile_comma
 
 @ Done
 @ tos   >in address

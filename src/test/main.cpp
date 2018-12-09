@@ -230,12 +230,12 @@ int main() {
              .flash_begin = SHI_FLASH_START,
              .flash_end = SHI_FLASH_END});
 
-  "17 create seventeen ,"_fs;
-  "seventeen"_fs;
-
-  ": my_constant create , does> @ ;"_fs;
-  "7 my_constant CON"_fs;
-  "CON"_fs;
+//  "17 create seventeen ,"_fs;
+//  "seventeen"_fs;
+//
+//  ": my_constant create , does> @ ;"_fs;
+//  "7 my_constant CON"_fs;
+//  "CON"_fs;
 
   //  semihosting_io();
 
