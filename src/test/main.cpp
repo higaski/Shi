@@ -1,62 +1,15 @@
 #include <cstdio>
+#include "forth2012_test_suite.hpp"
 #include "shi.h"
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
-#include "test.hpp"
 
 #define SHI_FLASH_START (0x08000000 + 0x00040000 - 0x8000)
 #define SHI_FLASH_END (0x08000000 + 0x00040000)
 #define SHI_RAM_START (0x20004000)
 #define SHI_RAM_END (0x20004000 + 0x00004000)
 
-#define _0S 0
-#define _1S -1
-#define MSB (1 << 31)
-#define MAX_UINT 4294967295ul
-#define MAX_INT 2147483647
-#define MIN_INT -2147483648
-#define MID_UINT 2147483647ul
-#define MID_UINT_p1 2147483648ul
-#define FALSE 0
-#define TRUE -1
-
 using shi::operator""_fs;
-
-// Core
-TEST(basic_assumptions);
-TEST(invert__and__or__xor);
-TEST(two_times__two_div__lshift__rshit);
-TEST(zero_equal__equal__zero_less__less__more__u_less__min__max);
-TEST(_2drop__2dup__2over__2swap_q_dup__depth__drop__dup__over__rot__swap);
-TEST(to_r__from_r__r_fetch);
-TEST(plus__minus__one_plus__one_minus__abs__negate);
-TEST(s_to_d__m_times__um_times);
-TEST(
-    fm_div_mod__sm_div_rem__um_div_mod__times_div__times_div_mod__div__div_mod__mod);
-TEST(
-    comma__fetch__store__cell_plus__cells__c_comma__c_fetch__c_store__chars__two_fetch__two_store__align__aligned__plus_store__allot);
-TEST(
-    tick__bracket_tick__find__execute__immediate__count__literal__postpone__state);
-TEST(if__else__then__begin__while__repeat__until__recurse);
-TEST(do__loop__plus_loop__i__j__unloop__leave__exit);
-TEST(colon__semicolon__constant__variable__create__does__to_body);
-TEST(source__to_in__word);
-TEST(num_start__num__num_s__hold__sign__base__to_number__hex__decimal);
-
-//
-TEST(ne__u_more);
-TEST(zero_ne__zero_more);
-TEST(nip__tuck__roll__pick);
-TEST(two_to_r__two_r_fetch__two_r_from);
-TEST(hex);
-TEST(within);
-TEST(unused);
-TEST(again);
-TEST(marker);
-TEST(q_do);
-TEST(buffer);
-TEST(value__to);
-TEST(case__of__endof__endcase);
 
 void shi_test();
 void shi_test_compile_to_flash();
@@ -277,61 +230,29 @@ int main() {
              .flash_begin = SHI_FLASH_START,
              .flash_end = SHI_FLASH_END});
 
-  //  ""_fs;
-  //  "bla"_fs;
+  "17 create seventeen ,"_fs;
+  "seventeen"_fs;
+
+  ": my_constant create , does> @ ;"_fs;
+  "7 my_constant CON"_fs;
+  "CON"_fs;
 
   //  semihosting_io();
 
-  UNITY_BEGIN();
+  //  RUN_TEST(unused0);  // Needs to run at the very top
 
-  RUN_TEST(unused0);  // Needs to run at the very top
-
-  RUN_TEST(basic_assumptions);
-  RUN_TEST(invert__and__or__xor);
-  RUN_TEST(two_times__two_div__lshift__rshit);
-  RUN_TEST(zero_equal__equal__zero_less__less__more__u_less__min__max);
-  RUN_TEST(_2drop__2dup__2over__2swap_q_dup__depth__drop__dup__over__rot__swap);
-  RUN_TEST(to_r__from_r__r_fetch);
-  RUN_TEST(plus__minus__one_plus__one_minus__abs__negate);
-  RUN_TEST(s_to_d__m_times__um_times);
-  RUN_TEST(
-      fm_div_mod__sm_div_rem__um_div_mod__times_div__times_div_mod__div__div_mod__mod);
-  RUN_TEST(
-      comma__fetch__store__cell_plus__cells__c_comma__c_fetch__c_store__chars__two_fetch__two_store__align__aligned__plus_store__allot);
-  RUN_TEST(
-      tick__bracket_tick__find__execute__immediate__count__literal__postpone__state);
-  RUN_TEST(if__else__then__begin__while__repeat__until__recurse);
-  RUN_TEST(do__loop__plus_loop__i__j__unloop__leave__exit);
-  RUN_TEST(colon__semicolon__constant__variable__create__does__to_body);
-  RUN_TEST(source__to_in__word);
-  RUN_TEST(num_start__num__num_s__hold__sign__base__to_number__hex__decimal);
-
-  RUN_TEST(ne__u_more);
-  RUN_TEST(zero_ne__zero_more);
-  RUN_TEST(nip__tuck__roll__pick);
-  RUN_TEST(two_to_r__two_r_fetch__two_r_from);
-  RUN_TEST(hex);
-  RUN_TEST(within);
-  RUN_TEST(unused);
-  RUN_TEST(again);
-  RUN_TEST(marker);
-  RUN_TEST(q_do);
-  RUN_TEST(buffer);
-  RUN_TEST(value__to);
-  RUN_TEST(case__of__endof__endcase);
-
-  RUN_TEST(numeric_notation);
+  //  RUN_TEST(numeric_notation);
   //  RUN_TEST(top);
   //  RUN_TEST(if_else_then);
-  RUN_TEST(loop);
+  //  RUN_TEST(loop);
   //  RUN_TEST(leave);
   //  RUN_TEST(case_);
   //  RUN_TEST(variable);
   //  RUN_TEST(constant);
 
-  RUN_TEST(unused1);  // Can run anywhere but at the top
+  //  RUN_TEST(unused1);  // Can run anywhere but at the top
 
-  return UNITY_END();
+  return forth2012_test_suite();
 }
 
 void shi_test_compile_to_flash() {

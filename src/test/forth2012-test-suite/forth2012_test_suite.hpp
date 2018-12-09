@@ -1,6 +1,8 @@
-#include "unity.h"
-
 // https://github.com/gerryjackson/forth2012-test-suite/tree/master/src
+
+#pragma once
+
+#include "unity.h"
 
 #define TEST(name) void name()
 
@@ -14,3 +16,5 @@
 #define MID_UINT_p1 2147483648ul
 #define FALSE 0
 #define TRUE -1
+
+int forth2012_test_suite();

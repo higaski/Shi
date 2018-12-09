@@ -189,7 +189,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
 @ finishes execution. An ambiguous condition exists if the memory-space pointer
 @ is not aligned prior to execution of ,.
  ******************************************************************************/
-WORD FLAG_SKIP, ",", comma
+WORD FLAG_INTERPRET_COMPILE, ",", comma
     ldr r0, =ram_begin
     ldr r1, [r0]
     str tos, [r1], #4                   @ Write x to address in ram_begin
@@ -1279,15 +1279,23 @@ WORD FLAG_SKIP, "c@", c_fetch
     bx lr
 */
 
-/*
-WORD FLAG_SKIP, "cell+", cell_plus
+/***************************************************************************//**
+@ cell+
+@ ( a-addr1 -- a-addr2 )
+@ Add the size in address units of a cell to a-addr1, giving a-addr2.
+ ******************************************************************************/
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "cell+", cell_plus
+    adds tos, #4
     bx lr
-*/
 
-/*
-WORD FLAG_SKIP, "cells", cells
+/***************************************************************************//**
+@ cells
+@ ( n1 -- n2 )
+@ n2 is the size in address units of n1 cells.
+ ******************************************************************************/
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "cells", cells
+    lsl tos, #2
     bx lr
-*/
 
 /*
 WORD FLAG_SKIP, "char"
@@ -1486,8 +1494,52 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 @ calling definition specified by nest-sys1. An ambiguous condition exists if
 @ name was not defined with create or a user-defined word that calls create.
  ******************************************************************************/
-WORD FLAG_COMPILE_IMMEDIATE, "does>", does
-    bx lr
+WORD FLAG_COMPILE, "does>", does
+    nop
+    nop
+    nop
+
+    // https://softwareengineering.stackexchange.com/questions/339283/forth-how-do-create-and-does-work-exactly
+    // oida -.-
+
+    @ Hmm... ich fürcht wir müssen create auch nochmal umschreiben
+    @ Folgendes Beispiel geht aktuell nicht:
+    @ "17 create seventeen ,"
+    @ und zwar deshalb, weil ohne ; keine Links und Flags geschrieben werden
+    @ das heißt der Eintrag wird zwar erzeugt und 17 in Speicher gschrieben
+    @ auffindbar is der Eintrag aber nie -.-
+
+    @ Folgende Idee find ich eigentlich nicht so schlecht:
+    @ In LR steht aktuell eine Rücksprungadresse, die auf den Code hinter does> zeigt.
+    @ Also eigentlich genau dorthin wo ma hinwollen.
+    @ Es erscheint also irgendwie logisch in die aktuelle Definition einfach:
+    @ PUSH_REGS lr
+    @ bl bl_comma
+    @ zu schreiben um eine Branch zum Code des define words zu erzeugen und an die Stelle
+    @ hinter does> zu springen...
+
+    @ Das Problem is nur, dass das bei dem kanonischen Beispiel
+    @   ": my_constant create , does> @ ;"_fs;
+    @   "7 my_constant CON"_fs;
+    @ ein Wort "CON" erzeugt wird, dass bei der Ausführung zuerst 7 im Speicher stehn hat
+    @ und dann eine Branch zum FETCH Teil von "my_constant"...
+
+    @ Da fallen also 2 Fragen an:
+    @ 1.) Muss does> die Adresse vom Datenfeld wo 7 steht in die Definition schreiben bevor gebranched wird?
+    @ 2.) Wie verhindert ma dass ma beim Aufruf von CON auf 7 hupft statt dorthin wo does hinzeigt?
+
+    @ bl, zum LR in die aktuelle definition screiben?
+    @PUSH_REGS lr
+    @bl bl_comma
+    @nop
+
+    @ und an exit brauchts vielleicht a?
+    @ um die aktuelle definition abzuschließen
+    @ oder glei semicolon...?
+    @bl semicolon
+
+    @ directly return to the caller...
+    pop {pc}
 
 /***************************************************************************//**
 @ drop

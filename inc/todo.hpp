@@ -73,3 +73,7 @@
 ///
 /// Alles was bestehende Words verändert wird NICHT unterstützt. Das betrifft
 /// zum Beispiel defer, is und defer!.
+///
+/// Fold Flags gibts nur für Words, die pure sind, sprich keine Nebeneffekte
+/// haben. Die Anzahl der Eingangsparameter is fürs Falten wichtig. Sprich 1x
+/// Eingangsparameter -> FOLDS_1, 2x Eingangsparameter -> FOLDS_2 usw.
