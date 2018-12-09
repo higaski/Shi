@@ -145,6 +145,155 @@ WORD FLAG_SKIP, "c\"", c_q
 WORD FLAG_COMPILE_IMMEDIATE, "case"
     bx lr
 
+/***************************************************************************//**
+@ compile,
+@ ( xt -- )
+@ Append the execution semantics of the definition represented by xt to the
+@ execution semantics of the current definition.
+ ******************************************************************************/
+WORD FLAG_COMPILE, "compile,", compile_comma
+    push {lr}
+
+@ Ram or flash
+    bl comma_q                          @ ( -- true | false )
+    cmp tos, #0
+    beq 1f                              @ Goto bl, ram
+        b 2f                            @ Goto bl, flash
+
+@ bl, ram
+@ tos   ram_begin
+@ r0    pc-relative address
+@ r2    xt
+1:  DROP                                @ ( false -- )
+    bl here                             @ ( -- ram_begin )
+    SWAP                                @ ( xt ram_begin -- ram_begin xt )
+    POP_REGS r2                         @ ( xt -- )
+    subs r0, r2, tos                    @ xt - ram_begin
+    subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
+    b 1f                                @ Goto range check for bl
+
+@ bl, flash
+@ tos   xt
+@ r0    pc-relative address
+@ r2    xt
+2:  DROP                                @ ( true -- )
+    ldr r0, =ram_begin_def
+    ldmia r0, {r1, r2}
+    subs r2, r1                         @ Length of current definition
+    ldr r0, =flash_begin
+    ldr r0, [r0]                        @ Beginning of current definition in flash
+    adds r0, r2                         @ Address current definition would have in flash so far
+    subs r0, tos, r0                    @ pc-relative address
+    subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
+    movs r2, tos                        @ Keep xt in r2 for later use
+
+@ Range check for bl
+@ r0    pc-relative address
+1:  cmp r0, #-16777216                  @ pc-relative address - -16777216
+    blt 3f                              @ Goto movw movt blx
+
+    ldr r1, =16777214
+    cmp r0, r1                          @ pc-relative address - 16777214
+    bgt 3f                              @ Goto movw movt blx
+
+@ bl
+@ tos   opcode
+@ r0    pc-relative address (xt - (memory-space pointer + 4))
+@ r1    J1 | J2 | imm11 | imm10
+    ldr tos, =0xF000D000                @ Opcode template
+
+    cmp r0, #0                          @ pc-relative address - 0
+    blt 1f                              @ Goto signed
+
+@ Unsigned
+    ands r1, r0, #0x800000              @ J1 = !I1
+    it eq
+    orreq tos, #0x2000
+
+    ands r1, r0, #0x400000              @ J2 = !I2
+    it eq
+    orreq tos, #0x800
+    b 2f
+
+@ Signed
+1:  ands r1, r0, #0x800000              @ J1 = I1
+    it ne
+    orrne tos, #0x2000
+
+    ands r1, r0, #0x400000              @ J2 = I2
+    it ne
+    orrne tos, #0x800
+
+    orr tos, #0x4000000                 @ Set sign
+
+2:  lsrs r0, #1
+    movw r1, #0x7FF                     @ Mask for imm11
+    ands r1, r0                         @ imm11
+    orrs tos, r1                        @ Or imm11 into template
+
+    lsrs r0, #11
+    movw r1, #0x3FF                     @ Mask for imm10
+    ands r1, r0                         @ imm10
+    orrs tos, tos, r1, lsl #16          @ Or imm10 into template
+
+    bl rev_comma                        @ Write opcode
+        b 6f                            @ Goto return
+
+@ movw movt blx
+@ bl coudln't cover our range, do movw movt blx
+@ tos   opcode
+@ r0    bottom | top
+@ r1    intermediate
+@ r2    xt + 1
+3:  adds r2, #1                         @ Make xt odd (thumb)
+
+@ movw
+    ldr tos, =0xF2400000                @ Opcode template
+
+    uxth r0, r2, ror #0                 @ bottom
+    ands r1, r0, #0xFF                  @ imm8
+    orrs tos, r1
+
+    ands r1, r0, #0x700                 @ imm3
+    orrs tos, tos, r1, lsl #4
+
+    ands r1, r0, #0x800                 @ i
+    orrs tos, tos, r1, lsl #15
+
+    ands r1, r0, #0xF000                @ imm4
+    orrs tos, tos, r1, lsl #4
+
+    push {r2}                           @ Save xt
+    bl rev_comma                        @ Write opcode
+    pop {r2}
+
+@ movt
+    PUSH_TOS
+
+    ldr tos, =0xF2C00000                @ Opcode template
+
+    lsrs r0, r2, #16                    @ top
+    ands r1, r0, #0xFF                  @ imm8
+    orrs tos, r1
+
+    ands r1, r0, #0x700                 @ imm3
+    orrs tos, tos, r1, lsl #4
+
+    ands r1, r0, #0x800                 @ i
+    orrs tos, tos, r1, lsl #15
+
+    ands r1, r0, #0xF000                @ imm4
+    orrs tos, tos, r1, lsl #4
+
+    bl rev_comma                        @ Write opcode
+
+@ blx r0
+    PUSH_INT16 #0x4780                  @ ( -- opcode )
+    bl h_comma                          @ Write opcode
+
+@ Return
+6:  pop {pc}
+
 /*
 WORD FLAG_SKIP, "defer"
     bx lr
@@ -544,3 +693,85 @@ WORD FLAG_SKIP, "[compile]", bracket_compile
 WORD FLAG_SKIP, "\\", bs
     bx lr
 */
+
+
+// NON-ANS (AKA MY OWN) EXTENSIONS ->
+
+/***************************************************************************//**
+@ binary
+@ ( -- )
+@ Set contents of radix to two.
+ ******************************************************************************/
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "binary"
+    ldr r0, =radix
+    movs r1, #2
+    str r1, [r0]
+    bx lr
+
+/***************************************************************************//**
+@ c-variable
+@ ( source: "<spaces>name" -- )
+@ (                 a-addr -- )
+@ Skip leading space delimiters. Parse name delimited by a space. Create a
+@ definition for name with the execution semantics defined below.
+@
+@ ( -- a-addr )
+@ a-addr is the address of the referenced C variable
+ ******************************************************************************/
+WORD FLAG_INTERPRET_COMPILE, "c-variable", c_variable
+    push {lr}
+
+@ Create
+    bl create
+
+@ Write literal with the C variables address
+    bl literal
+
+@ bx lr
+    PUSH_INT16 #0x4770
+    bl h_comma
+
+@ End
+    PUSH_INT8 #FLAG_INTERPRET_COMPILE   @ ( -- flags )
+    bl end_colon_semi
+
+@ Return
+    pop {pc}
+
+/***************************************************************************//**
+@ ,?
+@ ( -- true | false )
+@ Return true if compiler is currently compiling to flash. Return false if
+@ compiler is currently compiling to ram.
+ ******************************************************************************/
+WORD FLAG_INTERPRET, ",?", comma_q
+    PUSH_TOS
+    ldr r0, =status_compiler
+    ldr r0, [r0]
+    cmp r0, #0
+    ite ne
+    movne tos, #-1
+    moveq tos, #0
+    bx lr
+
+/***************************************************************************//**
+@ ,toflash
+@ ( -- )
+@ The next definition goes into flash
+ ******************************************************************************/
+WORD FLAG_INTERPRET, ",toflash", comma_to_flash
+    ldr r0, =status_compiler
+    movs r1, #-1
+    str r1, [r0]
+    bx lr
+
+/***************************************************************************//**
+@ ,toram
+@ ( -- )
+@ The next definition goes into ram
+ ******************************************************************************/
+WORD FLAG_INTERPRET, ",toram", comma_to_ram
+    ldr r0, =status_compiler
+    movs r1, #0
+    str r1, [r0]
+    bx lr

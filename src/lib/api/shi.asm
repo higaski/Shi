@@ -38,7 +38,7 @@ lfp .req r8                             @ Literal-folding pointer
 .include "extern.asm"
 .include "data.asm"
 .include "macros.asm"
-.include "branch.asm"
+.include "comma.asm"
 .include "inline.asm"
 .include "interpret.asm"
 

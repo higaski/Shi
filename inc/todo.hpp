@@ -1,9 +1,49 @@
 /// \page page_todo TODO
+/// -# create sollte von Anfang an vollwertige Einträge erzeugen. Das war beim
+///    mecrisp ja nur limitierend weil die gleich ins Flash compilieren und ned
+///    zerst ins RAM. Das Problem is, dass momentan so Dinge wie "17 create
+///    seventeen ," nicht funktionieren, obwohl das ANS is. Dummerweise wird
+///    ohne diesem "end:;" was ich aus mecrisp übernommen hab weder Links noch
+///    Flags geschrieben... und alles was ohne :; Päärchen erzeugt wird hängt in
+///    da Luft.<br>
+///    Wenn ich so drüber nachdenk wärs vielleicht sinnvoll nur :; Definitionen
+///    im Flash zuzulassen?<br>
+///    Ooooder! Man ruft NACH einer Definition ein spezielles Word auf, dass die
+///    letzt erzeugte Definition ins Flash schreibt? Das is vielleicht noch
+///    besser? Dann spart ma sich auch gleich den Schaß wo ständig geprüft wern
+///    muss wo grad hingeschrieben wird? Es wird einfach IMMER ins RAM
+///    compiliert und wenn dieses spezielle Wort aufgerufen wird, dann wird der
+///    Link angepasst und die ganze Definition ins Flash kopiert. Fertig?<br>
+///    Aktuell kommt "comma_q", sprich die Überprüfung ob RAM/FLASH übrigens an
+///    2x Stellen vor:
+///    - compile,
+///    - end:;
 ///
+///    Haken an der Sache is, dass ma dann vermutlich nur noch absolut und nimma
+///    relativ Branchen können? Und des is... Oasch. Dann kost nämlich jeder
+///    Sprung plötzlich 3x4 statt 4 Byte -.-
+///
+///    Ok, na, das is mega Oasch. Fuck! Wenn ma muss sich VORHER aussuchen dass
+///    die Definition im FLASH landet, aber dann sind ma quasi erst wieder da wo
+///    ma jetzt sind unds an Schalter gibt wo ma hin und her schalten kann.
+///
+/// -# In Gforth gibts zum Beispiel "latestxt" um es letzte xt das definiert
+///    wurde zu bekommen.
+///
+/// -# does> fehlt no und is SAU kompliziert...
+///
+/// -# Die "defer" Familie an Wörter möcht ich glaub ich nicht unterstützen. Das
+///    betrifft
+///    - defer
+///    - defer!
+///    - defer@
+///    - is (setzt bestehenden Namen auf x-beliebiges xt)
+///    Das macht in meinen Augen nur Sinn wenn ma Forth als System nutzt und
+///    irgnedwas dynamisch macht.
+///
+/// \page page_doc_stuff Doc stuff
 /// Data-stack -> Selbst gemanaged via tos und dsp, normal im RAM<br>
 /// Return-stack -> ECHTER "C" stack managed via sp... (so DONT FUCK THAT UP)
-///
-/// RAM und FLASH Bereiche sollen vom User festgelegt wern
 ///
 /// Die Funktion "shi_set_memory_space_pointer_flash" wird aber weiterhin
 /// gebraucht. Weil wenn da User neue Funktionen im FLASH anlegt, dann muessen
@@ -45,7 +85,7 @@
 /// (break aus switch-case) braucht
 ///
 // clang-format off
-/// \page page_todo TODO
+/// \page page_doc_stuff Doc stuff
 /// | Symbols         | Responsibility                                                                     |
 /// | ----------------| ---------------------------------------------------------------------------------- |
 /// | _s_shi_dstack   | Symbol at start of stack                                                           |
@@ -66,13 +106,10 @@
 /// | in              | Index in terminal input buffer                                                     |
 /// | radix           | Determine current numerical base (base is taken as word)                           |
 // clang-format on
-/// \page page_todo TODO
+/// \page page_doc_stuff Doc stuff
 ///
 /// Bezüglich Nummern...<br>
 /// HEX wird AUSSCHLIESSLICH!!!! in Großbuchstaben unterstützt!!!
-///
-/// Alles was bestehende Words verändert wird NICHT unterstützt. Das betrifft
-/// zum Beispiel defer, is und defer!.
 ///
 /// Fold Flags gibts nur für Words, die pure sind, sprich keine Nebeneffekte
 /// haben. Die Anzahl der Eingangsparameter is fürs Falten wichtig. Sprich 1x

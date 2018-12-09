@@ -67,7 +67,7 @@ WORD FLAG_INTERPRET, "'", tick
 6:  pop {pc}
 
 /*
-WORD FLAG_SKIP, "(", comment
+WORD FLAG_SKIP, "(", p
     bx lr
 */
 
@@ -199,44 +199,6 @@ WORD FLAG_INTERPRET_COMPILE, ",", comma
 .ltorg
 
 /***************************************************************************//**
-@ ,?
-@ ( -- true | false )
-@ Return true if compiler is currently compiling to flash. Return false if
-@ compiler is currently compiling to ram.
- ******************************************************************************/
-WORD FLAG_SKIP, ",?", comma_q
-    PUSH_TOS
-    ldr r0, =status_compiler
-    ldr r0, [r0]
-    cmp r0, #0
-    ite ne
-    movne tos, #-1
-    moveq tos, #0
-    bx lr
-
-/***************************************************************************//**
-@ ,toflash
-@ ( -- )
-@ The next definition goes into flash
- ******************************************************************************/
-WORD FLAG_INTERPRET, ",toflash", comma_to_flash
-    ldr r0, =status_compiler
-    movs r1, #-1
-    str r1, [r0]
-    bx lr
-
-/***************************************************************************//**
-@ ,toram
-@ ( -- )
-@ The next definition goes into ram
- ******************************************************************************/
-WORD FLAG_INTERPRET, ",toram", comma_to_ram
-    ldr r0, =status_compiler
-    movs r1, #0
-    str r1, [r0]
-    bx lr
-
-/***************************************************************************//**
 @ -
 @ ( n1 n2 -- n3 )
 @ Subtract n2 from n1, giving the difference n3
@@ -247,7 +209,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "-", minus
     bx lr
 
 /*
-WORD FLAG_SKIP, ".", dot
+WORD FLAG_SKIP, ".", d
     bx lr
 */
 
@@ -419,7 +381,7 @@ WORD FLAG_INTERPRET, ":", colon
 @ state, consuming colon-sys. If the memory-space pointer is not aligned,
 @ reserve enough memory-space to align it.
  ******************************************************************************/
-WORD FLAG_COMPILE_IMMEDIATE, ";", semicolon
+WORD FLAG_COMPILE_IMMEDIATE, ";", semi
     push {lr}
 
 // TODO check stack balance? (maybe even return stack?)
@@ -429,7 +391,7 @@ WORD FLAG_COMPILE_IMMEDIATE, ";", semicolon
 
 @ End
     PUSH_INT8 #FLAG_INTERPRET_COMPILE   @ ( -- flags )
-    bl end_colon_semicolon
+    bl end_colon_semi
 
 @ Enter interpretation state
     bl bracket_left
@@ -651,110 +613,6 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "and"
     bx lr
 
 /***************************************************************************//**
-@ b,
-@ ( orig dest -- )
-@ Compile an unconditional jump from orig to dest. For future-proofness the
-@ 32bit encoding t4 is used as instruction.
- ******************************************************************************/
-WORD FLAG_SKIP, "b,", b_comma
-    push {lr}
-
-@ tos   orig
-@ r0    dest
-@ r1    pc-relative address (dest - (orig + 4))
-    POP_REGS r0                         @ ( dest -- )
-    subs r1, r0, tos                    @ dest - orig
-    subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
-
-@ Range check for b
-@ r1    pc-relative address (dest - (orig + 4))
-    cmp r1, #-16777216                  @ pc-relative address - -16777216
-    bge 1f
-        DROP                            @ ( orig -- )
-        PRINT "'shi' branch offset too far negative >>>b,<<<"
-        b 6f                            @ Goto return
-
-1:  ldr r2, =16777214
-    cmp r1, r2                          @ pc-relative address - 16777214
-    ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
-        DROP                            @ ( orig -- )
-        PRINT "'shi' branch offset too far positive >>>b,<<<"
-        b 6f                            @ Goto return
-
-@ Temporarily set ram_begin to orig if necessary
-@ tos   orig
-@ r0    dest
-@ r2    ram_begin address
-@ r3    ram_begin
-@ r4    flag to indicate whether ram_begin is overwritten or not
-1:  movs r4, #0                         @ Reset flag
-    ldr r2, =ram_begin
-    ldr r3, [r2]
-    cmp tos, r3
-    bhs 1f
-        movs r4, #1                     @ Set flag
-        str tos, [r2]                   @ Temporarily store orig as ram_begin
-        movs tos, r3
-        PUSH_TOS                        @ ( -- ram_begin )
-
-@ b
-@ tos   opcode
-@ r1    pc-relative address (dest - (orig + 4))
-@ r2    J1 | J2 | imm11 | imm10
-1:  ldr tos, =0xF0009000                @ Opcode template
-
-    cmp r1, #0                          @ pc-relative address - 0
-    blt 1f                              @ Goto signed
-
-@ Unsigned
-    ands r2, r1, #0x800000              @ J1 = !I1
-    it eq
-    orreq tos, #0x2000
-
-    ands r2, r1, #0x400000              @ J2 = !I2
-    it eq
-    orreq tos, #0x800
-    b 2f
-
-@ Signed
-1:  ands r2, r1, #0x800000              @ J1 = I1
-    it ne
-    orrne tos, #0x2000
-
-    ands r2, r1, #0x400000              @ J2 = I2
-    it ne
-    orrne tos, #0x800
-
-    orr tos, #0x4000000                 @ Set sign
-
-2:  lsrs r1, #1
-    movw r2, #0x7FF                     @ Mask for imm11
-    ands r2, r1                         @ imm11
-    orrs tos, r2                        @ Or imm11 into template
-
-    lsrs r1, #11
-    movw r2, #0x3FF                     @ Mask for imm10
-    ands r2, r1                         @ imm10
-    orrs tos, tos, r2, lsl #16          @ Or imm10 into template
-
-@ Write opcode, do not reset ram_begin
-@ r4    flag to indicate whether ram_begin is overwritten or not
-    cmp r4, #0
-    bne 1f
-        bl rev_comma                    @ Write opcode
-        b 6f
-
-@ Write opcode and reset ram_begin
-@ r0    ram_begin address
-1:  bl rev_comma                        @ Write opcode
-    ldr r0, =ram_begin
-    str tos, [r0]
-    DROP                                @ ( ram_begin -- )
-
-@ Return
-6:  pop {pc}
-
-/***************************************************************************//**
 @ base
 @ ( -- a-addr )
 @ a-addr is the address of a cell containing the current number-conversion radix
@@ -783,261 +641,10 @@ WORD FLAG_COMPILE_IMMEDIATE, "begin"
 @ Return
     pop {pc}
 
-/***************************************************************************//**
-@ beq,
-@ ( orig dest -- )
-@ Compile a conditional equal jump from orig to dest. For future-proofness the
-@ 32bit encoding t3 is used as instruction.
- ******************************************************************************/
-WORD FLAG_SKIP, "beq,", beq_comma
-    push {lr}
-
-@ tos   orig
-@ r0    dest
-@ r1    pc-relative address (dest - (orig + 4))
-    POP_REGS r0                         @ ( dest -- )
-    subs r1, r0, tos                    @ dest - orig
-    subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
-
-@ Range check for beq
-@ r1    pc-relative address (dest - (orig + 4))
-    cmp r1, #-1048576                   @ pc-relative address - -1048576
-    bge 1f
-        DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far negative >>>beq,<<<"
-        b 6f                            @ Goto return
-
-1:  ldr r2, =1048574
-    cmp r1, r2                          @ pc-relative address - 1048574
-    ble 1f                              @ Goto temporarily set ram_begin to orig if necessary
-        DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far positive >>>beq,<<<"
-        b 6f                            @ Goto return
-
-@ Temporarily set ram_begin to orig if necessary
-@ tos   orig
-@ r0    dest
-@ r2    ram_begin address
-@ r3    ram_begin
-@ r4    flag to indicate whether ram_begin is overwritten or not
-1:  movs r4, #0                         @ Reset flag
-    ldr r2, =ram_begin
-    ldr r3, [r2]
-    cmp tos, r3
-    bhs 1f
-        movs r4, #1                     @ Set flag
-        str tos, [r2]                   @ Temporarily store orig as ram_begin
-        movs tos, r3
-        PUSH_TOS                        @ ( -- ram_begin)
-
-@ beq
-@ tos   opcode
-@ r1    pc-relative address (dest - (orig + 4))
-@ r2    J2 | J1 | imm11| imm6
-1:  ldr tos, =0xF0008000                @ Opcode template
-
-    cmp r1, #0
-    it lt
-    orrlt tos, #0x4000000               @ Set sign
-
-    ands r2, r1, #0x80000               @ J2
-    it ne
-    orrne tos, #0x800
-
-    ands r2, r1, #0x40000               @ J1
-    it ne
-    orrne tos, #0x2000
-
-    lsrs r1, #1
-    movw r2, #0x7FF                     @ Mask for imm11
-    ands r2, r1                         @ imm11
-    orrs tos, r2                        @ Or imm11 into template
-
-    lsrs r1, #11
-    ands r2, r1, #0x3F                  @ Mask for imm6
-    orrs tos, tos, r2, lsl #16          @ Or imm6 into template
-
-@ Write opcode, do not reset ram_begin
-@ r4    flag to indicate whether ram_begin is overwritten or not
-    cmp r4, #0
-    bne 1f
-        bl rev_comma                    @ Write opcode
-        b 6f
-
-@ Write opcode and reset ram_begin
-@ r0    ram_begin address
-1:  bl rev_comma                        @ Write opcode
-    ldr r0, =ram_begin
-    str tos, [r0]
-    DROP                                @ ( ram_begin -- )
-
-@ Return
-6:  pop {pc}
-
-/***************************************************************************//**
-@ binary
-@ ( -- )
-@ Set contents of radix to two.
- ******************************************************************************/
-WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "binary"
-    ldr r0, =radix
-    movs r1, #2
-    str r1, [r0]
-    bx lr
-
 /*
 WORD FLAG_SKIP, "bl"
     bx lr
 */
-
-/***************************************************************************//**
-@ compile,
-@ ( xt -- )
-@ Append the execution semantics of the definition represented by xt to the
-@ execution semantics of the current definition.
- ******************************************************************************/
-WORD FLAG_COMPILE, "compile,", compile_comma
-    push {lr}
-
-@ Ram or flash
-    bl comma_q                          @ ( -- true | false )
-    cmp tos, #0
-    beq 1f                              @ Goto bl, ram
-        b 2f                            @ Goto bl, flash
-
-@ bl, ram
-@ tos   ram_begin
-@ r0    pc-relative address
-@ r2    xt
-1:  DROP                                @ ( false -- )
-    bl here                             @ ( -- ram_begin )
-    SWAP                                @ ( xt ram_begin -- ram_begin xt )
-    POP_REGS r2                         @ ( xt -- )
-    subs r0, r2, tos                    @ xt - ram_begin
-    subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
-    b 1f                                @ Goto range check for bl
-
-@ bl, flash
-@ tos   xt
-@ r0    pc-relative address
-@ r2    xt
-2:  DROP                                @ ( true -- )
-    ldr r0, =ram_begin_def
-    ldmia r0, {r1, r2}
-    subs r2, r1                         @ Length of current definition
-    ldr r0, =flash_begin
-    ldr r0, [r0]                        @ Beginning of current definition in flash
-    adds r0, r2                         @ Address current definition would have in flash so far
-    subs r0, tos, r0                    @ pc-relative address
-    subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
-    movs r2, tos                        @ Keep xt in r2 for later use
-
-@ Range check for bl
-@ r0    pc-relative address
-1:  cmp r0, #-16777216                  @ pc-relative address - -16777216
-    blt 3f                              @ Goto movw movt blx
-
-    ldr r1, =16777214
-    cmp r0, r1                          @ pc-relative address - 16777214
-    bgt 3f                              @ Goto movw movt blx
-
-@ bl
-@ tos   opcode
-@ r0    pc-relative address (xt - (memory-space pointer + 4))
-@ r1    J1 | J2 | imm11 | imm10
-    ldr tos, =0xF000D000                @ Opcode template
-
-    cmp r0, #0                          @ pc-relative address - 0
-    blt 1f                              @ Goto signed
-
-@ Unsigned
-    ands r1, r0, #0x800000              @ J1 = !I1
-    it eq
-    orreq tos, #0x2000
-
-    ands r1, r0, #0x400000              @ J2 = !I2
-    it eq
-    orreq tos, #0x800
-    b 2f
-
-@ Signed
-1:  ands r1, r0, #0x800000              @ J1 = I1
-    it ne
-    orrne tos, #0x2000
-
-    ands r1, r0, #0x400000              @ J2 = I2
-    it ne
-    orrne tos, #0x800
-
-    orr tos, #0x4000000                 @ Set sign
-
-2:  lsrs r0, #1
-    movw r1, #0x7FF                     @ Mask for imm11
-    ands r1, r0                         @ imm11
-    orrs tos, r1                        @ Or imm11 into template
-
-    lsrs r0, #11
-    movw r1, #0x3FF                     @ Mask for imm10
-    ands r1, r0                         @ imm10
-    orrs tos, tos, r1, lsl #16          @ Or imm10 into template
-
-    bl rev_comma                        @ Write opcode
-        b 6f                            @ Goto return
-
-@ movw movt blx
-@ bl coudln't cover our range, do movw movt blx
-@ tos   opcode
-@ r0    bottom | top
-@ r1    intermediate
-@ r2    xt + 1
-3:  adds r2, #1                         @ Make xt odd (thumb)
-
-@ movw
-    ldr tos, =0xF2400000                @ Opcode template
-
-    uxth r0, r2, ror #0                 @ bottom
-    ands r1, r0, #0xFF                  @ imm8
-    orrs tos, r1
-
-    ands r1, r0, #0x700                 @ imm3
-    orrs tos, tos, r1, lsl #4
-
-    ands r1, r0, #0x800                 @ i
-    orrs tos, tos, r1, lsl #15
-
-    ands r1, r0, #0xF000                @ imm4
-    orrs tos, tos, r1, lsl #4
-
-    push {r2}                           @ Save xt
-    bl rev_comma                        @ Write opcode
-    pop {r2}
-
-@ movt
-    PUSH_TOS
-
-    ldr tos, =0xF2C00000                @ Opcode template
-
-    lsrs r0, r2, #16                    @ top
-    ands r1, r0, #0xFF                  @ imm8
-    orrs tos, r1
-
-    ands r1, r0, #0x700                 @ imm3
-    orrs tos, tos, r1, lsl #4
-
-    ands r1, r0, #0x800                 @ i
-    orrs tos, tos, r1, lsl #15
-
-    ands r1, r0, #0xF000                @ imm4
-    orrs tos, tos, r1, lsl #4
-
-    bl rev_comma                        @ Write opcode
-
-@ blx r0
-    PUSH_INT16 #0x4780                  @ ( -- opcode )
-    bl h_comma                          @ Write opcode
-
-@ Return
-6:  pop {pc}
 
 /*
 WORD FLAG_SKIP, "c!", c_store
@@ -1060,36 +667,6 @@ WORD FLAG_SKIP, "c,", c_comma
     str r1, [r0]                        @ Update address in ram_begin
     DROP                                @ ( char -- )
     bx lr
-
-/***************************************************************************//**
-@ c-variable
-@ ( source: "<spaces>name" -- )
-@ (                 a-addr -- )
-@ Skip leading space delimiters. Parse name delimited by a space. Create a
-@ definition for name with the execution semantics defined below.
-@
-@ ( -- a-addr )
-@ a-addr is the address of the referenced C variable
- ******************************************************************************/
-WORD FLAG_INTERPRET_COMPILE, "c-variable", c_variable
-    push {lr}
-
-@ Create
-    bl create
-
-@ Write literal with the C variables address
-    bl literal
-
-@ bx lr
-    PUSH_INT16 #0x4770
-    bl h_comma
-
-@ End
-    PUSH_INT8 #FLAG_INTERPRET_COMPILE   @ ( -- flags )
-    bl end_colon_semicolon
-
-@ Return
-    pop {pc}
 
 /*
 WORD FLAG_SKIP, "c@", c_fetch
@@ -1155,7 +732,7 @@ WORD FLAG_INTERPRET_COMPILE, "constant"
 
 @ End
     PUSH_INT8 #FLAG_INTERPRET_COMPILE   @ ( -- flags )
-    bl end_colon_semicolon
+    bl end_colon_semi
 
 @ Return
     pop {pc}
@@ -1353,7 +930,7 @@ WORD FLAG_COMPILE, "does>", does
     @ und an exit brauchts vielleicht a?
     @ um die aktuelle definition abzuschließen
     @ oder glei semicolon...?
-    @bl semicolon
+    @bl semi
 
     @ directly return to the caller...
     pop {pc}
@@ -1416,71 +993,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "else"
 WORD FLAG_SKIP, "emit"
     bx lr
 */
-
-/***************************************************************************//**
-@ end:;
-@ TODO
-@ ANS forces us to not write flags before the definition is completed!
-@ So write them now...
- ******************************************************************************/
-WORD FLAG_SKIP, "end:;", end_colon_semicolon
-    push {lr}
-
-@ Ram or flash
-    bl comma_q                          @ ( -- true | false )
-    cmp tos, #0
-    beq 1f                              @ Goto end:; ram
-        b 2f                            @ Goto end:; flash
-
-@ end:; ram
-@ tos   flags
-@ r0    ram_begin_def address
-@ r1    ram_begin_def
-@ r2    ram_begin
-@ r3    link address
-@ r4    link
-1:  DROP                                @ ( false -- )
-    ldr r0, =ram_begin_def
-    ldmia r0, {r1, r2}
-    ldr r3, =link
-    ldr r4, [r3]
-    str r1, [r3]                        @ Update last link
-    str r4, [r1], #4                    @ Write link
-    strb tos, [r1]                      @ Write flags
-    b 6f                                @ Goto return
-
-@ end:; flash
-@ tos   flags
-@ r0    ram_begin_def
-@ r1    ram_begin
-@ r2    flash_begin
-2:  DROP                                @ ( false -- )
-    ldr r2, =ram_begin_def
-    ldmia r2, {r0, r1}
-    strb tos, [r0, #4]!                 @ Write flags
-    ldr r2, =flash_begin
-    ldr r2, [r2]
-    bl shi_write_flash
-    ldr r1, =flash_begin                @ Update flash_begin
-    str r0, [r1]
-
-@ Clear definition from ram
-@ r0    ram_begin_def address
-@ r1    ram_begin_def
-@ r2    ram_begin
-@ r3    erased word
-    ldr r0, =ram_begin_def
-    ldmia r0, {r1, r2}
-    P2ALIGN2 align=r2, scratch=r3
-    movs r3, #ERASED_WORD
-2:  str r3, [r2], #-4
-    cmp r1, r2
-    blo 2b
-    stmia r0, {r1, r2}
-
-@ Return
-6:  DROP                                @ ( flags -- )
-    pop {pc}
 
 /*
 WORD FLAG_SKIP, "environment?", environment_q
@@ -1626,22 +1138,6 @@ WORD FLAG_INTERPRET_COMPILE, "find"
 WORD FLAG_SKIP, "fm/mod", fm_div_mod
     bx lr
 */
-
-/***************************************************************************//**
-@ h,
-@ ( h -- )
-@ Reserve half a cell of memory-space and store x in that place. If the
-@ memory-space pointer is aligned when h, begins execution, it will remain
-@ aligned when h, finishes execution. An ambiguous condition exists if the
-@ memory-space pointer is not aligned prior to execution of h,.
- ******************************************************************************/
-WORD FLAG_SKIP, "h,", h_comma
-    ldr r0, =ram_begin
-    ldr r1, [r0]
-    strh tos, [r1], #2                  @ Write h to address in ram_begin
-    str r1, [r0]                        @ Update address in ram_begin
-    DROP                                @ ( h -- )
-    bx lr
 
 /***************************************************************************//**
 @ here
@@ -1793,6 +1289,209 @@ WORD FLAG_COMPILE_IMMEDIATE, "leave"
 
 @ Return
     pop {pc}
+
+/***************************************************************************//**
+@ literal
+@ ( x -- )
+@ Append the run-time semantics given below to the current definition.
+@ Compiles code for a literal x in the memory-space. This could either be:
+@ movs (2 bytes)
+@ movs.w (4 bytes)
+@ movw movt (8 bytes)
+@
+@ ( -- x )
+@ Place x on the stack.
+ ******************************************************************************/
+WORD FLAG_SKIP, "literal", literal
+    push {lr}
+
+    PUSH_TOS
+    ldr tos, =0xF8476D04                @ PUSH_TOS opcode
+    bl rev_comma                        @ Write opcode
+
+@ movs (t1)
+@ tos   x
+    cmp tos, #0xFF
+    bhi 1f                              @ Goto movs (t2)
+        orrs tos, #0x2600               @ Opcode template (can be ored directly into tos)
+        bl h_comma                      @ Write opcode
+            b 6f                        @ Goto return
+
+@ movs (t2)
+@ Pattern 0x00XY00XY
+@ tos   x
+@ r0    bottom
+@ r1    top
+1:  ands r0, tos, #0x00FF00FF
+    cmp r0, tos
+    bne 1f                              @ Goto pattern 0xXY00XY00
+        movw r1, #0xFFFF
+        ands r0, r1                     @ bottom
+        lsrs r1, tos, #16               @ top
+        cmp r1, r0                      @ top - bottom
+        bne 1f                          @ Goto pattern 0xXY00XY00
+
+        ldr tos, =0xF05F1600            @ Opcode template
+        orrs tos, r0                    @ Or imm8 into template
+        bl rev_comma                    @ Write opcode
+            b 6f                        @ Goto return
+
+@ Pattern 0xXY00XY00
+@ tos   x
+@ r0    bottom
+@ r1    top
+1:  ands r0, tos, #0xFF00FF00
+    cmp r0, tos
+    bne 1f                              @ Goto pattern 0xXYXYXYXY
+        movw r1, #0xFFFF
+        ands r0, r1                     @ bottom
+        lsrs r1, tos, #16               @ top
+        cmp r1, r0                      @ top - bottom
+        bne 1f                          @ Goto pattern 0xXYXYXYXY
+
+        ldr tos, =0xF05F2600            @ Opcode template
+        orrs tos, tos, r0, lsr #8       @ Or imm8 into template
+        bl rev_comma                    @ Write opcode
+            b 6f                        @ Goto return
+
+@ Pattern 0xXYXYXYXY
+@ tos   x
+@ r0    rotated copy of tos
+1:  movs r0, tos
+    rors r0, #16
+    cmp r0, tos
+    bne 1f                              @ Goto pattern 0x00000XY0
+        rors r0, #8
+        cmp r0, tos
+        bne 1f                          @ Goto pattern 0x00000XY0
+
+        ldr tos, =0xF05F3600            @ Opcode template
+        orrs tos, tos, r0, lsr #24      @ Or imm8 into template
+        bl rev_comma                    @ Write opcode
+            b 6f                        @ Goto return
+
+@ Pattern
+@ 0x00000XY0
+1:  ands r0, tos, #0x00000FF0
+    cmp r0, tos
+    bne 1f                              @ Goto pattern 0x0000XY00
+        b 2f                            @ Goto 12bit encoding
+
+@ 0x0000XY00
+1:  ands r0, tos, #0x0000FF00
+    cmp r0, tos
+    bne 1f                              @ Goto pattern 0x000XY000
+        b 2f                            @ Goto 12bit encoding
+
+@ 0x000XY000
+1:  ands r0, tos, #0x000FF000
+    cmp r0, tos
+    bne 1f                              @ Goto pattern 0x00XY0000
+        b 2f                            @ Goto 12bit encoding
+
+@ 0x00XY0000
+1:  ands r0, tos, #0x00FF0000
+    cmp r0, tos
+    bne 1f                              @ Goto pattern 0x0XY00000
+        b 2f                            @ Goto 12bit encoding
+
+@ 0x0XY00000
+1:  ands r0, tos, #0x0FF00000
+    cmp r0, tos
+    bne 1f                              @ Goto pattern 0xXY000000
+        b 2f                            @ Goto 12bit encoding
+
+@ 0xXY000000
+1:  ands r0, tos, #0xFF000000
+    cmp r0, tos
+    bne 1f                              @ Goto pattern 0xY000000X
+
+@ 12bit encoding
+@ r0    imm8
+@ r1    counter
+2:  movs r0, tos                        @ Make copy of tos
+    movs r1, #0
+
+2:  rors r0, #31                        @ Rotate imm8 left
+    adds r1, #1                         @ Increment counter
+    cmp r1, #31                         @ counter - 31
+    bhi 1f                              @ Goto movw movt
+
+        cmp r0, #0xFF                   @ imm8 - 0xFF
+        bhi 2b
+            ands r2, r0, #0x80          @ MSB set?
+            beq 2b
+
+            ldr tos, =0xF05F0600        @ Opcode template
+            ands r0, #0x7F              @ imm8<6:0>
+            orrs tos, r0                @ Or imm8 into template
+
+            ands r0, r1, 0x1            @ imm8<7>
+            orrs tos, tos, r0, lsl #7   @ Or imm8<7> into template
+
+            ands r0, r1, 0xE            @ imm3
+            orrs tos, tos, r0, lsl #11  @ Or imm3 into template
+
+            ands r1, #0x10              @ i
+            it ne
+            orrne tos, #0x4000000
+
+            bl rev_comma                @ Write opcode
+
+            b 6f                        @ Goto return
+
+// TODO ev. noch mvn checkn?
+
+@ movw movt
+@ tos   opcode
+@ r0    bottom | top
+@ r1    intermediate
+@ r2    x
+1:  movs r2, tos
+
+@ movw
+    ldr tos, =0xF2400600                @ Opcode template
+
+    uxth r0, r2, ror #0                 @ bottom
+    ands r1, r0, #0xFF                  @ imm8
+    orrs tos, r1
+
+    ands r1, r0, #0x700                 @ imm3
+    orrs tos, tos, r1, lsl #4
+
+    ands r1, r0, #0x800                 @ i
+    orrs tos, tos, r1, lsl #15
+
+    ands r1, r0, #0xF000                @ imm4
+    orrs tos, tos, r1, lsl #4
+
+    push {r2}                           @ Save xt
+    bl rev_comma                        @ Write opcode
+    pop {r2}
+
+@ movt
+    PUSH_TOS
+
+    ldr tos, =0xF2C00600                @ Opcode template
+
+    lsrs r0, r2, #16                    @ top
+    ands r1, r0, #0xFF                  @ imm8
+    orrs tos, r1
+
+    ands r1, r0, #0x700                 @ imm3
+    orrs tos, tos, r1, lsl #4
+
+    ands r1, r0, #0x800                 @ i
+    orrs tos, tos, r1, lsl #15
+
+    ands r1, r0, #0xF000                @ imm4
+    orrs tos, tos, r1, lsl #4
+
+    bl rev_comma                        @ Write opcode
+
+@ Return
+6:  pop {pc}
+.ltorg
 
 /***************************************************************************//**
 @ loop
@@ -2007,25 +1706,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "repeat"
     pop {pc}
 
 /***************************************************************************//**
-@ rev,
-@ ( x -- )
-@ Reserve one cell of memory-space and store x in reverse order in the cell. If
-@ the memory-space pointer is aligned when r, begins execution, it will remain
-@ aligned when r, finishes execution. An ambiguous condition exists if the
-@ memory-space pointer is not aligned prior to execution of r,.
- ******************************************************************************/
-WORD FLAG_SKIP, "rev,", rev_comma
-    ldr r0, =ram_begin
-    ldr r1, [r0]
-    movs r2, tos
-    lsrs tos, #16
-    strh tos, [r1], #2                  @ Write x to address in ram_begin
-    strh r2, [r1], #2                   @ Write x to address in ram_begin
-    str r1, [r0]                        @ Update address in ram_begin
-    DROP                                @ ( x -- )
-    bx lr
-
-/***************************************************************************//**
 @ rot
 @ ( x1 x2 x3 -- x2 x3 x1 )
 @ Rotate the top three stack entries.
@@ -2143,7 +1823,7 @@ WORD FLAG_SKIP, "type"
 */
 
 /*
-WORD FLAG_SKIP, "u.", u_dot
+WORD FLAG_SKIP, "u.", u_d
     bx lr
 */
 
@@ -2252,7 +1932,7 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
 
 @ End
     PUSH_INT8 #FLAG_INTERPRET_COMPILE & RESERVE_1CELL   @ ( -- flags )
-    bl end_colon_semicolon
+    bl end_colon_semi
 
 @ Return
     pop {pc}
