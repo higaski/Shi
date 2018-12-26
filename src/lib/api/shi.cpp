@@ -10,7 +10,7 @@ namespace shi {
 
 /// Initialize
 void init(shi_init_t s) {
-  shi_init_asm(s.ram_begin, s.ram_end, s.flash_begin, s.flash_end);
+  shi_init_asm(s.data_begin, s.data_end, s.text_begin, s.text_end);
 }
 
 /// Clear stack

@@ -154,35 +154,35 @@ WORD FLAG_COMPILE_IMMEDIATE, "case"
 WORD FLAG_COMPILE, "compile,", compile_comma
     push {lr}
 
-@ Ram or flash
-    bl comma_q                          @ ( -- true | false )
+@ Data or text
+    bl to_text_q                        @ ( -- true | false )
     cmp tos, #0
-    beq 1f                              @ Goto bl, ram
-        b 2f                            @ Goto bl, flash
+    beq 1f                              @ Goto compile, data
+        b 2f                            @ Goto compile, text
 
-@ bl, ram
-@ tos   ram_begin
+@ compile, data
+@ tos   data_begin
 @ r0    pc-relative address
 @ r2    xt
 1:  DROP                                @ ( false -- )
-    bl here                             @ ( -- ram_begin )
-    SWAP                                @ ( xt ram_begin -- ram_begin xt )
+    bl here                             @ ( -- data_begin )
+    SWAP                                @ ( xt data_begin -- data_begin xt )
     POP_REGS r2                         @ ( xt -- )
-    subs r0, r2, tos                    @ xt - ram_begin
+    subs r0, r2, tos                    @ xt - data_begin
     subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
     b 1f                                @ Goto range check for bl
 
-@ bl, flash
+@ compile, text
 @ tos   xt
 @ r0    pc-relative address
 @ r2    xt
 2:  DROP                                @ ( true -- )
-    ldr r0, =ram_begin_def
+    ldr r0, =to_text_begin
     ldmia r0, {r1, r2}
-    subs r2, r1                         @ Length of current definition
-    ldr r0, =flash_begin
-    ldr r0, [r0]                        @ Beginning of current definition in flash
-    adds r0, r2                         @ Address current definition would have in flash so far
+    subs r2, r1                         @ Length of current >text block
+    ldr r0, =text_begin
+    ldr r0, [r0]
+    adds r0, r2                         @ Address current definition would have in text so far
     subs r0, tos, r0                    @ pc-relative address
     subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
     movs r2, tos                        @ Keep xt in r2 for later use
@@ -665,11 +665,11 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u>", u_more
  ******************************************************************************/
 WORD FLAG_INTERPRET, "unused"
     push {lr}
-    bl comma_q                          @ ( -- true | false )
+    bl to_text_q                        @ ( -- true | false )
     cmp tos, #0
     ite eq
-    ldreq r0, =ram_begin
-    ldrne r0, =flash_begin
+    ldreq r0, =data_begin
+    ldrne r0, =text_begin
     ldmia r0, {r0, tos}
     subs tos, r0
     pop {pc}
@@ -731,22 +731,18 @@ WORD FLAG_INTERPRET_COMPILE, "c-variable", c_variable
     PUSH_INT16 #0x4770
     bl h_comma
 
-@ End
-    PUSH_INT8 #FLAG_INTERPRET_COMPILE   @ ( -- flags )
-    bl end_colon_semi
-
 @ Return
     pop {pc}
 
 /***************************************************************************//**
-@ ,?
+@ >text?
 @ ( -- true | false )
-@ Return true if compiler is currently compiling to flash. Return false if
-@ compiler is currently compiling to ram.
+@ Return true if compiler is currently compiling to text. Return false if
+@ compiler is currently compiling to data.
  ******************************************************************************/
-WORD FLAG_INTERPRET, ",?", comma_q
+WORD FLAG_INTERPRET, ">text?", to_text_q
     PUSH_TOS
-    ldr r0, =status_compiler
+    ldr r0, =to_text_begin
     ldr r0, [r0]
     cmp r0, #0
     ite ne
@@ -755,23 +751,111 @@ WORD FLAG_INTERPRET, ",?", comma_q
     bx lr
 
 /***************************************************************************//**
-@ ,toflash
-@ ( -- )
-@ The next definition goes into flash
+@ >data?
+@ ( -- true | false )
+@ Return true if compiler is currently compiling to data. Return false if
+@ compiler is currently compiling to text.
  ******************************************************************************/
-WORD FLAG_INTERPRET, ",toflash", comma_to_flash
-    ldr r0, =status_compiler
-    movs r1, #-1
-    str r1, [r0]
-    bx lr
+WORD FLAG_INTERPRET, ">data?", to_data_q
+    push {lr}
+    bl to_text_q
+    mvn tos, tos
+    pop {pc}
 
 /***************************************************************************//**
-@ ,toram
+@ >text
 @ ( -- )
-@ The next definition goes into ram
+@
  ******************************************************************************/
-WORD FLAG_INTERPRET, ",toram", comma_to_ram
-    ldr r0, =status_compiler
-    movs r1, #0
+WORD FLAG_INTERPRET, ">text", to_text
+    ldr r0, =to_text_begin
+    ldr r1, [r0]
+    cmp r1, #0
+    bne 1f
+    ldr r1, =data_begin
+    ldr r1, [r1]
     str r1, [r0]
-    bx lr
+1:  bx lr
+
+/***************************************************************************//**
+@ >data
+@ ( -- )
+@
+ ******************************************************************************/
+WORD FLAG_INTERPRET, ">data", to_data
+    push {lr}
+
+    @bl to_text_q ?
+    @cmp
+
+@ Push data links to return stack
+@ r0    to_text_begin
+@ r1    _s_shi_dict
+@ r2    link
+@ r3    count links
+    ldr r0, =to_text_begin
+    ldr r0, [r0]
+    ldr r1, =_s_shi_dict
+    ldr r2, =link
+    movs r3, #0
+1:  ldr r2, [r2]
+    cmp r2, r0
+    blo 1f
+        cmp r2, r1
+        beq 1f
+            push {r2}
+            adds r3, #1
+            b 1b
+
+@ Update link with last link before >text
+1:  ldr r0, =link
+    str r2, [r0]
+
+@ Pop data links from return stack and calculate equivalent text links to
+@ replace them
+@ r0    text_begin
+@ r1    link n
+@ r2    link n+1
+@ r3    count links
+    ldr r0, =text_begin
+    ldr r0, [r0]
+    pop {r1}
+1:  cmp r3, #1
+    bls 1f
+        pop {r2}
+        subs r2, r1
+        adds r0, r2
+        str r0, [r1]
+        adds r1, r2
+        subs r3, #1
+        b 1b
+
+@ Last text link needs to be calculated from current data_begin
+@ r0    text_begin
+@ r1    link n
+@ r2    link n+1
+1:  ldr r2, =data_begin
+    ldr r2, [r2]
+    subs r2, r1
+    adds r0, r2
+    @ ALIGN!!!! r0 here
+    /*
+     eventuell irgendwie mit hilfe von clz? (count leading zeros?)
+     maske erzeugen, und verknüpfen
+     dann einmal des alignment dazu addieren und schaun ob des und verknüpfte oder des addierte größer is ?
+    */
+
+    str r0, [r1]
+
+@ Write text
+@ r0    to_text_begin
+@ r1    data_begin
+@ r2    text_begin
+    ldr r2, =to_text_begin
+    ldmia r2, {r0, r1}
+    ldr r2, =text_begin
+    ldr r2, [r2]
+    bl shi_write_text
+
+6:  nop
+    pop {pc}

@@ -4,8 +4,6 @@
 @ \author Vincent Hamp
 @ \date   27/07/2016
 
-.section .text
-
 /***************************************************************************//**
 @ Common
  ******************************************************************************/
@@ -18,9 +16,8 @@
 .macro SET_SOURCE c_addr, u
     ldr r0, =src
     movs r1, \c_addr
-    str r1, [r0], #4
-    movs r1, \u
-    str r1, [r0]
+    movs r2, \u
+    strd r1, r2, [r0]
 .endm
 
 /***************************************************************************//**
@@ -46,18 +43,18 @@
 @ Push registers (top ends up in tos)
 .macro PUSH_REGS top, from:vararg
     PUSH_TOS                            @ Push top of stack
-    .ifnb \from
+.ifnb \from
     stmdb dsp!, {\from}                 @ Push registers defined by \from
-    .endif
+.endif
     movs tos, \top                      @ Move last register to top of stack
 .endm
 
 @ Pop registers (tos ends up in top)
 .macro POP_REGS top, to:vararg
     movs \top, tos                      @ Move top of stack to last register
-    .ifnb \to
+.ifnb \to
     ldmia dsp!, {\to}                   @ Pop into registers defined by \to
-    .endif
+.endif
     ldmia dsp!, {tos}                   @ Pop last to top of stack
 .endm
 
@@ -181,11 +178,11 @@
  ******************************************************************************/
 @ Align register to 2-byte
 .macro P2ALIGN1 align, scratch:vararg
-    .ifnb \scratch
+.ifnb \scratch
     ands \scratch, \align, #1
-    .else
+.else
     ands r0, \align, #1
-    .endif
+.endif
     it ne
     addne \align, #1
 .endm
@@ -193,11 +190,11 @@
 @ Align register to 4-byte
 .macro P2ALIGN2 align, scratch:vararg
     P2ALIGN1 \align, \scratch
-    .ifnb \scratch
+.ifnb \scratch
     ands \scratch, \align, #2
-    .else
+.else
     ands r0, \align, #2
-    .endif
+.endif
     it ne
     addne \align, #2
 .endm
@@ -205,11 +202,11 @@
 @ Align register to 8-byte
 .macro P2ALIGN3 align, scratch:vararg
     P2ALIGN2 \align, \scratch
-    .ifnb \scratch
+.ifnb \scratch
     ands \scratch, \align, #7
-    .else
+.else
     ands r0, \align, #7
-    .endif
+.endif
     it ne
     addne \align, #4
 .endm
@@ -254,11 +251,10 @@ link\@\():                              @ Label the link
     .byte 8f - 7f                             @ Length (1 byte)
 7:  .ascii "\name"                            @ Name (cstring)
 8:  .p2align 1                          @ Align before code
-.ifnb \label                            @ Label for code (use name if label wasn't defined)
 .thumb_func
+.ifnb \label                            @ Label for code (use name if label wasn't defined)
 \label\():
 .else
-.thumb_func
 \name\():
 .endif
 .endm
@@ -272,11 +268,10 @@ link\@\():
     .byte 8f - 7f
 7:  .ascii "\name"
 8:  .p2align 1                          @ Align before code
-.ifnb \label
 .thumb_func
+.ifnb \label
 \label\():
 .else
-.thumb_func
 \name\():
 .endif
 .endm

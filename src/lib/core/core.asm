@@ -190,10 +190,10 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
 @ is not aligned prior to execution of ,.
  ******************************************************************************/
 WORD FLAG_INTERPRET_COMPILE, ",", comma
-    ldr r0, =ram_begin
+    ldr r0, =data_begin
     ldr r1, [r0]
-    str tos, [r1], #4                   @ Write x to address in ram_begin
-    str r1, [r0]                        @ Update address in ram_begin
+    str tos, [r1], #4                   @ Write x to address in data_begin
+    str r1, [r0]                        @ Update address in data_begin
     DROP                                @ ( x -- )
     bx lr
 .ltorg
@@ -362,6 +362,14 @@ WORD FLAG_INTERPRET, ":", colon
 @ Create
     bl create
 
+@ Change flags set by create and make current definition unfindable
+@ r0    link
+@ r1    flags
+    ldr r0, =link
+    ldr r0, [r0]
+    movs r1, #FLAG_SKIP
+    strb r1, [r0, #4]
+
 @ push {lr}
     PUSH_INT16 #0xB500                  @ ( -- opcode )
     bl h_comma                          @ Write opcode
@@ -389,9 +397,13 @@ WORD FLAG_COMPILE_IMMEDIATE, ";", semi
 @ Write return
     bl exit
 
-@ End
-    PUSH_INT8 #FLAG_INTERPRET_COMPILE   @ ( -- flags )
-    bl end_colon_semi
+@ Change flags set by create and make definition findable
+@ r0    link
+@ r1    flags
+    ldr r0, =link
+    ldr r0, [r0]
+    movs r1, #FLAG_INTERPRET_COMPILE
+    strb r1, [r0, #4]
 
 @ Enter interpretation state
     bl bracket_left
@@ -524,7 +536,7 @@ WORD FLAG_SKIP, "accept"
 @ If the memory-space pointer is not aligned, align it to 2-bytes.
  ******************************************************************************/
 WORD FLAG_INTERPRET_COMPILE, "align2"
-    ldr r0, =ram_begin
+    ldr r0, =data_begin
     ldr r1, [r0]
     P2ALIGN1 align=r1, scratch=r12
     str r1, [r0]
@@ -536,7 +548,7 @@ WORD FLAG_INTERPRET_COMPILE, "align2"
 @ If the memory-space pointer is not aligned, align it to 4-bytes.
  ******************************************************************************/
 WORD FLAG_INTERPRET_COMPILE, "align4"
-    ldr r0, =ram_begin
+    ldr r0, =data_begin
     ldr r1, [r0]
     P2ALIGN2 align=r1, scratch=r12
     str r1, [r0]
@@ -548,7 +560,7 @@ WORD FLAG_INTERPRET_COMPILE, "align4"
 @ If the memory-space pointer is not aligned, align it to 8-bytes.
  ******************************************************************************/
 WORD FLAG_INTERPRET_COMPILE, "align8"
-    ldr r0, =ram_begin
+    ldr r0, =data_begin
     ldr r1, [r0]
     P2ALIGN3 align=r1, scratch=r12
     str r1, [r0]
@@ -595,7 +607,7 @@ WORD FLAG_INTERPRET_COMPILE, "aligned8"
 @ aligned when allot finishes execution.
  ******************************************************************************/
 WORD FLAG_INTERPRET_COMPILE, "allot"
-    ldr r0, =ram_begin
+    ldr r0, =data_begin
     ldr r1, [r0]
     adds r1, tos
     str r1, [r0]
@@ -661,10 +673,10 @@ WORD FLAG_SKIP, "c!", c_store
 @ character-aligned prior to execution of c,.
  ******************************************************************************/
 WORD FLAG_SKIP, "c,", c_comma
-    ldr r0, =ram_begin
+    ldr r0, =data_begin
     ldr r1, [r0]
-    strb tos, [r1], #1                  @ Write char to address in ram_begin
-    str r1, [r0]                        @ Update address in ram_begin
+    strb tos, [r1], #1                  @ Write char to address in data_begin
+    str r1, [r0]                        @ Update address in data_begin
     DROP                                @ ( char -- )
     bx lr
 
@@ -730,10 +742,6 @@ WORD FLAG_INTERPRET_COMPILE, "constant"
     PUSH_INT16 #0x4770
     bl h_comma
 
-@ End
-    PUSH_INT8 #FLAG_INTERPRET_COMPILE   @ ( -- flags )
-    bl end_colon_semi
-
 @ Return
     pop {pc}
 
@@ -781,39 +789,47 @@ WORD FLAG_INTERPRET_COMPILE, "create"
         // leave evaluate?
         b 6f                            @ Goto return
 
-@ Create
-@ Mark beginning of new definition
-@ r0    ram_begin address
-@ r1    ram_begin
-1:  ldr r0, =ram_begin
+@ Write link
+@ r0    data_begin address
+@ r1    data_begin
+@ r2    link address
+@ r3    link
+1:  TWO_DROP                            @ ( token-addr 0 -- )
+    ldr r0, =data_begin
     ldr r1, [r0]
-    str r1, [r0, #-4]                   @ Store beginning of new definition in ram_begin_def
+    ldr r2, =link
+    ldr r3, [r2]
+    str r1, [r2]                        @ Update last link
+    str r3, [r1], #4                    @ Write link
 
-@ Take account of link and flags
-    TWO_DROP                            @ ( token-addr 0 -- )
-    PUSH_INT8 #5
-    bl allot
+@ Write flags
+@ r0    data_begin address
+@ r1    data_begin
+@ r2    flags
+    movs r2, #FLAG_INTERPRET_COMPILE
+    strb r2, [r1], #1
 
 @ Write cstring
 @ tos   character
-@ r0    token-addr
-@ r1    token-addr + token-u
-    DUP                                 @ ( -- token-addr token-u token-u)
-    bl c_comma
-    POP_REGS top=r1, to=r0
-    adds r1, r1, r0
-1:  cmp r1, r0                          @ token-addr + token-u - token-addr
-    bls 1f                              @ Goto align ram_begin
-        PUSH_TOS
-        ldrb tos, [r0], #1              @ character
-        push {r0, r1}
-        bl c_comma                      @ Write character
-        pop {r0, r1}
+@ r0    data_begin address
+@ r1    data_begin
+@ r2    token-addr
+@ r3    token-addr + token-u
+    strb tos, [r1], #1                  @ Write length
+    POP_REGS top=r3, to=r2              @ ( token-addr token-u -- )
+    adds r3, r3, r2
+1:  cmp r3, r2                          @ token-addr + token-u - token-addr
+    bls 1f
+        ldrb tos, [r2], #1
+        strb tos, [r1], #1
         b 1b
 
-@ Align ram_begin
+@ Align data_begin
 @ Name could have been any length and screw with alignment
-1:  bl align2
+@ r0    data_begin address
+@ r1    data_begin
+1:  P2ALIGN1 align=r1, scratch=r2
+    str r1, [r0]
 
 @ Return
 6:  pop {pc}
@@ -1050,6 +1066,8 @@ WORD FLAG_INTERPRET, "execute"
 WORD FLAG_COMPILE_IMMEDIATE, "exit"
     push {lr}
 
+@ TODO needs to check if unloop needs to be called?!
+
 @ pop {pc}
     PUSH_INT16 #0xBD00                  @ ( -- opcode )
     bl h_comma                          @ Write opcode
@@ -1127,7 +1145,7 @@ WORD FLAG_INTERPRET_COMPILE, "find"
 
 @ Found something
 @ Only keep tos, r2 and r4
-5:  P2ALIGN1 r4                         @ xt is at next 2-byte aligned address
+5:  P2ALIGN1 r4, scratch=r0             @ xt is at next 2-byte aligned address
     DROP                                @ ( token-addr -- )
     PUSH_REGS top=r2, from=r4           @ ( -- xt flags )
 
@@ -1146,7 +1164,7 @@ WORD FLAG_SKIP, "fm/mod", fm_div_mod
  ******************************************************************************/
 WORD FLAG_SKIP, "here"
     PUSH_TOS
-    ldr tos, =ram_begin
+    ldr tos, =data_begin
     ldr tos, [tos]
     bx lr
 
@@ -1918,7 +1936,7 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
     bl create
 
 @ Write literal with the reserved cells address
-    ldr r0, =ram_end
+    ldr r0, =data_end
     ldr r1, [r0]
     movs r2, #0                         @ Zero initialize cell
     str r2, [r1, #-4]!
@@ -1930,9 +1948,13 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
     PUSH_INT16 #0x4770
     bl h_comma
 
-@ End
-    PUSH_INT8 #FLAG_INTERPRET_COMPILE & RESERVE_1CELL   @ ( -- flags )
-    bl end_colon_semi
+@ Change flags set by create to also reserve a cell
+@ r0    link
+@ r1    flags
+    ldr r0, =link
+    ldr r0, [r0]
+    movs r1, #FLAG_INTERPRET_COMPILE & RESERVE_1CELL
+    strb r1, [r0, #4]
 
 @ Return
     pop {pc}

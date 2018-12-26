@@ -43,20 +43,20 @@
 #  include <string.h>
 
 typedef struct {
-  uint32_t ram_begin;
-  uint32_t ram_end;
-  uint32_t flash_begin;
-  uint32_t flash_end;
+  uint32_t data_begin;
+  uint32_t data_end;
+  uint32_t text_begin;
+  uint32_t text_end;
 } shi_init_t;
 
 #  ifdef __cplusplus
 extern "C" {
 #  endif
 
-void shi_init_asm(uint32_t ram_begin,
-                  uint32_t ram_end,
-                  uint32_t flash_begin,
-                  uint32_t flash_end);
+void shi_init_asm(uint32_t data_begin,
+                  uint32_t data_end,
+                  uint32_t text_begin,
+                  uint32_t text_end);
 void shi_c_variable_asm(char const* name, size_t len);
 void shi_evaluate_asm(char const* str, size_t len);
 
@@ -68,7 +68,7 @@ void shi_evaluate_asm(char const* str, size_t len);
 #  ifndef __cplusplus
 
 inline void shi_init(shi_init_t s) {
-  shi_init_asm(s.ram_begin, s.ram_end, s.flash_begin, s.flash_end);
+  shi_init_asm(s.data_begin, s.data_end, s.text_begin, s.text_end);
 }
 
 inline void shi_evaluate(char const* str) {

@@ -6,29 +6,30 @@
 ///    ohne diesem "end:;" was ich aus mecrisp übernommen hab weder Links noch
 ///    Flags geschrieben... und alles was ohne :; Päärchen erzeugt wird hängt in
 ///    da Luft.<br>
-///    Wenn ich so drüber nachdenk wärs vielleicht sinnvoll nur :; Definitionen
-///    im Flash zuzulassen?<br>
-///    Ooooder! Man ruft NACH einer Definition ein spezielles Word auf, dass die
-///    letzt erzeugte Definition ins Flash schreibt? Das is vielleicht noch
-///    besser? Dann spart ma sich auch gleich den Schaß wo ständig geprüft wern
-///    muss wo grad hingeschrieben wird? Es wird einfach IMMER ins RAM
-///    compiliert und wenn dieses spezielle Wort aufgerufen wird, dann wird der
-///    Link angepasst und die ganze Definition ins Flash kopiert. Fertig?<br>
 ///    Aktuell kommt "comma_q", sprich die Überprüfung ob RAM/FLASH übrigens an
 ///    2x Stellen vor:
 ///    - compile,
 ///    - end:;
 ///
-///    Haken an der Sache is, dass ma dann vermutlich nur noch absolut und nimma
-///    relativ Branchen können? Und des is... Oasch. Dann kost nämlich jeder
-///    Sprung plötzlich 3x4 statt 4 Byte -.-
+/// -# Künftig soll nicht mehr jede Definition einzeln ins Flash compiliert
+///    werden, sondern gleich ganze Blöcke. Jene Blöcke werden via ">text" und
+///    ">data" gekennzeichnet. Erst wenn nach einem >text wieder ein >data
+///    erfolgt wird des was bis dato im RAM steht ins Flash kopiert.
 ///
-///    Ok, na, das is mega Oasch. Fuck! Wenn ma muss sich VORHER aussuchen dass
-///    die Definition im FLASH landet, aber dann sind ma quasi erst wieder da wo
-///    ma jetzt sind unds an Schalter gibt wo ma hin und her schalten kann.
+/// -# Folgende Funktionen müssen komplett umgeschrieben wern:
+///    - create: Schreibt gleich Links und ev. Flags
+///    - end_colon_semi: Braucht ma vermutlich gar nimma?
 ///
-/// -# In Gforth gibts zum Beispiel "latestxt" um es letzte xt das definiert
-///    wurde zu bekommen.
+/// -# Wenn ma künftig in create gleich Links und Flags (ui, des könnt no
+///    problematisch wern) is fraglich ob ma den Anfang der aktuellen Definition
+///    überhaupt speichern muss? Der letzte Link wird ja quasi eh sofort
+///    geupdatet? damit hat ma die aktuelle Definition eh immer parat. Was ma
+///    aber auf alle Fälle speichern wird müssen is der Anfang von am ">text"
+///    Block.
+///
+/// -# Problematisch wird auch das Umschreiben der Links für an >text Block. Am
+///    Anfang wern dort wohl normale RAM Links drin stehen die ja auf die
+///    vorherige Definition zeigen. Jene Links müssen dann alle geändert werden.
 ///
 /// -# does> fehlt no und is SAU kompliziert...
 ///
@@ -75,7 +76,7 @@
 /// Bei da Init wird die Funktion reserve_ram aufgerufen. Die rennt das ganze
 /// Dictionary durch und prüft ob Einträge RAM reservieren müssen wie es zum
 /// Beispiel das Wort "variable" tut. Jener RAM wird hinten vom übergebenen RAM
-/// Bereich genommen! Und nacher wird ram_end entsprechend angepasst.
+/// Bereich genommen! Und nacher wird data_end entsprechend angepasst.
 ///
 /// csp<br>
 /// csp is im Prinzip ein Stackpointer... Im Gegensatz zum normalen Stackpointer
@@ -92,9 +93,10 @@
 /// | _e_shi_dstack   | Symbol at end of stack                                                             |
 /// | _s_shi_context  | Symbol at start of context (tos, dsp and lfp)                                      |
 /// | _s_shi_context  | Symbol at end of context                                                           |
-/// | ram_begin       | Pointer to ram (and beginning of current definition)                               |
-/// | flash_begin     | Pointer to flash                                                                   |
-/// | ram_end         | Used for reserving ram for variables                                               |
+/// | data_begin      | Pointer to ram begin                                                               |
+/// | data_end        | Pointer to ram end, used for reserving ram for variables                           |
+/// | text_begin      | Pointer to flash begin                                                             |
+/// | text_end        | Pointer to flash end                                                               |
 /// | csp             | Inside loop: points to leave addresses from the current loop on the stack <br><!-- |
 /// |                 | --> Inside case: points to end of addresses from the current case on the stack     |
 /// | link            | Contains address of link of the last definition                                    |
@@ -114,3 +116,12 @@
 /// Fold Flags gibts nur für Words, die pure sind, sprich keine Nebeneffekte
 /// haben. Die Anzahl der Eingangsparameter is fürs Falten wichtig. Sprich 1x
 /// Eingangsparameter -> FOLDS_1, 2x Eingangsparameter -> FOLDS_2 usw.
+///
+/// Es gibt 4x Sprungfunktionen:
+/// - b_comma
+/// - beq_comma
+/// - blt_comma
+/// - bne_comma
+/// Die Sprünge von orig nach dest compilieren. Innerhalb der Funktion wird
+/// manchmal data_begin kurzzeitig überschrieben, damit die anderen Comma
+/// Funktionen den Sprung an die richtige Stelle schreiben.

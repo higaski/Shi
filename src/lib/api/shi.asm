@@ -61,17 +61,17 @@ WORD_TAIL FLAG_SKIP, "_e_shi"
 
 /***************************************************************************//**
 @ Initialize shi
-@ r0    ram_begin
-@ r1    ram_end
-@ r2    flash_begin
-@ r3    flash_end
+@ r0    data_begin
+@ r1    data_end
+@ r2    text_begin
+@ r3    text_end
  ******************************************************************************/
 .thumb_func
 shi_init_asm:
     push {r4-r9, lr}
 
 @ Store addresses
-    ldr r4, =ram_begin                  @ Store addresses
+    ldr r4, =data_begin                 @ Store addresses
     stmia r4, {r0, r1, r2, r3}
 
 @ Fill ram
@@ -97,14 +97,14 @@ shi_init_asm:
  ******************************************************************************/
 .thumb_func
 fill_ram:
-@ r0    ram_begin
-@ r1    ram_end
+@ r0    data_begin
+@ r1    data_end
 @ r2    erased word
-    ldr r2, =ram_begin
+    ldr r2, =data_begin
     ldmia r2, {r0, r1}
     movs r2, #ERASED_WORD
 1:  cmp r0, r1
-    beq 2f                              @ Goto set memory-space pointers
+    beq 2f
         str r2, [r0], #4
         b 1b
 
@@ -118,10 +118,10 @@ fill_ram:
 .thumb_func
 set_memory_space_pointer_flash:
 @ r0    flash start address
-@ r1    flash_begin
-@ r2    flash_end
+@ r1    text_begin
+@ r2    text_end
 @ r3    flash content
-    ldr r0, =flash_begin
+    ldr r0, =text_begin
     ldmia r0, {r1, r2}
     ldr r3, =_e_shi_dict                @ Set last link of core to user dictionary
     str r1, [r3]
@@ -146,22 +146,22 @@ reserve_ram:
 @ r0    link
 @ r1    copy of link
 @ r2    flags
-@ r3    ram_end address
-@ r4    ram_end
+@ r3    data_end address
+@ r4    data_end
     ldr r0, =_s_shi_dict
-    ldr r3, =ram_end
+    ldr r3, =data_end
     ldr r4, [r3]
     movs r1, r0
 1:  ldrb r2, [r0, #4]                   @ Flags
     mvns r2, r2                         @ Invert flags
     ands r2, r2, #BIT_RESERVE_RAM       @ Extract reserve ram bits from flags
-    subs r4, r2                         @ If bits are set subtract amount of bytes from ram_end
+    subs r4, r2                         @ If bits are set subtract amount of bytes from data_end
     ldr r0, [r0]                        @ Link
     cmp r0, #LINK_INVALID               @ End of dictionary?
     itt ne
     movne r1, r0
     bne 1b                              @ Goto search
-        str r4, [r3]                    @ Store ram_end
+        str r4, [r3]                    @ Store data_end
 
 @ Return
     bx lr
@@ -234,12 +234,11 @@ shi_evaluate_asm:
 .thumb_func
 clear:
 @ tos   0
-@ dsp   stack end address
-@ r0    stack start address
+@ dsp   _e_shi_dstack
+@ r0    _s_shi_dstack
     movs tos, #0
     ldr dsp, =_e_shi_dstack
     ldr r0, =_s_shi_dstack
-
 1:  cmp r0, dsp
     beq 2f                              @ Goto return
         str tos, [r0], #4

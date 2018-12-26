@@ -4,8 +4,8 @@
 @ \author Vincent Hamp
 @ \date   03/12/2018
 
-.extern shi_printf, shi_write_flash
-.weak shi_printf, shi_write_flash
+.extern shi_printf, shi_write_text
+.weak shi_printf, shi_write_text
 
 /***************************************************************************//**
 @ shi_printf stub
@@ -17,9 +17,9 @@ shi_printf:
 .endif
 
 /***************************************************************************//**
-@ shi_write_flash stub
+@ shi_write_text stub
  ******************************************************************************/
 .thumb_func
-shi_write_flash:
+shi_write_text:
     movs r0, r2
     bx lr
