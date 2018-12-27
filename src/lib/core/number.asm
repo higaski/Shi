@@ -6,12 +6,12 @@
 
 .section .text
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ number
 @ ( token-addr token-u -- n true | false )
 @ Convert token-addr u to a number.
 @ Return a flag do indicate whether conversion was successful or not.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 .thumb_func
 number:
     push {lr}
@@ -84,7 +84,7 @@ number:
 @ Return
 6:  pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ cstring2num_base_10
 @ Convert a cstring with bases <=10 into a decimal number.
 @ tos   token-addr
@@ -93,7 +93,7 @@ number:
 @ r4    return flag
 @       true:   conversion successful
 @       false:  conversion failed
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 .thumb_func
 cstring2num_base_10:
 
@@ -122,7 +122,7 @@ cstring2num_base_10:
 @ Return
 6:  bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ cstring2num_base_36
 @ Convert a cstring with bases <=36 into a decimal number.
 @ tos   token-addr
@@ -131,7 +131,7 @@ cstring2num_base_10:
 @ r4    return flag
 @       true:   conversion successful
 @       false:  conversion failed
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 .thumb_func
 cstring2num_base_36:
 

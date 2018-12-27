@@ -1,6 +1,6 @@
 #include <cstdio>
 #include "forth2012_test_suite.hpp"
-#include "shi.h"
+#include "shi.hpp"
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
 
@@ -215,50 +215,10 @@ TEST(constant) {
   shi::clear();
 }
 
-size_t align(size_t alignment, size_t value) {
-  asm volatile("subs r0, %[alignment], #1"
-               "\n\t"
-
-               // "unaligned" bits
-               "ands r1, %[value], r0"
-               "\n\t"
-
-               // wenn unaligned bits 0 san -> san ma fertig
-               "beq 1f"
-               "\n\t"
-
-               //"mvn r0, r0"
-               //"\n\t"
-
-               // wert ohne "unaligned" bits... wozu?
-               //"ands r2, %[value], r0"
-               //"\n\t"
-
-               "subs %[alignment], r1"
-               "\n\t"
-
-               "adds %[value], %[alignment]"
-               "\n\t"
-
-               "1:"
-               "\n\t"
-
-               : [value] "+&r"(value)
-               : [alignment] "r"(alignment)
-               : "cc", "r0", "r1", "r2", "r3", "r4");
-
-  return value;
-}
-
 // This looks super promising for writing flash memory stuff @ QEMU...
 // https://dangokyo.me/2018/03/27/qemu-internal-memory-region-address-space-and-qemu-io/#more-1697
 
 int main() {
-  size_t v;
-  v = align(4, 0x20004012);
-  v = align(4, 0x20004012);
-  v = align(4, 0x20004012);
-
   // Reset of all peripherals, Initializes the Flash interface and the Systick
   HAL_Init();
   // Configure the system clock
@@ -273,16 +233,25 @@ int main() {
   // TODO test if there is a problem with >text >data if we do not create ANY
   // definition in it at all?
 
-  asm volatile("nop");
-  ">text"_fs;
-  asm volatile("nop");
-  ": first 1 ;"_fs;
-  asm volatile("nop");
-  ": second 2 ;"_fs;
-  asm volatile("nop");
-  ": third 3 ;"_fs;
-  asm volatile("nop");
-  ">data"_fs;
+  // Crap inside a >text block is ignored...
+//  ">text"_fs;
+//  asm volatile("nop");
+//  "4 allot"_fs;
+//  asm volatile("nop");
+//  ": definition_not_first 1 ;"_fs;
+//  asm volatile("nop");
+//  ">data"_fs;
+//  asm volatile("nop");
+//
+//  // This works, it contains definitions and nothing else
+//  ">text"_fs;
+//  asm volatile("nop");
+//  ": first 1 ;"_fs;
+//  asm volatile("nop");
+//  ": second 2 ;"_fs;
+//  asm volatile("nop");
+//  ": third 3 ;"_fs;
+//  asm volatile("nop");
 
   //  semihosting_io();
 

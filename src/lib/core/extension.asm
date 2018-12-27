@@ -16,11 +16,11 @@ WORD FLAG_SKIP, ".r", dot_r
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 0<>
 @ ( x -- flag )
 @ flag is true if and only if x is not equal to zero.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0<>", zero_ne
     cmp tos, #0
     ite ne
@@ -28,11 +28,11 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0<>", zero_ne
     moveq tos, #0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 0>
 @ ( n -- flag )
 @ flag is true if and only if n is greater than zero.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0>", zero_more
     cmp tos, #0
     ite gt
@@ -40,35 +40,35 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0>", zero_more
     movle tos, #0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 2>r
 @ (    x1 x2 --       )
 @ ( R:       -- x1 x2 )
 @ Transfer cell pair x1 x2 to the return stack. Semantically equivalent to swap
 @ >r >r.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE & FLAG_INLINE, "2>r", two_to_r
     TWO_TO_R
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 2>r
 @ (         -- x1 x2 )
 @ (R: x1 x2 --       )
 @ Transfer cell pair x1 x2 from the return stack. Semantically equivalent to r>
 @ r> swap.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE & FLAG_INLINE, "2r>", two_r_from
     TWO_R_FROM
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 2r@
 @ (          -- x1 x2 )
 @ ( R: x1 x2 -- x1 x2 )
 @ Copy cell pair x1 x2 from the return stack. Semantically equivalent to r> r>
 @ 2dup >r >r swap.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE & FLAG_INLINE, "2r@", two_r_fetch
     ldmia sp, {r0, r1}
     PUSH_REGS top=r0, from=r1
@@ -79,11 +79,11 @@ WORD FLAG_SKIP, ":noname", colon_noname
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ <>
 @ ( x1 x2 -- flag )
 @ flag is true if and only if x1 is not bit-for-bit the same as x2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<>", ne
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -102,7 +102,7 @@ WORD FLAG_SKIP, "action-of", action_of
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ again
 @ ( dest -- )
 @ Append the run-time semantics given below to the current definition, resolving
@@ -111,7 +111,7 @@ WORD FLAG_SKIP, "action-of", action_of
 @ ( -- )
 @ Continue execution at the location specified by dest. If no other control flow
 @ words are used, any program code after again will not be executed.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "again"
     push {lr}
 
@@ -133,7 +133,7 @@ WORD FLAG_SKIP, "c\"", c_q
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ case
 @ ( -- case-sys )
 @ Mark the start of the case...of...endof...endcase structure. Append the
@@ -141,16 +141,16 @@ WORD FLAG_SKIP, "c\"", c_q
 @
 @ ( -- )
 @ Continue execution.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "case"
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ compile,
 @ ( xt -- )
 @ Append the execution semantics of the definition represented by xt to the
 @ execution semantics of the current definition.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE, "compile,", compile_comma
     push {lr}
 
@@ -309,7 +309,7 @@ WORD FLAG_SKIP, "defer@", defer_fetch
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ endcase
 @ ( case-sys -- )
 @ Mark the end of the case...of...endof...endcase structure. Use case-sys to
@@ -318,7 +318,7 @@ WORD FLAG_SKIP, "defer@", defer_fetch
 @
 @ ( x -- )
 @ Discard the case selector x and continue execution
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "endcase"
     push {lr}
 
@@ -366,7 +366,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 @ Return
 6:  pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ endof
 @ ( case-sys1 of-sys -- case-sys2 )
 @ Mark the end of the of...endof part of the case structure. The next location
@@ -376,7 +376,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 @
 @ ( -- )
 @ Continue execution at the location specified by the consumer of case-sys2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "endof"
     push {lr}
 
@@ -406,21 +406,21 @@ WORD FLAG_SKIP, "erase"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ false
 @ ( -- false )
 @ Return a false flag.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "false"
     PUSH_TOS
     movs tos, #0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ hex
 @ ( -- )
 @ Set contents of radix to sixteen.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "hex"
     ldr r0, =radix
     movs r1, #16
@@ -442,16 +442,16 @@ WORD FLAG_SKIP, "marker"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ nip
 @ ( x1 x2 -- x2 )
 @ Drop the first item below the top of stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "nip"
     NIP
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ of
 @ ( -- of-sys )
 @ Put of-sys onto the stack. Append the run-time semantics given below to the
@@ -463,7 +463,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "nip"
 @ continue execution at the location specified by the consumer of of-sys,
 @ e.g., following the next endof. Otherwise, discard both values and continue
 @ execution in line.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "of"
     push {lr}
 
@@ -494,7 +494,7 @@ WORD FLAG_SKIP, "pad"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ parse
 @ ( c-addr u -- token-addr token-u )
 @ c-addr is the address (within the input buffer) and u is the length of the
@@ -505,7 +505,7 @@ WORD FLAG_SKIP, "pad"
 @ directly ( char "ccc<char>" -- c-addr u ). This version simply takes the
 @ whole cstring from stack, searches for the next token with respect to >in and
 @ then simply throws the found token, also as cstring, back onto the stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "parse"
 
 @ tos   c-addr + >in            (= start address)
@@ -562,12 +562,12 @@ WORD FLAG_SKIP, "parse-name", parse_name
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ pick
 @ ( xu...x1 x0 u -- xu...x1 x0 xu )
 @ Remove u. Copy the xu to the top of the stack. An ambiguous condition exists
 @ if there are less than u+2 items on the stack before pick is executed.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "pick"
     PICK
     bx lr
@@ -582,12 +582,12 @@ WORD FLAG_SKIP, "restore-input", restore_input
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ roll
 @ ( xu xu-1 ... x0 u -- xu-1 ... x0 xu )
 @ Remove u. Rotate u+1 items on the top of the stack. An ambiguous condition
 @ exists if there are less than u+2 items on the stack before roll is executed.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "roll"
     lsl r0, tos, #2
     adds r0, dsp, r0
@@ -620,21 +620,21 @@ WORD FLAG_SKIP, "to"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ true
 @ ( -- true )
 @ Return a true flag, a single-cell value with all bits set.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "true"
     PUSH_TOS
     movs tos, #-1
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ tuck
 @ ( x1 x2 -- x2 x1 x2 )
 @ Copy the first (top) stack item below the second stack item.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "tuck"
     TUCK
     bx lr
@@ -644,11 +644,11 @@ WORD FLAG_SKIP, "u.r", u_dot_r
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ u>
 @ ( u1 u2 -- flag )
 @ flag is true if and only if u1 is greater than u2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u>", u_more
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -657,12 +657,12 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u>", u_more
     movls tos, #0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ unused
 @ ( -- u )
 @ u is the amount of space remaining in the region addressed by here, in address
 @ units.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET, "unused"
     push {lr}
     bl to_text_q                        @ ( -- true | false )
@@ -697,18 +697,18 @@ WORD FLAG_SKIP, "\\", bs
 
 // NON-ANS (AKA MY OWN) EXTENSIONS ->
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ binary
 @ ( -- )
 @ Set contents of radix to two.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "binary"
     ldr r0, =radix
     movs r1, #2
     str r1, [r0]
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ c-variable
 @ ( source: "<spaces>name" -- )
 @ (                 a-addr -- )
@@ -717,7 +717,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "binary"
 @
 @ ( -- a-addr )
 @ a-addr is the address of the referenced C variable
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "c-variable", c_variable
     push {lr}
 
@@ -734,12 +734,12 @@ WORD FLAG_INTERPRET_COMPILE, "c-variable", c_variable
 @ Return
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ >text?
 @ ( -- true | false )
 @ Return true if compiler is currently compiling to text. Return false if
 @ compiler is currently compiling to data.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET, ">text?", to_text_q
     PUSH_TOS
     ldr r0, =to_text_begin
@@ -750,23 +750,23 @@ WORD FLAG_INTERPRET, ">text?", to_text_q
     moveq tos, #0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ >data?
 @ ( -- true | false )
 @ Return true if compiler is currently compiling to data. Return false if
 @ compiler is currently compiling to text.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET, ">data?", to_data_q
     push {lr}
     bl to_text_q
     mvn tos, tos
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ >text
 @ ( -- )
 @
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET, ">text", to_text
     ldr r0, =to_text_begin
     ldr r1, [r0]
@@ -777,16 +777,13 @@ WORD FLAG_INTERPRET, ">text", to_text
     str r1, [r0]
 1:  bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ >data
 @ ( -- )
 @
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET, ">data", to_data
     push {lr}
-
-    @bl to_text_q ?
-    @cmp
 
 @ Push data links to return stack
 @ r0    to_text_begin
@@ -795,6 +792,8 @@ WORD FLAG_INTERPRET, ">data", to_data
 @ r3    count links
     ldr r0, =to_text_begin
     ldr r0, [r0]
+    cmp r0, #0
+    beq 6f                              @ Goto return
     ldr r1, =_s_shi_dict
     ldr r2, =link
     movs r3, #0
@@ -807,19 +806,27 @@ WORD FLAG_INTERPRET, ">data", to_data
             adds r3, #1
             b 1b
 
+@ Return if no links were found
+1:  cmp r3, #0
+    beq 6f                              @ Goto return
+
 @ Update link with last link before >text
-1:  ldr r0, =link
+    ldr r0, =link
     str r2, [r0]
 
 @ Pop data links from return stack and calculate equivalent text links to
-@ replace them
+@ replace them. Also overwrite to_text_begin if it deviates from very the very
+@ first link. This is important to make sure that the first thing written to
+@ text is a link and nothing else!
 @ r0    text_begin
 @ r1    link n
 @ r2    link n+1
 @ r3    count links
+    pop {r1}
+    ldr r0, =to_text_begin
+    str r1, [r0]
     ldr r0, =text_begin
     ldr r0, [r0]
-    pop {r1}
 1:  cmp r3, #1
     bls 1f
         pop {r2}
@@ -838,24 +845,53 @@ WORD FLAG_INTERPRET, ">data", to_data
     ldr r2, [r2]
     subs r2, r1
     adds r0, r2
-    @ ALIGN!!!! r0 here
-    /*
-     eventuell irgendwie mit hilfe von clz? (count leading zeros?)
-     maske erzeugen, und verknüpfen
-     dann einmal des alignment dazu addieren und schaun ob des und verknüpfte oder des addierte größer is ?
-    */
 
-    str r0, [r1]
+@ Align text_begin before writing last text link
+@ r0    text_begin
+@ r1    link n
+@ r2    text_align
+@ r3    text_align - 1
+@ r4    unaligned bits
+    ldr r2, =text_align
+    ldrb r2, [r2]
+    subs r3, r2, #1
+    ands r4, r0, r3                     @ "Unaligned" bits
+    itt ne
+    subne r2, r4                        @ Alignment - "unaligned" bits
+    addne r0, r2
+    str r0, [r1]                        @ Write last text link
+    movs r4, r0
 
-@ Write text
+@ Store new text_begin and call shi_write_text
 @ r0    to_text_begin
 @ r1    data_begin
 @ r2    text_begin
+@ r3    text_begin address
+@ r4    text_begin after write
     ldr r2, =to_text_begin
     ldmia r2, {r0, r1}
-    ldr r2, =text_begin
-    ldr r2, [r2]
+    ldr r3, =text_begin
+    ldr r2, [r3]
+    str r4, [r3]
     bl shi_write_text
 
-6:  nop
+@ Clear >text block from data
+@ r0    to_text_begin
+@ r1    data_begin
+@ r2    erased word
+    ldr r0, =to_text_begin
+    ldr r0, [r0]
+    ldr r2, =data_begin
+    ldr r1, [r2]
+    str r0, [r2]                        @ Store data_begin as before >text
+    movs r2, #ERASED_WORD
+1:  cmp r1, r0
+    bls 6f
+        strh r2, [r1, #-2]!
+        b 1b
+
+@ Return
+6:  ldr r0, =to_text_begin
+    movs r1, #0
+    str r1, [r0]
     pop {pc}

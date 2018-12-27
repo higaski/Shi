@@ -1,11 +1,17 @@
+@ Comma
+@
+@ \file   comma.asm
+@ \author Vincent Hamp
+@ \date   27/07/2016
+
 .section .text
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ b,
 @ ( orig dest -- )
 @ Compile an unconditional jump from orig to dest. For future-proofness the
 @ 32bit encoding t4 is used as instruction.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 .thumb_func
 b_comma:
     push {lr}
@@ -105,12 +111,12 @@ b_comma:
 @ Return
 6:  pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ beq,
 @ ( orig dest -- )
 @ Compile a conditional equal jump from orig to dest. For future-proofness the
 @ 32bit encoding t3 is used as instruction.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 .thumb_func
 beq_comma:
     push {lr}
@@ -197,12 +203,12 @@ beq_comma:
 @ Return
 6:  pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ blt,
 @ ( orig dest -- )
 @ Compile a conditional less-than jump from orig to dest. For future-proofness
 @ the 32bit encoding t3 is used as instruction.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 .thumb_func
 blt_comma:
     push {lr}
@@ -289,12 +295,12 @@ blt_comma:
 @ Return
 6:  pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ bne,
 @ ( orig dest -- )
 @ Compile a conditional not-equal jump from orig to dest. For future-proofness
 @ the 32bit encoding t3 is used as instruction.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 .thumb_func
 bne_comma:
     push {lr}
@@ -381,14 +387,14 @@ bne_comma:
 @ Return
 6:  pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ h,
 @ ( h -- )
 @ Reserve half a cell of memory-space and store x in that place. If the
 @ memory-space pointer is aligned when h, begins execution, it will remain
 @ aligned when h, finishes execution. An ambiguous condition exists if the
 @ memory-space pointer is not aligned prior to execution of h,.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 .thumb_func
 h_comma:
     ldr r0, =data_begin
@@ -398,14 +404,43 @@ h_comma:
     DROP                                @ ( h -- )
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
+@ inline,
+@ ( xt -- )
+@ Inlines code from xt in the memory-space.
+@ ------------------------------------------------------------------------------
+.thumb_func
+inline_comma:
+    push {lr}
+
+@ Copy opcodes from xt
+@ r0    xt
+@ r1    opcode bx lr
+@ r2    hword
+    POP_REGS r0
+    movw r1, #0x4770
+1:  ldrh r2, [r0], #2
+    cmp r2, r1                          @ End if opcode equals bx lr
+    beq 6f
+        cmp r2, #0xBD00                 @ or pop {pc}
+        beq 6f
+            PUSH_REGS r2
+            push {r0, r1}
+            bl h_comma
+            pop {r0, r1}
+            b 1b
+
+@ Return
+6:  pop {pc}
+
+@ ------------------------------------------------------------------------------
 @ rev,
 @ ( x -- )
 @ Reserve one cell of memory-space and store x in reverse order in the cell. If
 @ the memory-space pointer is aligned when r, begins execution, it will remain
 @ aligned when r, finishes execution. An ambiguous condition exists if the
 @ memory-space pointer is not aligned prior to execution of r,.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 .thumb_func
 rev_comma:
     ldr r0, =data_begin

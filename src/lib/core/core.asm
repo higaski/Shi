@@ -6,11 +6,11 @@
 
 .section .text
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ !
 @ ( x a-addr -- )
 @ Store x at a-addr.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "!", store
     ldmia dsp!, {r0, r1}
     str r0, [tos]
@@ -32,14 +32,14 @@ WORD FLAG_SKIP, "#s", num_s
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ '
 @ ( source: "<spaces>name" --    )
 @ (                        -- xt )
 @ Skip leading space delimiters. Parse name delimited by a space. Find name and
 @ return xt, the execution token for name. An ambiguous condition exists if name
 @ is not found. When interpreting, ' xyz execute is equivalent to xyz.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET, "'", tick
     push {lr}
 
@@ -71,17 +71,17 @@ WORD FLAG_SKIP, "(", p
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ *
 @ ( n1 n2 -- n3 )
 @ Multiply n1 by n2 giving the product n3
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "*", times
     ldmia dsp!, {r0}
     muls tos, r0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ * /
 @ ( n1 n2 n3 -- n4 )
 @ Multiply n1 by n2 producing the intermediate double-cell result d. Divide d by
@@ -90,7 +90,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "*", times
 @ n3 differ in sign, the implementation-defined result returned will be the same
 @ as that returned by either the phrase >r m* r> fm/mod swap drop or the phrase
 @ >r m* r> sm/rwm swap drop.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "*/", times_div
 @ r0    n1
 @ r1    n2
@@ -113,21 +113,21 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "*/", times_div
 WORD FLAG_SKIP, "*/mod", times_div_mod
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ +
 @ ( n1 n2 -- n3 )
 @ Add n2 to n1, giving the sum n3
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "+", plus
     ldmia dsp!, {r0}
     adds tos, r0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ +!
 @ ( n a-addr -- )
 @ Add n to the single-cell number at a-addr.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "+!", plus_store
     ldmia dsp!, {r0, r1}
     ldr r2, [tos]
@@ -136,7 +136,7 @@ WORD FLAG_INTERPRET_COMPILE, "+!", plus_store
     movs tos, r1
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ +loop
 @ ( do-sys -- )
 @ Append the run-time semantics given below to the current definition. Resolve
@@ -151,7 +151,7 @@ WORD FLAG_INTERPRET_COMPILE, "+!", plus_store
 @ the loop limit minus one and the loop limit, continue execution at the
 @ beginning of the loop. Otherwise, discard the current loop control parameters
 @ and continue execution immediately following the loop.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
     push {lr}
 
@@ -181,14 +181,14 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
 @ Return
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ ,
 @ ( x -- )
 @ Reserve one cell of memory-space and store x in the cell. If the memory-space
 @ pointer is aligned when , begins execution, it will remain aligned when ,
 @ finishes execution. An ambiguous condition exists if the memory-space pointer
 @ is not aligned prior to execution of ,.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, ",", comma
     ldr r0, =data_begin
     ldr r1, [r0]
@@ -198,11 +198,11 @@ WORD FLAG_INTERPRET_COMPILE, ",", comma
     bx lr
 .ltorg
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ -
 @ ( n1 n2 -- n3 )
 @ Subtract n2 from n1, giving the difference n3
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "-", minus
     ldmia dsp!, {r0}
     subs tos, r0, tos
@@ -218,11 +218,11 @@ WORD FLAG_SKIP, ".\"", dot_q
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ /
 @ ( n1 n2 -- n3 )
 @ Divide n1 by n2, giving the single-cell quotient n3
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "/", div
     ldmia dsp!, {r0}
     sdiv tos, r0, tos
@@ -233,11 +233,11 @@ WORD FLAG_SKIP, "/mod", div_mod
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 0<
 @ ( n -- flag )
 @ flag is true if and only if n is less than zero.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0<", zero_less
     cmp tos, #0
     ite lt
@@ -245,11 +245,11 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0<", zero_less
     movge tos, #0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 0<
 @ ( n -- flag )
 @ flag is true if and only if x is equal to zero.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0=", zero_equal
     cmp tos, #0
     ite eq
@@ -257,20 +257,20 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0=", zero_equal
     movne tos, #0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 1+
 @ ( n1 -- n2 )
 @ Add one (1) to n1 giving the sum n2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "1+", one_plus
     adds tos, #1
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 1-
 @ ( n1 -- n2 )
 @ Subtract one (1) from n1 giving the difference n2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "1-", one_minus
     subs tos, #1
     bx lr
@@ -280,22 +280,22 @@ WORD FLAG_SKIP, "2!", two_store
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 2*
 @ ( x1 -- x2 )
 @ x2 is the result of shifting x1 one bit toward the most-significant bit,
 @ filling the vacated least-significant bit with zero.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "2*", two_times
     lsl tos, #1
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 2/
 @ ( x1 -- x2 )
 @ x2 is the result of shifting x1 one bit toward the least-significant bit,
 @ leaving the most-significant bit unchanged.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "2/", two_div
     asr tos, #1
     bx lr
@@ -305,43 +305,43 @@ WORD FLAG_SKIP, "2@", two_fetch
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 2drop
 @ ( x1 x2 -- )
 @ Drop cell pair x1 x2 from the stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "2drop", two_drop
     TWO_DROP
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 2dup
 @ ( x1 x2 -- x1 x2 x1 x2 )
 @ Duplicate cell pair x1 x2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "2dup", two_dup
     TWO_DUP
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 2over
 @ ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )
 @ Copy cell pair x1 x2 to the top of the stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "2over", two_over
     TWO_OVER
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ 2swap
 @ ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
 @ Exchange the top two cell pairs.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "2swap", two_swap
     TWO_SWAP
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ :
 @ ( source "<spaces>name" -- colon-sys )
 @ Skip leading space delimiters. Parse name delimited by a space. Create a
@@ -353,7 +353,7 @@ WORD FLAG_INTERPRET_COMPILE, "2swap", two_swap
 @ the body of the definition. The current definition shall not be findable in
 @ the dictionary until it is ended (or until the execution of DOES> in some
 @ systems).
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET, ":", colon
     push {lr}
 
@@ -381,14 +381,14 @@ WORD FLAG_INTERPRET, ":", colon
     pop {pc}
 .ltorg
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ ;
 @ ( colon-sys -- )
 @ Append the run-time semantics below to the current definition. End the current
 @ definition, allow it to be found in the dictionary and enter interpretation
 @ state, consuming colon-sys. If the memory-space pointer is not aligned,
 @ reserve enough memory-space to align it.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, ";", semi
     push {lr}
 
@@ -411,11 +411,11 @@ WORD FLAG_COMPILE_IMMEDIATE, ";", semi
 @ Return
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ <
 @ ( n1 n2 -- flag )
 @ Flag is true if and only if n1 is less than n2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<", less
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -429,11 +429,11 @@ WORD FLAG_SKIP, "<#", num_start
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ =
 @ ( x1 x2 -- flag )
 @ Flag is true if and only if x1 is bit-for-bit the same as x2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "=", equal
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -442,11 +442,11 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "=", equal
     movne tos, #0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ >
 @ ( n1 n2 -- flag )
 @ Flag is true if and only if n1 is greater than n2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, ">", more
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -460,12 +460,12 @@ WORD FLAG_SKIP, ">body", to_body
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ >in
 @ ( -- a-addr )
 @ a-addr is the address of a cell containing the offset in characters from the
 @ start of the input buffer to the start of the parse area.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, ">in", to_in
     PUSH_TOS
     ldr tos, =in
@@ -476,30 +476,30 @@ WORD FLAG_SKIP, ">number", to_number
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ >r
 @ (    x --   )
 @ ( R:   -- x )
 @ Move x to the return stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE & FLAG_INLINE, ">r", to_r
     TO_R
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ >r
 @ ( x -- 0 | x x )
 @ Duplicate x if it is non-zero.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "?dup", q_dup
     Q_DUP
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ @
 @ ( a-addr -- x )
 @ x is the value stored at a-addr.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "@", fetch
     ldr tos, [tos]
     bx lr
@@ -514,11 +514,11 @@ WORD FLAG_SKIP, "abort\"", abort_q
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ abs
 @ ( n -- u )
 @ u is the absolute value of n.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "abs"
     asrs r0, tos, #31
     adds tos, r0
@@ -530,11 +530,11 @@ WORD FLAG_SKIP, "accept"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ align2
 @ ( -- )
 @ If the memory-space pointer is not aligned, align it to 2-bytes.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "align2"
     ldr r0, =data_begin
     ldr r1, [r0]
@@ -542,11 +542,11 @@ WORD FLAG_INTERPRET_COMPILE, "align2"
     str r1, [r0]
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ align4
 @ ( -- )
 @ If the memory-space pointer is not aligned, align it to 4-bytes.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "align4"
     ldr r0, =data_begin
     ldr r1, [r0]
@@ -554,11 +554,11 @@ WORD FLAG_INTERPRET_COMPILE, "align4"
     str r1, [r0]
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ align8
 @ ( -- )
 @ If the memory-space pointer is not aligned, align it to 8-bytes.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "align8"
     ldr r0, =data_begin
     ldr r1, [r0]
@@ -566,34 +566,34 @@ WORD FLAG_INTERPRET_COMPILE, "align8"
     str r1, [r0]
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ aligned2
 @ ( addr -- a-addr )
 @ a-addr is the first 2-byte aligned address greater than or equal to addr.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "aligned2"
     P2ALIGN1 tos
     bx lr
 
-/***************************************************************************//**
-@ aligned2
+@ ------------------------------------------------------------------------------
+@ aligned4
 @ ( addr -- a-addr )
 @ a-addr is the first 4-byte aligned address greater than or equal to addr.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "aligned4"
     P2ALIGN2 tos
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ aligned8
 @ ( addr -- a-addr )
 @ a-addr is the first 8-byte aligned address greater than or equal to addr.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "aligned8"
     P2ALIGN3 tos
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ allot
 @ ( n -- )
 @ If n is greater than zero, reserve n address units of memory-space. If n is
@@ -605,7 +605,7 @@ WORD FLAG_INTERPRET_COMPILE, "aligned8"
 @ If the memory-space pointer is character aligned and n is a multiple of the
 @ size of a character when allot begins execution, it will remain character
 @ aligned when allot finishes execution.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "allot"
     ldr r0, =data_begin
     ldr r1, [r0]
@@ -614,28 +614,28 @@ WORD FLAG_INTERPRET_COMPILE, "allot"
     DROP                                @ ( n -- )
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ and
 @ ( x1 x2 -- x3 )
 @ x3 is the bit-by-bit logical "and" of x1 with x2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "and"
     ldmia dsp!, {r0}
     ands tos, r0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ base
 @ ( -- a-addr )
 @ a-addr is the address of a cell containing the current number-conversion radix
 @ {{2...36}}.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "base"
     PUSH_TOS
     ldr tos, =radix                     @ ( -- a-addr )
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ begin
 @ ( -- dest )
 @ Put the next location for a transfer of control, dest, onto the stack. Append
@@ -643,7 +643,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "base"
 @
 @ ( -- )
 @ Continue execution.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "begin"
     push {lr}
 
@@ -663,7 +663,7 @@ WORD FLAG_SKIP, "c!", c_store
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ c,
 @ ( char -- )
 @ Reserve space for one character in the memory-space and store char in the
@@ -671,7 +671,7 @@ WORD FLAG_SKIP, "c!", c_store
 @ execution, it will remain character aligned when c, finishes execution. An
 @ ambiguous condition exists if the memory-space pointer is not
 @ character-aligned prior to execution of c,.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_SKIP, "c,", c_comma
     ldr r0, =data_begin
     ldr r1, [r0]
@@ -685,20 +685,20 @@ WORD FLAG_SKIP, "c@", c_fetch
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ cell+
 @ ( a-addr1 -- a-addr2 )
 @ Add the size in address units of a cell to a-addr1, giving a-addr2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "cell+", cell_plus
     adds tos, #4
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ cells
 @ ( n1 -- n2 )
 @ n2 is the size in address units of n1 cells.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "cells", cells
     lsl tos, #2
     bx lr
@@ -718,7 +718,7 @@ WORD FLAG_SKIP, "chars"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ constant
 @ ( source: "<spaces>name" -- )
 @ (                      x -- )
@@ -728,7 +728,7 @@ WORD FLAG_SKIP, "chars"
 @
 @ ( -- x )
 @ Place x on the stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "constant"
     push {lr}
 
@@ -753,8 +753,9 @@ WORD FLAG_SKIP, "count"
 /*
 WORD FLAG_SKIP, "cr"
     bx lr
+*/
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ create
 @ ( source: "<spaces>name" -- )
 @ Skip leading space delimiters. Parse name delimited by a space. Create a
@@ -762,7 +763,7 @@ WORD FLAG_SKIP, "cr"
 @ memory-space pointer is not aligned, reserve enough memory-space to align it.
 @ The new memory-space pointer defines name's data field. Create does not
 @ allocate memory-space in name's data field.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "create"
     push {lr}
 
@@ -834,28 +835,28 @@ WORD FLAG_INTERPRET_COMPILE, "create"
 @ Return
 6:  pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ decimal
 @ ( -- )
 @ Set contents of radix to ten.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "decimal"
     ldr r0, =radix
     movs r1, #10
     str r1, [r0]
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ depth
 @ ( -- +n )
 @ +n is the number of single-cell values contained in the data stack before +n
 @ was placed on the stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "depth"
     DEPTH
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ do
 @ ( -- do-sys )
 @ Place do-sys onto the stack. Append the run-time semantics given below to the
@@ -868,7 +869,7 @@ WORD FLAG_INTERPRET_COMPILE, "depth"
 @ condition exists if n1 and n2 are not both the same type. Anything already on
 @ the return stack becomes unavailable until the loop-control parameters are
 @ discarded.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "do"
     push {lr}
 
@@ -889,7 +890,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 @ Return
     pop {pc}                          
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ does>
 @ ( colon-sys1 -- colon-sys2 )
 @ Append the run-time semantics below to the current definition. Whether or not
@@ -903,7 +904,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 @ name, with the name execution semantics given below. Return control to the
 @ calling definition specified by nest-sys1. An ambiguous condition exists if
 @ name was not defined with create or a user-defined word that calls create.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE, "does>", does
     nop
     nop
@@ -951,25 +952,25 @@ WORD FLAG_COMPILE, "does>", does
     @ directly return to the caller...
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ drop
 @ ( x -- )
 @ Remove x from the stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "drop"
     DROP
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ dup
 @ ( x -- x x )
 @ Duplicate x.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "dup"
     DUP
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ else
 @ ( orig1 fp-to-branch1 -- orig2 fp-to-branch2 )
 @ Put the location of a new unresolved forward reference orig2 and it's function
@@ -980,7 +981,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "dup"
 @
 @ ( -- )
 @ Continue execution at the location given by the resolution of orig2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "else"
     push {lr}
 
@@ -1015,7 +1016,7 @@ WORD FLAG_SKIP, "environment?", environment_q
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ evaluate
 @ ( i*x c-addr u -- j*x )
 @ Save the current input source specification. Store minus-one (-1) in SOURCE-ID
@@ -1023,7 +1024,7 @@ WORD FLAG_SKIP, "environment?", environment_q
 @ source and input buffer, set >IN to zero, and interpret. When the parse area
 @ is empty, restore the prior input source specification. Other stack effects
 @ are due to the words EVALUATEd.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "evaluate"
     push {lr}
 
@@ -1045,24 +1046,24 @@ WORD FLAG_INTERPRET_COMPILE, "evaluate"
 @ Return
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ execute
 @ ( i * x xt -- j * x )
 @ Remove xt from the stack and perform the semantics identified by it. Other
 @ stack effects are due to the word executed.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET, "execute"
     POP_REGS r0
     mov pc, r0
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ exit
 @ (             -- )
 @ ( R: nest-sys -- )
 @ Return control to the calling definition specified by nest-sys. Before
 @ executing exit within a do-loop, a program shall discard the loop-control
 @ parameters by executing unloop.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "exit"
     push {lr}
 
@@ -1080,13 +1081,13 @@ WORD FLAG_SKIP, "fill"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ find
 @ ( token-addr token-u -- token-addr false | xt flags )
 @ Find the definition named in the counted string at c-addr. If the definition
 @ is not found, return token-addr and zero. If the definition is found, return
 @ its execution token xt and its flags.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "find"
 @ tos   token-addr
 @ r0    token-u
@@ -1157,11 +1158,11 @@ WORD FLAG_SKIP, "fm/mod", fm_div_mod
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ here
 @ ( -- addr )
 @ addr is the memory-space pointer.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_SKIP, "here"
     PUSH_TOS
     ldr tos, =data_begin
@@ -1173,13 +1174,13 @@ WORD FLAG_SKIP, "hold"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ i
 @ (             -- n        )
 @ ( R: loop-sys -- loop-sys )
 @ n is a copy of the current (innermost) loop index. An ambiguous condition
 @ exists if the loop control parameters are unavailable.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "i"
     push {lr}
 
@@ -1195,7 +1196,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "i"
 @ Return
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ if
 @ ( -- orig fp-to-branch )
 @ Put the location of a new unresolved forward reference orig and it's function
@@ -1206,7 +1207,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "i"
 @ ( x -- )
 @ If all bits of x are zero, continue execution at the location specified by the
 @ resolution of orig.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "if"
     push {lr}
 
@@ -1239,22 +1240,22 @@ WORD FLAG_SKIP, "immediate"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ invert
 @ ( x1 -- x2 )
 @ Invert all bits of x1, giving its logical inverse x2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "invert"
     mvns tos, tos
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ j
 @ (                        -- n                   )
 @ ( R: loop-sys1 loop-sys2 -- loop-sys1 loop-sys2 )
 @ n is a copy of the next-outer loop index. An ambiguous condition exists if the
 @ loop control parameters of the next-outer loop, loop-sys1, are unavailable.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "j"
     push {lr}
 
@@ -1275,14 +1276,14 @@ WORD FLAG_SKIP, "key"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ leave
 @ (             -- )
 @ ( R: loop-sys -- )
 @ Discard the current loop control parameters. An ambiguous condition exists if
 @ they are unavailable. Continue execution immediately following the innermost
 @ syntactically enclosing do...loop or do...+loop.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "leave"
     push {lr}
 
@@ -1308,7 +1309,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "leave"
 @ Return
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ literal
 @ ( x -- )
 @ Append the run-time semantics given below to the current definition.
@@ -1319,7 +1320,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "leave"
 @
 @ ( -- x )
 @ Place x on the stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_SKIP, "literal", literal
     push {lr}
 
@@ -1511,7 +1512,7 @@ WORD FLAG_SKIP, "literal", literal
 6:  pop {pc}
 .ltorg
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ loop
 @ ( do-sys -- )
 @ Append the run-time semantics given below to the current definition. Resolve
@@ -1525,7 +1526,7 @@ WORD FLAG_SKIP, "literal", literal
 @ Add one to the loop index. If the loop index is then equal to the loop limit,
 @ discard the loop parameters and continue execution immediately following the
 @ loop. Otherwise continue execution at the beginning of the loop.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "loop"
     push {lr}
 
@@ -1583,13 +1584,13 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
 @ Return
 6:  pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ lshift
 @ ( x1 u -- x2 )
 @ Perform a logical left shift of u bit-places on x1, giving x2. Put zeroes into
 @ the least significant bits vacated by the shift. An ambiguous condition exists
 @ if u is greater than or equal to the number of bits in a cell.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "lshift"
     ldmia dsp!, {r0}
     lsls tos, r0, tos
@@ -1600,11 +1601,11 @@ WORD FLAG_SKIP, "m*", m_times
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ max
 @ ( n1 n2 -- n3 )
 @ n3 is the greater of n1 and n2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "max"
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -1612,11 +1613,11 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "max"
     movgt tos, r0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ min
 @ ( n1 n2 -- n3 )
 @ n3 is the lesser of n1 and n2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "min"
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -1634,30 +1635,30 @@ WORD FLAG_SKIP, "move"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ negate
 @ ( n1 -- n2 )
 @ n2 is the negated value of n1.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "negate"
     rsbs tos, tos, #0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ or
 @ ( x1 x2 -- x3 )
 @ x3 is the bit-by-bit inclusive-or of x1 with x2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "or"
     ldmia dsp!, {r0}
     orrs tos, r0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ over
 @ ( x1 x2 -- x1 x2 x1 )
 @ Place a copy of x1 on top of the stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "over"
     OVER
     bx lr
@@ -1672,22 +1673,22 @@ WORD FLAG_SKIP, "quit"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ >r
 @ (      -- x )
 @ ( R: x --   )
 @ Move x from the return stack to the data-stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE & FLAG_INLINE, "r>", r_from
     R_FROM
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ r@
 @ (      -- x )
 @ ( R: x -- x )
 @ Copy x from the return stack to the data stack.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE & FLAG_INLINE, "r@", r_fetch
     PUSH_TOS
     ldr tos, [sp]
@@ -1698,7 +1699,7 @@ WORD FLAG_SKIP, "recurse"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ repeat
 @ ( orig dest -- )
 @ Append the run-time semantics given below to the current definition, resolving
@@ -1707,7 +1708,7 @@ WORD FLAG_SKIP, "recurse"
 @
 @ ( -- )
 @ Continue execution at the location given by dest.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "repeat"
     push {lr}
 
@@ -1723,22 +1724,22 @@ WORD FLAG_COMPILE_IMMEDIATE, "repeat"
 @ Return
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ rot
 @ ( x1 x2 x3 -- x2 x3 x1 )
 @ Rotate the top three stack entries.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "rot"
     ROT
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ rshift
 @ ( x1 u -- x2 )
 @ Perform a logical right shift of u bit-places on x1, giving x2. Put zeroes
 @ into the most significant bits vacated by the shift. An ambiguous condition
 @ exists if u is greater than or equal to the number of bits in a cell.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "rshift"
     ldmia dsp!, {r0}
     lsrs tos, r0, tos
@@ -1764,12 +1765,12 @@ WORD FLAG_SKIP, "sm/rem", sm_div_rem
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ source
 @ ( -- c-addr u )
 @ c-addr is the address of, and u is the number of characters in, the input
 @ buffer.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "source"
     ldr r0, =src
     ldmia r0, {r1, r2}
@@ -1786,7 +1787,7 @@ WORD FLAG_SKIP, "spaces"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ state
 @ ( -- a-addr )
 @ a-addr is the address of a cell containing the compilation-state flag. State
@@ -1794,22 +1795,22 @@ WORD FLAG_SKIP, "spaces"
 @ non-zero, but is otherwise implementation-defined. Only the following standard
 @ words alter the value in state: : (colon), ; (semicolon), abort, quit,
 @ :noname, [ (left-bracket), ] (right-bracket).
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_SKIP, "state"
     PUSH_TOS
     ldr tos, =status
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ swap
 @ ( x1 x2 -- x2 x1 )
 @ Exchange the top two stack items.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "swap"
     SWAP
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ then
 @ ( orig fp-to-branch -- )
 @ Append the run-time semantics given below to the current definition. Resolve
@@ -1818,7 +1819,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "swap"
 @
 @ ( -- )
 @ Continue execution.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "then"
     push {lr}
 
@@ -1845,11 +1846,11 @@ WORD FLAG_SKIP, "u.", u_d
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ u<
 @ ( u1 u2 -- flag )
 @ flag is true if and only if u1 is less than u2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u<", u_less
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -1868,14 +1869,14 @@ WORD FLAG_SKIP, "um/mod", um_div_mod
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ unloop
 @ (             -- )
 @ ( R: loop-sys -- )
 @ Discard the loop-control parameters for the current nesting level. An unloop
 @ is required for each nesting level before the definition may be exited. An
 @ ambiguous condition exists if the loop-control parameters are unavailable.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "unloop"
     push {lr}
 
@@ -1886,7 +1887,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "unloop"
 @ Return
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ until
 @ ( dest -- )
 @ Append the run-time semantics given below to the current definition, resolving
@@ -1895,7 +1896,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "unloop"
 @ ( x -- )
 @ If all bits of x are zero, continue execution at the location specified by
 @ dest.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "until"
     push {lr}
 
@@ -1918,7 +1919,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "until"
 @ Return
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ variable
 @ ( source: "<spaces>name" -- )
 @ Skip leading space delimiters. Parse name delimited by a space. Create a
@@ -1928,7 +1929,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "until"
 @
 @ ( -- a-addr )
 @ a-addr is the address of the reserved cell.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "variable"
     push {lr}
 
@@ -1959,7 +1960,7 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
 @ Return
     pop {pc}
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ while
 @ ( dest -- orig dest )
 @ Put the location of a new unresolved forward reference orig onto the stack,
@@ -1970,7 +1971,7 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
 @ ( x -- )
 @ If all bits of x are zero, continue execution at the location specified by the
 @ resolution of orig.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "while"
     push {lr}
 
@@ -1999,28 +2000,28 @@ WORD FLAG_SKIP, "word"
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ xor
 @ ( x1 x2 -- x3 )
 @ x3 is the bit-by-bit exclusive-or of x1 with x2.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "xor"
     ldmia dsp!, {r0}
     eors tos, r0
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ [
 @ ( -- )
 @ Enter interpretation state. [ is an immediate word.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "[", bracket_left
     ldr r0, =status
     movs r1, #0
     str r1, [r0]
     bx lr
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ [']
 @ ( source: "<spaces>name" --    )
 @ Skip leading space delimiters. Parse name delimited by a space. Find name.
@@ -2031,7 +2032,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "[", bracket_left
 @ Place name's execution token xt on the stack. The execution token returned by
 @ the compiled phrase "['] x" is the same value returned by "' x" outside of
 @ compilation state.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, "[']", bracket_tick
     push {lr}
     bl tick                             @ ( -- xt )
@@ -2043,11 +2044,11 @@ WORD FLAG_SKIP, "[char]", bracket_char
     bx lr
 */
 
-/***************************************************************************//**
+@ ------------------------------------------------------------------------------
 @ [
 @ ( -- )
 @ Enter compilation state.
- ******************************************************************************/
+@ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET, "]", bracket_right
     ldr r0, =status
     movs r1, #-1

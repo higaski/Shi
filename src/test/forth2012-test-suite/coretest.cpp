@@ -1,5 +1,5 @@
 #include "forth2012_test_suite.hpp"
-#include "shi.h"
+#include "shi.hpp"
 
 using shi::operator""_fs;
 
