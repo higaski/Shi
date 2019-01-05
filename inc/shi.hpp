@@ -72,6 +72,41 @@
 ///
 /// \section section_stack_notation Stack notation
 /// blabla
+///
+/// \page page_lerp Lerp
+/// blabla
+///
+/// ```
+/// ( x x1 x2 y1 y2 -- )
+/// ```
+///
+/// LERP ->
+/// 'y1 y2 y1 - x x1 - * x2 x1 - / +'
+/// 'x x1 x2 y1 y2'
+/// over
+/// 'x x1 x2 y1 y2 y1'
+/// -
+/// 'x x1 x2 y1 (y2-y1)'
+/// 4 roll
+/// 'x1 x2 y1 (y2-y1) x'
+/// 4 pick
+/// 'x1 x2 y1 (y2-y1) x x1'
+/// -
+/// 'x1 x2 y1 (y2-y1) (x-x1)'
+/// *
+/// 'x1 x2 y1 (y2-y1)*(x-x1)'
+/// 2swap
+/// 'y1 (y2-y1)*(x-x1) x1 x2'
+/// swap
+/// 'y1 (y2-y1)*(x-x1) x2 x1'
+/// -
+/// 'y1 (y2-y1)*(x-x1) (x2-x1)'
+/// /
+/// 'y1 (y2-y1)*(x-x1)/(x2-x1)'
+/// +
+///
+/// ... done
+/// : lerp over - 4 roll 4 pick - * 2swap swap - / + ;
 
 #pragma once
 
