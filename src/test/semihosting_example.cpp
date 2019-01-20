@@ -4,11 +4,11 @@
 void semihosting_example() {
   printf("Hello World!\n");
 
-  int c;
-  do {
-    c = getchar();
-    putchar(c);
-  } while (c != EOF);
+  //  int c;
+  //  do {
+  //    c = getchar();
+  //    putchar(c);
+  //  } while (c != EOF);
 
   FILE* fp;
   fp = fopen("log.txt", "w");

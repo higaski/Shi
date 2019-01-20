@@ -47,5 +47,4 @@ CXXFLAGS += -std=c++2a -fno-exceptions -fno-rtti -fno-use-cxa-atexit -fno-thread
 
 # Linker flags
 LDFLAGS += $(FLAGS)
-LDFLAGS += -nostartfiles
 LDFLAGS += --specs=nano.specs -Wl,--gc-sections,-Map=$(MAP)

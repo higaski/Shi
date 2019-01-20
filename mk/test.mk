@@ -13,21 +13,23 @@ CPPFLAGS += -DOS_USE_TRACE_SEMIHOSTING_STDOUT
 INC_DIRS += ./inc
 INC_DIRS += ./src/lib/core
 
-SRC_DIRS = ./src/test
-SRC_DIRS += ./src/lib/api
+SRC_DIRS = ./src/lib/api
+SRC_DIRS += ./src/ports/stm32f4discovery
+SRC_DIRS += ./src/test
 
-LDFLAGS += -T"./src/test/ldscripts/mem.ld"
-LDFLAGS += -T"./src/test/ldscripts/sections_after_pp.ld"
+LDFLAGS += -T"$(TARGET_DIR)/STM32F407VGTx_FLASH.ld"
+
+ifdef FILL_UNUSED_FLASH
+	FILL = -DFILL_UNUSED_FLASH
+else
+	FILL = -DDONT_FILL_UNUSED_FLASH
+endif	
 
 endif	
 
-test: make_sections.ld $(HEX)
+test: ldscript $(HEX)
 	@echo "Build took $$(($$(date +%s)-$(DATE))) seconds"
 
-# Run linker script through preprocessor to fill flash with 0xFF if needed
-make_sections.ld:
-ifdef FILL_UNUSED_FLASH
-	cpp -DFILL_UNUSED_FLASH -P ./src/test/ldscripts/sections_before_pp.ld -o ./src/test/ldscripts/sections_after_pp.ld
-else
-	cpp -P ./src/test/ldscripts/sections_before_pp.ld -o ./src/test/ldscripts/sections_after_pp.ld
-endif
+ldscript:
+	$(MKDIR_P) $(TARGET_DIR)
+	cpp $(FILL) -P ./src/ports/stm32f4discovery/STM32F407VGTx_FLASH.ld -o $(TARGET_DIR)/STM32F407VGTx_FLASH.ld
