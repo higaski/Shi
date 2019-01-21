@@ -4,17 +4,10 @@
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
 
-#define SHI_FLASH_START (0x08000000 + 0x00040000 - 0x8000)
-#define SHI_FLASH_END (0x08000000 + 0x00040000)
-#define SHI_RAM_START (0x20004000)
-#define SHI_RAM_END (0x20004000 + 0x00004000)
-
 using shi::operator""_fs;
 
 void shi_test();
 void shi_test_compile_to_flash();
-void SystemClock_Config();
-void _Error_Handler(char* file, int line);
 
 TEST(unused0) {
   ",toram"_fs;
@@ -220,17 +213,19 @@ TEST(constant) {
 
 void semihosting_example();
 
-extern "C" void test_lua();
-extern "C" void test_micropython();
+extern "C" void test_performance_shi();
+extern "C" void test_performance_lua();
+extern "C" void test_performance_micropython();
 
 extern "C" int test() {
-  test_lua();
-  test_micropython();
+  shi::init({.data_begin = SHI_RAM_START,
+             .data_end = SHI_RAM_END,
+             .text_begin = SHI_FLASH_START,
+             .text_end = SHI_FLASH_END});
 
-  //  shi::init({.data_begin = SHI_RAM_START,
-  //             .data_end = SHI_RAM_END,
-  //             .text_begin = SHI_FLASH_START,
-  //             .text_end = SHI_FLASH_END});
+  //  test_performance_shi();
+  //  test_performance_lua();
+  test_performance_micropython();
 
   // TODO test if there is a problem with >text >data if we do not create ANY
   // definition in it at all?
@@ -270,8 +265,7 @@ extern "C" int test() {
 
   //  RUN_TEST(unused1);  // Can run anywhere but at the top
 
-  //  return forth2012_test_suite();
-  return 0;
+  return forth2012_test_suite();
 }
 
 void shi_test_compile_to_flash() {

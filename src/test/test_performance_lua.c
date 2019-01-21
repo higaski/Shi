@@ -4,7 +4,7 @@
 #include "lua/lualib.h"
 #include "stm32f4xx_hal.h"
 
-void test_lua() {
+void test_performance_lua() {
   // initialize Lua interpreter
   lua_State* L = luaL_newstate();
 

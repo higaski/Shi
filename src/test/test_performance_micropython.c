@@ -6,6 +6,11 @@
 #include "py/repl.h"
 #include "py/runtime.h"
 
+/* https://github.com/dhylands/micropython/blob/c-sample2/stmhal/c_sample.c
+ * https://forum.micropython.org/viewtopic.php?f=2&t=1411&start=10
+ * https://micropython-dev-docs.readthedocs.io/en/latest/adding-module.html
+ */
+
 void do_str(const char* src, mp_parse_input_kind_t input_kind) {
   nlr_buf_t nlr;
   if (nlr_push(&nlr) == 0) {
@@ -23,7 +28,7 @@ void do_str(const char* src, mp_parse_input_kind_t input_kind) {
   }
 }
 
-void test_micropython() {
+void test_performance_micropython() {
   mp_init();
   do_str("print('hello world!', list(x+1 for x in range(10)), end='eol\\n')",
          MP_PARSE_SINGLE_INPUT);

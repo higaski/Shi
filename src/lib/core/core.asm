@@ -811,18 +811,19 @@ WORD FLAG_INTERPRET_COMPILE, "create"
     strb r2, [r1], #1
 
 @ Write cstring
-@ tos   character
+@ tos   token-u
 @ r0    data_begin address
 @ r1    data_begin
 @ r2    token-addr
 @ r3    token-addr + token-u
+@ r12   character
     strb tos, [r1], #1                  @ Write length
     POP_REGS top=r3, to=r2              @ ( token-addr token-u -- )
     adds r3, r3, r2
 1:  cmp r3, r2                          @ token-addr + token-u - token-addr
     bls 1f
-        ldrb tos, [r2], #1
-        strb tos, [r1], #1
+        ldrb r12, [r2], #1
+        strb r12, [r1], #1
         b 1b
 
 @ Align data_begin
