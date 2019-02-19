@@ -12,7 +12,7 @@
 <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.qemu.gdbClientOtherOptions" value=""/>
 <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.qemu.gdbServerBoardName" value="generic"/>
 <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.qemu.gdbServerDeviceName" value="STM32F407VG"/>
-<stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.qemu.gdbServerExecutable" value="${project_loc}/qemu/2.8.0-3-20180523-0703/bin/qemu-system-gnuarmeclipse"/>
+<stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.qemu.gdbServerExecutable" value="${project_loc}/qemu/2.8.0-4-20190211-0633/bin/qemu-system-gnuarmeclipse"/>
 <intAttribute key="ilg.gnumcueclipse.debug.gdbjtag.qemu.gdbServerGdbPortNumber" value="1234"/>
 <stringAttribute key="ilg.gnumcueclipse.debug.gdbjtag.qemu.gdbServerOther" value="-d unimp,guest_errors"/>
 <booleanAttribute key="ilg.gnumcueclipse.debug.gdbjtag.qemu.isGdbServerVerbose" value="false"/>
