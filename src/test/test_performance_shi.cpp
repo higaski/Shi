@@ -8,7 +8,7 @@ using shi::operator""_fs;
 
 extern "C" void test_performance_shi() {
 
-
+  // lerp ( x x1 x2 y1 y2 -- y )
   ": lerp over - 4 roll 4 pick - * 2swap swap - / + ;"_fs;
 
   __disable_irq();

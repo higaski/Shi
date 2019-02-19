@@ -17,8 +17,8 @@ extern "C" int test() {
   //             .text_end = SHI_FLASH_END});
 
   // test_performance_shi();
-  // test_performance_lua();
-  // test_performance_micropython();
+  test_performance_lua();
+  test_performance_micropython();
 
   //  semihosting_example();
 
