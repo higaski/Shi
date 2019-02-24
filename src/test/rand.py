@@ -20,7 +20,7 @@ def write_np_array(name, np_array):
     f.write('int32_t const ' + name + '[] = {')
     for i in range(n - 1):
         f.write(str(np_array[i]) + ', ')
-    f.write(str(np_array[n-1]) + '};\n')
+    f.write(str(np_array[n-1]) + '};\n\n')
     
 write_np_array('x', x)
 write_np_array('x1', x1)
