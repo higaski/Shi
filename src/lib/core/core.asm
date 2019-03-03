@@ -110,8 +110,8 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "*/", times_div
 @ Return
     bx lr
 
-WORD FLAG_SKIP, "*/mod", times_div_mod
-    bx lr
+@WORD FLAG_SKIP, "*/mod", times_div_mod
+@    bx lr
 
 @ ------------------------------------------------------------------------------
 @ +
@@ -740,13 +740,18 @@ WORD FLAG_INTERPRET_COMPILE, "create"
     ldr tos, =0xF8476D04                @ ( -- opcode )
     bl rev_comma                        @ Write opcode
 
-@ mov tos, pc
-    PUSH_INT16 #0x467E                  @ ( -- opcode )
-    bl h_comma                          @ Write opcode
+@ add tos, pc, #4
+    PUSH_TOS
+    ldr tos, =0xF20F0604                @ ( -- opcode )
+    bl rev_comma                        @ Write opcode
 
 @ bx lr
     PUSH_INT16 #0x4770                  @ ( -- opcode )
     bl h_comma                          @ Write opcode
+
+@ Allot enough space to allow does> changing bx lr to b
+    PUSH_INT8 #2
+    bl allot
 
 @ Return
     pop {pc}
@@ -824,48 +829,19 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 WORD FLAG_COMPILE, "does>", does
     push {lr}
 
-    // https://softwareengineering.stackexchange.com/questions/339283/forth-how-do-create-and-does-work-exactly
-    // http://www.forth.org/svfig/Len/definwds.htm
-    // oida -.-
-
-    nop
-
-@ wir brauchen 2x byte mehr fuern sprung als fuer bx lr...?
-    PUSH_INT8 #2
-    bl allot
-    bl align
-    bl here                             @
-
-@ sich zu "bx lr" vom aktuellen create hangeln...
-@ r0 = adresse von bx lr von create...
+@ Get address of bx lr of create
+@ r0    bx lr address
     ldr r0, =link
     ldr r0, [r0]
-    ldrb r1, [r0, #5]                   @ string laenge...
+    ldrb r1, [r0, #5]                   @ c-addr
     adds r0, r1
-    P2ALIGN1 align=r0, scratch=r1       @ des muesst jetztn die push tos sein
-    adds r0, #12
+    P2ALIGN1 align=r0, scratch=r1
+    adds r0, #14                        @ bx lr address = xt create + #14
 
-    @ REMOVE (nur testweise hier)
-    ldrh r1, [r0] @ und des bx lr?
-
-// jetzt alles zwischen "here" und r0 um 2 byte nach hint verschieben?
-@ r0    bx lr
-@ r1    here
-@ tos   here
-@ r2
-    movs r1, tos
-1:  cmp r1, r0
-    bls 1f
-      ldrh r2, [r1, #-2]
-      strh r2, [r1], #-2
-      b 1b
-
-// SOOO und jetzt frag i mi
-// WOHIN ZUR HOELLE hupf ma jetzt? I mag hinter "does>" von der definition hupfn mit dessen hilfe ma die aktuelle erzeugen
-// aber WO?! is de adress? wie find i de?
-// seht die im link register?
-// hmm naw immer no falsche adress :/ da landet ma zurueck im interpret loop
-1:  movs tos, r0
+@ Replace bx lr of create with branch to code after does>
+@ r0    bx lr address
+@ tos   does> link address
+    PUSH_REGS r0
     PUSH_TOS
     ldr tos, [sp]
     bl b_comma

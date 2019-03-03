@@ -454,6 +454,13 @@ rev_comma:
     bx lr
 
 @ ------------------------------------------------------------------------------
+@ ( source: "<spaces>name" -- )
+@ Skip leading space delimiters. Parse name delimited by a space. Create a
+@ definition for name with the execution semantics defined below. If the
+@ data-space pointer is not aligned, reserve enough data space to align it. The
+@ new data-space pointer defines name's data field. word_comma does not allocate
+@ data space in name's data field.
+@ ------------------------------------------------------------------------------
 .thumb_func
 word_comma:
     push {lr}
