@@ -14,7 +14,7 @@
 @ ------------------------------------------------------------------------------
 .p2align 2                              @ Make sure the stack is 4-byte aligned (ldm and stm operations need 4-byte alignment)
 _s_shi_dstack:                          @ Data-stack start
-.space DSTACK_SIZE                      @ Data-stack size in bytes
+.space DATASTACK_SIZE                   @ Data-stack size in bytes
 _e_shi_dstack:                          @ Data-stack end
 
 .p2align 2
@@ -23,7 +23,7 @@ _s_shi_context:                         @ Used to store the forth context
 _e_forth_context:
 
 @ ------------------------------------------------------------------------------
-@ Memory-space pointers
+@ Data-space pointers
 @ ------------------------------------------------------------------------------
 .p2align 2
 to_text_begin:

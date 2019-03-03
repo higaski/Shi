@@ -198,7 +198,7 @@ WORD FLAG_COMPILE, "compile,", compile_comma
 
 @ bl
 @ tos   opcode
-@ r0    pc-relative address (xt - (memory-space pointer + 4))
+@ r0    pc-relative address (xt - (data-space pointer + 4))
 @ r1    J1 | J2 | imm11 | imm10
     ldr tos, =0xF000D000                @ Opcode template
 

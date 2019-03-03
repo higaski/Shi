@@ -390,10 +390,10 @@ bne_comma:
 @ ------------------------------------------------------------------------------
 @ h,
 @ ( h -- )
-@ Reserve half a cell of memory-space and store x in that place. If the
-@ memory-space pointer is aligned when h, begins execution, it will remain
-@ aligned when h, finishes execution. An ambiguous condition exists if the
-@ memory-space pointer is not aligned prior to execution of h,.
+@ Reserve half a cell of data space and store x in the cell. If the data-space
+@ pointer is aligned when h, begins execution, it will remain aligned when h,
+@ finishes execution. An ambiguous condition exists if the data-space pointer
+@ is not aligned prior to execution of h,.
 @ ------------------------------------------------------------------------------
 .thumb_func
 h_comma:
@@ -407,7 +407,7 @@ h_comma:
 @ ------------------------------------------------------------------------------
 @ inline,
 @ ( xt -- )
-@ Inlines code from xt in the memory-space.
+@ Inlines code from xt in the data-space.
 @ ------------------------------------------------------------------------------
 .thumb_func
 inline_comma:
@@ -436,10 +436,10 @@ inline_comma:
 @ ------------------------------------------------------------------------------
 @ rev,
 @ ( x -- )
-@ Reserve one cell of memory-space and store x in reverse order in the cell. If
-@ the memory-space pointer is aligned when r, begins execution, it will remain
-@ aligned when r, finishes execution. An ambiguous condition exists if the
-@ memory-space pointer is not aligned prior to execution of r,.
+@ Reserve one cell of data space and store x in reverse order in the cell. If
+@ the data-space pointer is aligned when rev, begins execution, it will remain
+@ aligned when rev, finishes execution. An ambiguous condition exists if the
+@ data-space pointer is not aligned prior to execution of rev,.
 @ ------------------------------------------------------------------------------
 .thumb_func
 rev_comma:
@@ -452,3 +452,77 @@ rev_comma:
     str r1, [r0]                        @ Update address in data_begin
     DROP                                @ ( x -- )
     bx lr
+
+@ ------------------------------------------------------------------------------
+.thumb_func
+word_comma:
+    push {lr}
+
+@ Parse
+    bl source                           @ ( -- c-addr u )
+    bl parse                            @ ( -- token-addr token-u )
+    cmp tos, #0                         @ token-u - 0
+    bne 1f                              @ Goto find
+        TWO_DROP                        @ ( token-addr false -- )
+        PRINT "'shi' attempt to use zero-length string as a name >>>create<<<"
+        b 6f                            @ Goto return
+
+@ Find
+1:  TWO_DUP                             @ ( -- token-addr token-u token-addr token-u )
+    bl find                             @ ( -- token-addr 0 | xt flags )
+    // TODO maybe write a "create" which doesn't check for redefinition?
+    cmp tos, #0                         @ flags - 0
+    beq 1f                              @ Goto create
+        TWO_DROP                        @ ( xt flags -- )
+        TWO_DROP                        @ ( token-addr token-u -- )
+        PRINT "'shi' redefined word >>>create<<<"
+        // TODO What should we do in case a word gets redefined?
+        // Maybe src should be dropped, so that when we leave create we also
+        // leave evaluate?
+        b 6f                            @ Goto return
+
+@ Write link
+@ r0    data_begin address
+@ r1    data_begin
+@ r2    link address
+@ r3    link
+1:  TWO_DROP                            @ ( token-addr 0 -- )
+    ldr r0, =data_begin
+    ldr r1, [r0]
+    ldr r2, =link
+    ldr r3, [r2]
+    str r1, [r2]                        @ Update last link
+    str r3, [r1], #4                    @ Write link
+
+@ Write flags
+@ r0    data_begin address
+@ r1    data_begin
+@ r2    flags
+    movs r2, #FLAG_INTERPRET_COMPILE
+    strb r2, [r1], #1
+
+@ Write cstring
+@ tos   token-u
+@ r0    data_begin address
+@ r1    data_begin
+@ r2    token-addr
+@ r3    token-addr + token-u
+@ r12   character
+    strb tos, [r1], #1                  @ Write length
+    POP_REGS top=r3, to=r2              @ ( token-addr token-u -- )
+    adds r3, r3, r2
+1:  cmp r3, r2                          @ token-addr + token-u - token-addr
+    bls 1f
+        ldrb r12, [r2], #1
+        strb r12, [r1], #1
+        b 1b
+
+@ Align data_begin
+@ Name could have been any length and screw with alignment
+@ r0    data_begin address
+@ r1    data_begin
+1:  P2ALIGN1 align=r1, scratch=r2
+    str r1, [r0]
+
+@ Return
+6:  pop {pc}

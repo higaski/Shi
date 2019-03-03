@@ -184,9 +184,9 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
 @ ------------------------------------------------------------------------------
 @ ,
 @ ( x -- )
-@ Reserve one cell of memory-space and store x in the cell. If the memory-space
+@ Reserve one cell of data space and store x in the cell. If the data-space
 @ pointer is aligned when , begins execution, it will remain aligned when ,
-@ finishes execution. An ambiguous condition exists if the memory-space pointer
+@ finishes execution. An ambiguous condition exists if the data-space pointer
 @ is not aligned prior to execution of ,.
 @ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, ",", comma
@@ -359,8 +359,8 @@ WORD FLAG_INTERPRET, ":", colon
 
 // TODO check stack balance? (maybe even return stack?)
 
-@ Create
-    bl create
+@ Create word
+    bl word_comma
 
 @ Change flags set by create and make current definition unfindable
 @ r0    link
@@ -386,8 +386,11 @@ WORD FLAG_INTERPRET, ":", colon
 @ ( colon-sys -- )
 @ Append the run-time semantics below to the current definition. End the current
 @ definition, allow it to be found in the dictionary and enter interpretation
-@ state, consuming colon-sys. If the memory-space pointer is not aligned,
-@ reserve enough memory-space to align it.
+@ state, consuming colon-sys. If the data-space pointer is not aligned, reserve
+@ enough data space to align it.
+@
+@ ( -- ) ( R: nest-sys -- )
+@ Return to the calling definition specified by nest-sys.
 @ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE_IMMEDIATE, ";", semi
     push {lr}
@@ -533,7 +536,7 @@ WORD FLAG_SKIP, "accept"
 @ ------------------------------------------------------------------------------
 @ align2
 @ ( -- )
-@ If the memory-space pointer is not aligned, align it to 2-bytes.
+@ If the data-space pointer is not aligned, align it to 2-bytes.
 @ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "align2"
     ldr r0, =data_begin
@@ -545,7 +548,7 @@ WORD FLAG_INTERPRET_COMPILE, "align2"
 @ ------------------------------------------------------------------------------
 @ align4
 @ ( -- )
-@ If the memory-space pointer is not aligned, align it to 4-bytes.
+@ If the data-space pointer is not aligned, align it to 4-bytes.
 @ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "align4"
     ldr r0, =data_begin
@@ -557,7 +560,7 @@ WORD FLAG_INTERPRET_COMPILE, "align4"
 @ ------------------------------------------------------------------------------
 @ align8
 @ ( -- )
-@ If the memory-space pointer is not aligned, align it to 8-bytes.
+@ If the data-space pointer is not aligned, align it to 8-bytes.
 @ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "align8"
     ldr r0, =data_begin
@@ -596,15 +599,15 @@ WORD FLAG_INTERPRET_COMPILE, "aligned8"
 @ ------------------------------------------------------------------------------
 @ allot
 @ ( n -- )
-@ If n is greater than zero, reserve n address units of memory-space. If n is
-@ less than zero, release | n | address units of memory-space. If n is zero,
-@ leave the memory-space pointer unchanged.
-@ If the memory-space pointer is aligned and n is a multiple of the size of a
-@ cell when allot begins execution, it will remain aligned when allot finishes
+@ If n is greater than zero, reserve n address units of data space. If n is less
+@ than zero, release | n | address units of data space. If n is zero, leave the
+@ data-space pointer unchanged.
+@ If the data-space pointer is aligned and n is a multiple of the size of a cell
+@ when allot begins execution, it will remain aligned when allot finishes
 @ execution.
-@ If the memory-space pointer is character aligned and n is a multiple of the
-@ size of a character when allot begins execution, it will remain character
-@ aligned when allot finishes execution.
+@ If the data-space pointer is character aligned and n is a multiple of the size
+@ of a character when allot begins execution, it will remain character aligned
+@ when allot finishes execution.
 @ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "allot"
     ldr r0, =data_begin
@@ -666,11 +669,11 @@ WORD FLAG_SKIP, "c!", c_store
 @ ------------------------------------------------------------------------------
 @ c,
 @ ( char -- )
-@ Reserve space for one character in the memory-space and store char in the
-@ space. If the memory-space pointer is character aligned when c, begins
-@ execution, it will remain character aligned when c, finishes execution. An
-@ ambiguous condition exists if the memory-space pointer is not
-@ character-aligned prior to execution of c,.
+@ Reserve space for one character in the data space and store char in the space.
+@ If the data-space pointer is character aligned when c, begins execution, it
+@ will remain character aligned when c, finishes execution. An ambiguous
+@ condition exists if the data-space pointer is not character-aligned prior to
+@ execution of c,.
 @ ------------------------------------------------------------------------------
 WORD FLAG_SKIP, "c,", c_comma
     ldr r0, =data_begin
@@ -732,8 +735,8 @@ WORD FLAG_SKIP, "chars"
 WORD FLAG_INTERPRET_COMPILE, "constant"
     push {lr}
 
-@ Create
-    bl create
+@ Create word
+    bl word_comma
 
 @ Write literal
     bl literal
@@ -760,81 +763,34 @@ WORD FLAG_SKIP, "cr"
 @ ( source: "<spaces>name" -- )
 @ Skip leading space delimiters. Parse name delimited by a space. Create a
 @ definition for name with the execution semantics defined below. If the
-@ memory-space pointer is not aligned, reserve enough memory-space to align it.
-@ The new memory-space pointer defines name's data field. Create does not
-@ allocate memory-space in name's data field.
+@ data-space pointer is not aligned, reserve enough data space to align it. The
+@ new data-space pointer defines name's data field. create does not allocate
+@ data space in name's data field.
+@
+@ ( -- a-addr )
+@ a-addr is the address of name's data field. The execution semantics of name
+@ may be extended by using does>.
 @ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "create"
     push {lr}
 
-@ Parse
-    bl source                           @ ( -- c-addr u )
-    bl parse                            @ ( -- token-addr token-u )
-    cmp tos, #0                         @ token-u - 0
-    bne 1f                              @ Goto find
-        TWO_DROP                        @ ( token-addr false -- )
-        PRINT "'shi' attempt to use zero-length string as a name >>>create<<<"
-        b 6f                            @ Goto return
+    bl word_comma
 
-@ Find
-1:  TWO_DUP                             @ ( -- token-addr token-u token-addr token-u )
-    bl find                             @ ( -- token-addr 0 | xt flags )
-    // TODO maybe write a "create" which doesn't check for redefinition?
-    cmp tos, #0                         @ flags - 0
-    beq 1f                              @ Goto create
-        TWO_DROP                        @ ( xt flags -- )
-        TWO_DROP                        @ ( token-addr token-u -- )
-        PRINT "'shi' redefined word >>>create<<<"
-        // TODO What should we do in case a word gets redefined?
-        // Maybe src should be dropped, so that when we leave create we also
-        // leave evaluate?
-        b 6f                            @ Goto return
+@ str tos, [dsp, #-4]!
+    PUSH_TOS
+    ldr tos, =0xF8476D04                @ ( -- opcode )
+    bl rev_comma                        @ Write opcode
 
-@ Write link
-@ r0    data_begin address
-@ r1    data_begin
-@ r2    link address
-@ r3    link
-1:  TWO_DROP                            @ ( token-addr 0 -- )
-    ldr r0, =data_begin
-    ldr r1, [r0]
-    ldr r2, =link
-    ldr r3, [r2]
-    str r1, [r2]                        @ Update last link
-    str r3, [r1], #4                    @ Write link
+@ mov tos, pc
+    PUSH_INT16 #0x467E                  @ ( -- opcode )
+    bl h_comma                          @ Write opcode
 
-@ Write flags
-@ r0    data_begin address
-@ r1    data_begin
-@ r2    flags
-    movs r2, #FLAG_INTERPRET_COMPILE
-    strb r2, [r1], #1
-
-@ Write cstring
-@ tos   token-u
-@ r0    data_begin address
-@ r1    data_begin
-@ r2    token-addr
-@ r3    token-addr + token-u
-@ r12   character
-    strb tos, [r1], #1                  @ Write length
-    POP_REGS top=r3, to=r2              @ ( token-addr token-u -- )
-    adds r3, r3, r2
-1:  cmp r3, r2                          @ token-addr + token-u - token-addr
-    bls 1f
-        ldrb r12, [r2], #1
-        strb r12, [r1], #1
-        b 1b
-
-@ Align data_begin
-@ Name could have been any length and screw with alignment
-@ r0    data_begin address
-@ r1    data_begin
-1:  P2ALIGN1 align=r1, scratch=r2
-    str r1, [r0]
+@ bx lr
+    PUSH_INT16 #0x4770                  @ ( -- opcode )
+    bl h_comma                          @ Write opcode
 
 @ Return
-6:  pop {pc}
+    pop {pc}
 
 @ ------------------------------------------------------------------------------
 @ decimal
@@ -907,50 +863,16 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 @ name was not defined with create or a user-defined word that calls create.
 @ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE, "does>", does
+    push {lr}
+
     nop
     nop
     nop
 
     // https://softwareengineering.stackexchange.com/questions/339283/forth-how-do-create-and-does-work-exactly
+    // http://www.forth.org/svfig/Len/definwds.htm
     // oida -.-
 
-    @ Hmm... ich fürcht wir müssen create auch nochmal umschreiben
-    @ Folgendes Beispiel geht aktuell nicht:
-    @ "17 create seventeen ,"
-    @ und zwar deshalb, weil ohne ; keine Links und Flags geschrieben werden
-    @ das heißt der Eintrag wird zwar erzeugt und 17 in Speicher gschrieben
-    @ auffindbar is der Eintrag aber nie -.-
-
-    @ Folgende Idee find ich eigentlich nicht so schlecht:
-    @ In LR steht aktuell eine Rücksprungadresse, die auf den Code hinter does> zeigt.
-    @ Also eigentlich genau dorthin wo ma hinwollen.
-    @ Es erscheint also irgendwie logisch in die aktuelle Definition einfach:
-    @ PUSH_REGS lr
-    @ bl compile_comma
-    @ zu schreiben um eine Branch zum Code des define words zu erzeugen und an die Stelle
-    @ hinter does> zu springen...
-
-    @ Das Problem is nur, dass das bei dem kanonischen Beispiel
-    @   ": my_constant create , does> @ ;"_fs;
-    @   "7 my_constant CON"_fs;
-    @ ein Wort "CON" erzeugt wird, dass bei der Ausführung zuerst 7 im Speicher stehn hat
-    @ und dann eine Branch zum FETCH Teil von "my_constant"...
-
-    @ Da fallen also 2 Fragen an:
-    @ 1.) Muss does> die Adresse vom Datenfeld wo 7 steht in die Definition schreiben bevor gebranched wird?
-    @ 2.) Wie verhindert ma dass ma beim Aufruf von CON auf 7 hupft statt dorthin wo does hinzeigt?
-
-    @ bl, zum LR in die aktuelle definition screiben?
-    @PUSH_REGS lr
-    @bl compile_comma
-    @nop
-
-    @ und an exit brauchts vielleicht a?
-    @ um die aktuelle definition abzuschließen
-    @ oder glei semicolon...?
-    @bl semi
-
-    @ directly return to the caller...
     pop {pc}
 
 @ ------------------------------------------------------------------------------
@@ -1162,7 +1084,7 @@ WORD FLAG_SKIP, "fm/mod", fm_div_mod
 @ ------------------------------------------------------------------------------
 @ here
 @ ( -- addr )
-@ addr is the memory-space pointer.
+@ addr is the data-space pointer.
 @ ------------------------------------------------------------------------------
 WORD FLAG_SKIP, "here"
     PUSH_TOS
@@ -1314,7 +1236,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "leave"
 @ literal
 @ ( x -- )
 @ Append the run-time semantics given below to the current definition.
-@ Compiles code for a literal x in the memory-space. This could either be:
+@ Compiles code for a literal x in the data-space. This could either be:
 @ movs (2 bytes)
 @ movs.w (4 bytes)
 @ movw movt (8 bytes)
@@ -1326,7 +1248,7 @@ WORD FLAG_SKIP, "literal", literal
     push {lr}
 
     PUSH_TOS
-    ldr tos, =0xF8476D04                @ PUSH_TOS opcode
+    ldr tos, =0xF8476D04                @ ( -- opcode )
     bl rev_comma                        @ Write opcode
 
 @ movs (t1)
@@ -1934,8 +1856,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "until"
 WORD FLAG_INTERPRET_COMPILE, "variable"
     push {lr}
 
-@ Create
-    bl create
+@ Create word
+    bl word_comma
 
 @ Write literal with the reserved cells address
     ldr r0, =data_end
