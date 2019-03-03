@@ -721,8 +721,8 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "binary"
 WORD FLAG_INTERPRET_COMPILE, "c-variable", c_variable
     push {lr}
 
-@ Create
-    bl create
+@ Create word
+    bl word_comma
 
 @ Write literal with the C variables address
     bl literal
@@ -815,9 +815,9 @@ WORD FLAG_INTERPRET, ">data", to_data
     str r2, [r0]
 
 @ Pop data links from return stack and calculate equivalent text links to
-@ replace them. Also overwrite to_text_begin if it deviates from very the very
-@ first link. This is important to make sure that the first thing written to
-@ text is a link and nothing else!
+@ replace them. Also overwrite to_text_begin if it deviates from the very first
+@ link. This is important to make sure that the first thing written to text is a
+@ link and nothing else!
 @ r0    text_begin
 @ r1    link n
 @ r2    link n+1

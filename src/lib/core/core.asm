@@ -534,11 +534,11 @@ WORD FLAG_SKIP, "accept"
 */
 
 @ ------------------------------------------------------------------------------
-@ align2
+@ align
 @ ( -- )
-@ If the data-space pointer is not aligned, align it to 2-bytes.
+@ If the data-space pointer is not aligned, reserve enough space to align it.
 @ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE, "align2"
+WORD FLAG_INTERPRET_COMPILE, "align"
     ldr r0, =data_begin
     ldr r1, [r0]
     P2ALIGN1 align=r1, scratch=r12
@@ -546,54 +546,12 @@ WORD FLAG_INTERPRET_COMPILE, "align2"
     bx lr
 
 @ ------------------------------------------------------------------------------
-@ align4
-@ ( -- )
-@ If the data-space pointer is not aligned, align it to 4-bytes.
-@ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE, "align4"
-    ldr r0, =data_begin
-    ldr r1, [r0]
-    P2ALIGN2 align=r1, scratch=r12
-    str r1, [r0]
-    bx lr
-
-@ ------------------------------------------------------------------------------
-@ align8
-@ ( -- )
-@ If the data-space pointer is not aligned, align it to 8-bytes.
-@ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE, "align8"
-    ldr r0, =data_begin
-    ldr r1, [r0]
-    P2ALIGN3 align=r1, scratch=r12
-    str r1, [r0]
-    bx lr
-
-@ ------------------------------------------------------------------------------
-@ aligned2
+@ aligned
 @ ( addr -- a-addr )
-@ a-addr is the first 2-byte aligned address greater than or equal to addr.
+@ a-addr is the first aligned address greater than or equal to addr.
 @ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE, "aligned2"
-    P2ALIGN1 tos
-    bx lr
-
-@ ------------------------------------------------------------------------------
-@ aligned4
-@ ( addr -- a-addr )
-@ a-addr is the first 4-byte aligned address greater than or equal to addr.
-@ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE, "aligned4"
-    P2ALIGN2 tos
-    bx lr
-
-@ ------------------------------------------------------------------------------
-@ aligned8
-@ ( addr -- a-addr )
-@ a-addr is the first 8-byte aligned address greater than or equal to addr.
-@ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE, "aligned8"
-    P2ALIGN3 tos
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "aligned"
+    P2ALIGN1 align=tos, scratch=r12
     bx lr
 
 @ ------------------------------------------------------------------------------
@@ -774,6 +732,7 @@ WORD FLAG_SKIP, "cr"
 WORD FLAG_INTERPRET_COMPILE, "create"
     push {lr}
 
+@ Create word
     bl word_comma
 
 @ str tos, [dsp, #-4]!
@@ -865,14 +824,53 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 WORD FLAG_COMPILE, "does>", does
     push {lr}
 
-    nop
-    nop
-    nop
-
     // https://softwareengineering.stackexchange.com/questions/339283/forth-how-do-create-and-does-work-exactly
     // http://www.forth.org/svfig/Len/definwds.htm
     // oida -.-
 
+    nop
+
+@ wir brauchen 2x byte mehr fuern sprung als fuer bx lr...?
+    PUSH_INT8 #2
+    bl allot
+    bl align
+    bl here                             @
+
+@ sich zu "bx lr" vom aktuellen create hangeln...
+@ r0 = adresse von bx lr von create...
+    ldr r0, =link
+    ldr r0, [r0]
+    ldrb r1, [r0, #5]                   @ string laenge...
+    adds r0, r1
+    P2ALIGN1 align=r0, scratch=r1       @ des muesst jetztn die push tos sein
+    adds r0, #12
+
+    @ REMOVE (nur testweise hier)
+    ldrh r1, [r0] @ und des bx lr?
+
+// jetzt alles zwischen "here" und r0 um 2 byte nach hint verschieben?
+@ r0    bx lr
+@ r1    here
+@ tos   here
+@ r2
+    movs r1, tos
+1:  cmp r1, r0
+    bls 1f
+      ldrh r2, [r1, #-2]
+      strh r2, [r1], #-2
+      b 1b
+
+// SOOO und jetzt frag i mi
+// WOHIN ZUR HOELLE hupf ma jetzt? I mag hinter "does>" von der definition hupfn mit dessen hilfe ma die aktuelle erzeugen
+// aber WO?! is de adress? wie find i de?
+// seht die im link register?
+// hmm naw immer no falsche adress :/ da landet ma zurueck im interpret loop
+1:  movs tos, r0
+    PUSH_TOS
+    ldr tos, [sp]
+    bl b_comma
+
+@ Return
     pop {pc}
 
 @ ------------------------------------------------------------------------------
@@ -936,6 +934,17 @@ WORD FLAG_SKIP, "emit"
 
 /*
 WORD FLAG_SKIP, "environment?", environment_q
+    bx lr
+*/
+
+@ ------------------------------------------------------------------------------
+@ erase
+@ ( addr u -- )
+@ If u is greater than zero, clear all bits in each of u consecutive address
+@ units of memory beginning at addr.
+@ ------------------------------------------------------------------------------
+/*
+WORD FLAG_SKIP, "erase"
     bx lr
 */
 
@@ -1069,7 +1078,7 @@ WORD FLAG_INTERPRET_COMPILE, "find"
 
 @ Found something
 @ Only keep tos, r2 and r4
-5:  P2ALIGN1 r4, scratch=r0             @ xt is at next 2-byte aligned address
+5:  P2ALIGN1 align=r4, scratch=r0       @ xt is at next 2-byte aligned address
     DROP                                @ ( token-addr -- )
     PUSH_REGS top=r2, from=r4           @ ( -- xt flags )
 
