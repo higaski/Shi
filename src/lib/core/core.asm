@@ -275,10 +275,17 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "1-", one_minus
     subs tos, #1
     bx lr
 
-/*
-WORD FLAG_SKIP, "2!", two_store
+@ ------------------------------------------------------------------------------
+@ 2!
+@ ( x1 x2 a-addr -- )
+@ Store the cell pair x1 x2 at a-addr, with x2 at a-addr and x1 at the next
+@ consecutive cell. It is equivalent to the sequence swap over ! cell+ !.
+@ ------------------------------------------------------------------------------
+WORD FLAG_INTERPRET_COMPILE, "2!", two_store
+    ldmia dsp!, {r0, r1}
+    stmia tos, {r0, r1}
+    DROP
     bx lr
-*/
 
 @ ------------------------------------------------------------------------------
 @ 2*
@@ -300,10 +307,18 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "2/", two_div
     asr tos, #1
     bx lr
 
-/*
-WORD FLAG_SKIP, "2@", two_fetch
+@ ------------------------------------------------------------------------------
+@ 2@
+@ ( a-addr -- x1 x2 )
+@ Fetch the cell pair x1 x2 stored at a-addr. x2 is stored at a-addr and x1 at
+@ the next consecutive cell. It is equivalent to the sequence dup cell+ @ swap
+@ @.
+@ ------------------------------------------------------------------------------
+WORD FLAG_INTERPRET_COMPILE, "2@", two_fetch
+    ldr r0, [tos, #4]
+    str r0, [dsp, #-4]!
+    ldr tos, [tos]
     bx lr
-*/
 
 @ ------------------------------------------------------------------------------
 @ 2drop
@@ -458,10 +473,15 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, ">", more
     movle tos, #0
     bx lr
 
-/*
-WORD FLAG_SKIP, ">body", to_body
+@ ------------------------------------------------------------------------------
+@ ( xt -- a-addr )
+@ a-addr is the data-field address corresponding to xt. An ambiguous condition
+@ exists if xt is not for a word defined via create.
+@ ------------------------------------------------------------------------------
+WORD FLAG_INTERPRET_COMPILE, ">body", to_body
+    adds tos, #12                       @ align(xt + 12, 4)
+    P2ALIGN2 align=tos, scratch=r12
     bx lr
-*/
 
 @ ------------------------------------------------------------------------------
 @ >in
@@ -619,10 +639,17 @@ WORD FLAG_SKIP, "bl"
     bx lr
 */
 
-/*
-WORD FLAG_SKIP, "c!", c_store
+@ ------------------------------------------------------------------------------
+@ c!
+@ ( char c-addr -- )
+@ Store char at c-addr. When character size is smaller than cell size, only the
+@ number of low-order bits corresponding to character size are transferred.
+@ ------------------------------------------------------------------------------
+WORD FLAG_INTERPRET_COMPILE, "c!", c_store
+    ldrb r0, [dsp], #4
+    strb r0, [tos]
+    DROP
     bx lr
-*/
 
 @ ------------------------------------------------------------------------------
 @ c,
@@ -633,7 +660,7 @@ WORD FLAG_SKIP, "c!", c_store
 @ condition exists if the data-space pointer is not character-aligned prior to
 @ execution of c,.
 @ ------------------------------------------------------------------------------
-WORD FLAG_SKIP, "c,", c_comma
+WORD FLAG_INTERPRET_COMPILE, "c,", c_comma
     ldr r0, =data_begin
     ldr r1, [r0]
     strb tos, [r1], #1                  @ Write char to address in data_begin
@@ -641,10 +668,15 @@ WORD FLAG_SKIP, "c,", c_comma
     DROP                                @ ( char -- )
     bx lr
 
-/*
-WORD FLAG_SKIP, "c@", c_fetch
+@ ------------------------------------------------------------------------------
+@ c@
+@ ( c-addr -- char )
+@ Fetch the character stored at c-addr. When the cell size is greater than
+@ character size, the unused high-order bits are all zeroes.
+@ ------------------------------------------------------------------------------
+WORD FLAG_INTERPRET_COMPILE, "c@", c_fetch
+    ldrb tos, [tos]
     bx lr
-*/
 
 @ ------------------------------------------------------------------------------
 @ cell+
@@ -669,15 +701,22 @@ WORD FLAG_SKIP, "char"
     bx lr
 */
 
-/*
-WORD FLAG_SKIP, "char+", char_plus
+@ ------------------------------------------------------------------------------
+@ char+
+@ ( c-addr1 -- c-addr2 )
+@ Add the size in address units of a character to c-addr1, giving c-addr2.
+@ ------------------------------------------------------------------------------
+WORD FLAG_INTERPRET_COMPILE, "char+", char_plus
+    adds tos, #1
     bx lr
-*/
 
-/*
-WORD FLAG_SKIP, "chars"
+@ ------------------------------------------------------------------------------
+@ chars
+@ ( n1 -- n2 )
+@ n2 is the size in address units of n1 characters.
+@ ------------------------------------------------------------------------------
+WORD FLAG_INTERPRET_COMPILE, "chars"
     bx lr
-*/
 
 @ ------------------------------------------------------------------------------
 @ constant
@@ -740,8 +779,16 @@ WORD FLAG_INTERPRET_COMPILE, "create"
     ldr tos, =0xF8476D04                @ ( -- opcode )
     bl rev_comma                        @ Write opcode
 
+@ Additions to pc can only be 4 byte aligned, add nop if necessary
+@ nop
+    bl here
+    ands tos, #3
+    beq 1f
+      PUSH_INT16 #0xBF00                @ ( -- opcode )
+      bl h_comma                        @ Write opcode
+
 @ add tos, pc, #4
-    PUSH_TOS
+1:  PUSH_TOS
     ldr tos, =0xF20F0604                @ ( -- opcode )
     bl rev_comma                        @ Write opcode
 
@@ -754,6 +801,7 @@ WORD FLAG_INTERPRET_COMPILE, "create"
     bl allot
 
 @ Return
+    DROP
     pop {pc}
 
 @ ------------------------------------------------------------------------------
@@ -827,23 +875,20 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 @ name was not defined with create or a user-defined word that calls create.
 @ ------------------------------------------------------------------------------
 WORD FLAG_COMPILE, "does>", does
-    push {lr}
-
-@ Get address of bx lr of create
+@ Get address of bx lr of latest definition's create
 @ r0    bx lr address
     ldr r0, =link
     ldr r0, [r0]
     ldrb r1, [r0, #5]                   @ c-addr
     adds r0, r1
-    P2ALIGN1 align=r0, scratch=r1
-    adds r0, #14                        @ bx lr address = xt create + #14
+    adds r0, #12+2                      @ align(link + c-addr + 12 + 2, 4)
+    P2ALIGN2 align=r0, scratch=r12
 
 @ Replace bx lr of create with branch to code after does>
 @ r0    bx lr address
-@ tos   does> link address
+@ lr    does> link address
     PUSH_REGS r0
-    PUSH_TOS
-    ldr tos, [sp]
+    PUSH_REGS lr
     bl b_comma
 
 @ Return
@@ -1071,7 +1116,7 @@ WORD FLAG_SKIP, "fm/mod", fm_div_mod
 @ ( -- addr )
 @ addr is the data-space pointer.
 @ ------------------------------------------------------------------------------
-WORD FLAG_SKIP, "here"
+WORD FLAG_INTERPRET_COMPILE, "here"
     PUSH_TOS
     ldr tos, =data_begin
     ldr tos, [tos]
@@ -1533,10 +1578,19 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "min"
     movlt tos, r0
     bx lr
 
-/*
-WORD FLAG_SKIP, "mod"
+@ ------------------------------------------------------------------------------
+@ mod
+@ ( n1 n2 -- n3 )
+@ Divide n1 by n2, giving the single-cell remainder n3. An ambiguous condition
+@ exists if n2 is zero. If n1 and n2 differ in sign, the implementation-defined
+@ result returned will be the same as that returned by either the phrase >r s>d
+@ r> fm/mod drop or the phrase >r s>d r> sm/rem drop.
+@ ------------------------------------------------------------------------------
+WORD FLAG_INTERPRET_COMPILE, "mod"
+    ldr r0, [dsp], #4
+    sdiv    r1, r0, tos
+    mls     tos, r1, tos, r0
     bx lr
-*/
 
 /*
 WORD FLAG_SKIP, "move"

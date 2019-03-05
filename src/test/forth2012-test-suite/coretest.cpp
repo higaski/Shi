@@ -1,21 +1,17 @@
 #include "forth2012_test_suite.hpp"
-#include "shi.hpp"
 
 using shi::operator""_fs;
 
 TEST(basic_assumptions) {
   ": BITSSET? if 0 0 else 0 then ;"_fs;
-
   "0 BITSSET?"_fs;
   TEST_ASSERT_EQUAL(1, shi::size());
   TEST_ASSERT_EQUAL(0, shi::top());
-
   "1 BITSSET?"_fs;
   TEST_ASSERT_EQUAL(3, shi::size());
   TEST_ASSERT_EQUAL(0, shi::top());
   TEST_ASSERT_EQUAL(0, shi::top(-1));
   TEST_ASSERT_EQUAL(0, shi::top(-2));
-
   "-1 BITSSET?"_fs;
   TEST_ASSERT_EQUAL(5, shi::size());
   TEST_ASSERT_EQUAL(0, shi::top());
@@ -107,8 +103,7 @@ TEST(two_times__two_div__lshift__rshit) {
   TEST_ASSERT_EQUAL(2, shi::top());
   "1 2 lshift"_fs;
   TEST_ASSERT_EQUAL(4, shi::top());
-  //  shi::evaluate("1 F lshift");  // -> 8000 }T         \ BIGGEST GUARANTEED
-  //  SHIFT TEST_ASSERT_EQUAL(8000, shi::top());
+  // T{ 1 F LSHIFT -> 8000 }T \ BIGGEST GUARANTEED SHIFT
   "1S 1 lshift 1 xor"_fs;
   TEST_ASSERT_EQUAL(_1S, shi::top());
   "MSB 1 lshift"_fs;
@@ -122,8 +117,7 @@ TEST(two_times__two_div__lshift__rshit) {
   TEST_ASSERT_EQUAL(1, shi::top());
   "4 2 rshift"_fs;
   TEST_ASSERT_EQUAL(1, shi::top());
-  // shi::evaluate("8000 F rshift");  // -> 1 }T         \ BIGGEST
-  //  TEST_ASSERT_EQUAL(1, shi::top());
+  // T{ 8000 F RSHIFT -> 1 }T \ BIGGEST
   "MSB 1 rshift MSB and"_fs;
   TEST_ASSERT_EQUAL(0, shi::top());
   "MSB 1 rshift 2*"_fs;
@@ -797,77 +791,127 @@ TEST(
 
 TEST(
     comma__fetch__store__cell_plus__cells__c_comma__c_fetch__c_store__chars__two_fetch__two_store__align__aligned__plus_store__allot) {
-  //  HERE 1 ALLOT
-  //  HERE
-  //  CONSTANT 2NDA
-  //  CONSTANT 1STA
-  //  T{ 1STA 2NDA U< -> <TRUE> }T      \ HERE MUST GROW WITH ALLOT
-  //  T{ 1STA 1+ -> 2NDA }T         \ ... BY ONE ADDRESS UNIT
-  //  ( MISSING TEST: NEGATIVE ALLOT )
-  //
-  //  \ Added by GWJ so that ALIGN can be used before , (comma) is tested
-  //  1 ALIGNED CONSTANT ALMNT   \ -- 1|2|4|8 for 8|16|32|64 bit alignment
-  //  ALIGN
-  //  T{ HERE 1 ALLOT ALIGN HERE SWAP - ALMNT = -> <TRUE> }T
-  //  \ End of extra test
-  //
-  //  HERE 1 ,
-  //  HERE 2 ,
-  //  CONSTANT 2ND
-  //  CONSTANT 1ST
-  //  T{ 1ST 2ND U< -> <TRUE> }T         \ HERE MUST GROW WITH ALLOT
-  //  T{ 1ST CELL+ -> 2ND }T         \ ... BY ONE CELL
-  //  T{ 1ST 1 CELLS + -> 2ND }T
-  //  T{ 1ST @ 2ND @ -> 1 2 }T
-  //  T{ 5 1ST ! -> }T
-  //  T{ 1ST @ 2ND @ -> 5 2 }T
-  //  T{ 6 2ND ! -> }T
-  //  T{ 1ST @ 2ND @ -> 5 6 }T
-  //  T{ 1ST 2@ -> 6 5 }T
-  //  T{ 2 1 1ST 2! -> }T
-  //  T{ 1ST 2@ -> 2 1 }T
-  //  T{ 1S 1ST !  1ST @ -> 1S }T      \ CAN STORE CELL-WIDE VALUE
-  //
-  //  HERE 1 C,
-  //  HERE 2 C,
-  //  CONSTANT 2NDC
-  //  CONSTANT 1STC
-  //  T{ 1STC 2NDC U< -> <TRUE> }T      \ HERE MUST GROW WITH ALLOT
-  //  T{ 1STC CHAR+ -> 2NDC }T         \ ... BY ONE CHAR
-  //  T{ 1STC 1 CHARS + -> 2NDC }T
-  //  T{ 1STC C@ 2NDC C@ -> 1 2 }T
-  //  T{ 3 1STC C! -> }T
-  //  T{ 1STC C@ 2NDC C@ -> 3 2 }T
-  //  T{ 4 2NDC C! -> }T
-  //  T{ 1STC C@ 2NDC C@ -> 3 4 }T
-  //
-  //  ALIGN 1 ALLOT HERE ALIGN HERE 3 CELLS ALLOT
-  //  CONSTANT A-ADDR  CONSTANT UA-ADDR
-  //  T{ UA-ADDR ALIGNED -> A-ADDR }T
-  //  T{    1 A-ADDR C!  A-ADDR C@ ->    1 }T
-  //  T{ 1234 A-ADDR  !  A-ADDR  @ -> 1234 }T
-  //  T{ 123 456 A-ADDR 2!  A-ADDR 2@ -> 123 456 }T
-  //  T{ 2 A-ADDR CHAR+ C!  A-ADDR CHAR+ C@ -> 2 }T
-  //  T{ 3 A-ADDR CELL+ C!  A-ADDR CELL+ C@ -> 3 }T
-  //  T{ 1234 A-ADDR CELL+ !  A-ADDR CELL+ @ -> 1234 }T
-  //  T{ 123 456 A-ADDR CELL+ 2!  A-ADDR CELL+ 2@ -> 123 456 }T
-  //
-  //  : BITS ( X -- U )
-  //     0 SWAP BEGIN DUP WHILE DUP MSB AND IF >R 1+ R> THEN 2* REPEAT DROP ;
+  "here 1 allot"_fs;
+  "here"_fs;
+  "constant 2NDA"_fs;
+  "constant 1STA"_fs;
+  "1STA 2NDA u<"_fs;
+  TEST_ASSERT_EQUAL(1, shi::size());
+  TEST_ASSERT_EQUAL(TRUE, shi::top());
+  "1STA 1+"_fs;
+  "2NDA"_fs;
+  TEST_ASSERT_EQUAL(shi::top(), shi::top(-1));
+  // ( MISSING TEST: NEGATIVE ALLOT )
+
+  "1 aligned constant ALMNT"_fs;  // 1|2|4|8 for 8|16|32|64 bit alignment
+  "align"_fs;
+  "here 1 allot align here swap - ALMNT ="_fs;
+  TEST_ASSERT_EQUAL(TRUE, shi::top());
+
+  "here 1 ,"_fs;
+  "here 2 ,"_fs;
+  "constant 2ND"_fs;
+  "constant 1ST"_fs;
+  "2ND"_fs;
+  auto const _2ND{shi::top()};
+  "1ST 2ND u<"_fs;
+  TEST_ASSERT_EQUAL(TRUE, shi::top());
+  "1ST cell+"_fs;
+  TEST_ASSERT_EQUAL(_2ND, shi::top());
+  "1ST 1 cells +"_fs;
+  TEST_ASSERT_EQUAL(_2ND, shi::top());
+  "1ST @ 2ND @"_fs;
+  TEST_ASSERT_EQUAL(2, shi::top());
+  TEST_ASSERT_EQUAL(1, shi::top(-1));
+  "5 1ST !"_fs;
+  "1ST @ 2ND @"_fs;
+  TEST_ASSERT_EQUAL(2, shi::top());
+  TEST_ASSERT_EQUAL(5, shi::top(-1));
+  "6 2ND !"_fs;
+  "1ST @ 2ND @"_fs;
+  TEST_ASSERT_EQUAL(6, shi::top());
+  TEST_ASSERT_EQUAL(5, shi::top(-1));
+  "1ST 2@"_fs;
+  TEST_ASSERT_EQUAL(5, shi::top());
+  TEST_ASSERT_EQUAL(6, shi::top(-1));
+  "2 1 1ST 2!"_fs;
+  "1ST 2@"_fs;
+  TEST_ASSERT_EQUAL(1, shi::top());
+  TEST_ASSERT_EQUAL(2, shi::top(-1));
+  "1S 1ST ! 1ST @"_fs;
+  TEST_ASSERT_EQUAL(_1S, shi::top());
+
+  "here 1 c,"_fs;
+  "here 2 c,"_fs;
+  "constant 2NDC"_fs;
+  "constant 1STC"_fs;
+  "2NDC"_fs;
+  auto const _2NDC{shi::top()};
+  "1STC 2NDC u<"_fs;
+  TEST_ASSERT_EQUAL(TRUE, shi::top());
+  "1STC char+"_fs;
+  TEST_ASSERT_EQUAL(_2NDC, shi::top());
+  "1STC 1 chars +"_fs;
+  TEST_ASSERT_EQUAL(_2NDC, shi::top());
+  "1STC c@ 2NDC c@"_fs;
+  TEST_ASSERT_EQUAL(2, shi::top());
+  TEST_ASSERT_EQUAL(1, shi::top(-1));
+  "3 1STC c!"_fs;
+  "1STC c@ 2NDC c@"_fs;
+  TEST_ASSERT_EQUAL(2, shi::top());
+  TEST_ASSERT_EQUAL(3, shi::top(-1));
+  "4 2NDC c!"_fs;
+  "1STC c@ 2NDC c@"_fs;
+  TEST_ASSERT_EQUAL(4, shi::top());
+  TEST_ASSERT_EQUAL(3, shi::top(-1));
+
+  "align 1 allot here align here 3 cells allot"_fs;
+  "constant A-ADDR constant UA-ADDR"_fs;
+  "A-ADDR"_fs;
+  auto const A_ADDR{shi::top()};
+  "UA-ADDR aligned"_fs;
+  TEST_ASSERT_EQUAL(A_ADDR, shi::top());
+  "1 A-ADDR c! A-ADDR c@"_fs;
+  TEST_ASSERT_EQUAL(1, shi::top());
+  "1234 A-ADDR ! A-ADDR @"_fs;
+  TEST_ASSERT_EQUAL(1234, shi::top());
+  "123 456 A-ADDR 2! A-ADDR 2@"_fs;
+  TEST_ASSERT_EQUAL(456, shi::top());
+  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  "2 A-ADDR char+ c! A-ADDR char+ c@"_fs;
+  TEST_ASSERT_EQUAL(2, shi::top());
+  "3 A-ADDR cell+ c! A-ADDR cell+ c@"_fs;
+  TEST_ASSERT_EQUAL(3, shi::top());
+  "1234 A-ADDR cell+ ! A-ADDR cell+ @"_fs;
+  TEST_ASSERT_EQUAL(1234, shi::top());
+  "123 456 A-ADDR cell+ 2! A-ADDR cell+ 2@"_fs;
+  TEST_ASSERT_EQUAL(456, shi::top());
+  TEST_ASSERT_EQUAL(123, shi::top(-1));
+
+  ": BITS 0 swap begin dup while dup MSB and if >r 1+ r> then 2* repeat drop ;"_fs;
   //  ( CHARACTERS >= 1 AU, <= SIZE OF CELL, >= 8 BITS )
-  //  T{ 1 CHARS 1 < -> <FALSE> }T
-  //  T{ 1 CHARS 1 CELLS > -> <FALSE> }T
-  //  ( TBD: HOW TO FIND NUMBER OF BITS? )
-  //
+  "1 chars 1 <"_fs;
+  TEST_ASSERT_EQUAL(FALSE, shi::top());
+  "1 chars 1 cells >"_fs;
+  TEST_ASSERT_EQUAL(FALSE, shi::top());
+  // ( TBD: HOW TO FIND NUMBER OF BITS? )
+
   //  ( CELLS >= 1 AU, INTEGRAL MULTIPLE OF CHAR SIZE, >= 16 BITS )
-  //  T{ 1 CELLS 1 < -> <FALSE> }T
-  //  T{ 1 CELLS 1 CHARS MOD -> 0 }T
-  //  T{ 1S BITS 10 < -> <FALSE> }T
-  //
-  //  T{ 0 1ST ! -> }T
-  //  T{ 1 1ST +! -> }T
-  //  T{ 1ST @ -> 1 }T
-  //  T{ -1 1ST +! 1ST @ -> 0 }T
+  "1 cells 1 <"_fs;
+  TEST_ASSERT_EQUAL(FALSE, shi::top());
+  "1 cells 1 chars mod"_fs;
+  TEST_ASSERT_EQUAL(0, shi::top());
+  "1S BITS 10 <"_fs;
+  TEST_ASSERT_EQUAL(FALSE, shi::top());
+
+  "0 1ST !"_fs;
+  "1 1ST +!"_fs;
+  "1ST @"_fs;
+  TEST_ASSERT_EQUAL(1, shi::top());
+  "-1 1ST +! 1ST @"_fs;
+  TEST_ASSERT_EQUAL(0, shi::top());
+
+  shi::clear();
 }
 
 TEST(
@@ -971,38 +1015,78 @@ TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
 }
 
 TEST(colon__semicolon__constant__variable__create__does__to_body) {
-  //  T{ 123 CONSTANT X123 -> }T
-  //  T{ X123 -> 123 }T
-  //  T{ : EQU CONSTANT ; -> }T
-  //  T{ X123 EQU Y123 -> }T
-  //  T{ Y123 -> 123 }T
-  //
-  //  T{ VARIABLE V1 -> }T
-  //  T{ 123 V1 ! -> }T
-  //  T{ V1 @ -> 123 }T
-  //
+  "123 constant X123"_fs;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "X123"_fs;
+  TEST_ASSERT_EQUAL(1, shi::size());
+  TEST_ASSERT_EQUAL(123, shi::top());
+  ": EQU constant ;"_fs;  // }T
+  "X123 EQU Y123"_fs;     // }T
+  "Y123"_fs;              // 123 }T
+  TEST_ASSERT_EQUAL(2, shi::size());
+  TEST_ASSERT_EQUAL(123, shi::top());
+  TEST_ASSERT_EQUAL(123, shi::top(-1));
+
+  "variable V1"_fs;
+  TEST_ASSERT_EQUAL(2, shi::size());
+  "123 V1 !"_fs;
+  TEST_ASSERT_EQUAL(2, shi::size());
+  "V1 @"_fs;
+  TEST_ASSERT_EQUAL(3, shi::size());
+  TEST_ASSERT_EQUAL(123, shi::top());
+  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  TEST_ASSERT_EQUAL(123, shi::top(-2));
+
+  shi::clear();
+
   //  T{ : NOP : POSTPONE ; ; -> }T
   //  T{ NOP NOP1 NOP NOP2 -> }T
   //  T{ NOP1 -> }T
   //  T{ NOP2 -> }T
-  //
-  //  T{ : DOES1 DOES> @ 1 + ; -> }T
-  //  T{ : DOES2 DOES> @ 2 + ; -> }T
-  //  T{ CREATE CR1 -> }T
-  //  T{ CR1 -> HERE }T
-  //  T{ ' CR1 >BODY -> HERE }T
-  //  T{ 1 , -> }T
-  //  T{ CR1 @ -> 1 }T
-  //  T{ DOES1 -> }T
-  //  T{ CR1 -> 2 }T
-  //  T{ DOES2 -> }T
-  //  T{ CR1 -> 3 }T
-  //
-  //  T{ : WEIRD: CREATE DOES> 1 + DOES> 2 + ; -> }T
-  //  T{ WEIRD: W1 -> }T
-  //  T{ ' W1 >BODY -> HERE }T
-  //  T{ W1 -> HERE 1 + }T
-  //  T{ W1 -> HERE 2 + }T
+
+  ": DOES1 does> @ 1 + ;"_fs;  // }T
+  TEST_ASSERT_EQUAL(0, shi::size());
+  ": DOES2 does> @ 2 + ;"_fs;  // }T
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "create CR1"_fs;  // }T
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "here"_fs;
+
+  "CR1"_fs;
+  TEST_ASSERT_EQUAL(2, shi::size());
+  TEST_ASSERT_EQUAL(shi::top(), shi::top(-1));
+  "' CR1 >body"_fs;
+  TEST_ASSERT_EQUAL(3, shi::size());
+  TEST_ASSERT_EQUAL(shi::top(), shi::top(-1));
+  "1 ,"_fs;
+  TEST_ASSERT_EQUAL(3, shi::size());
+  "CR1 @"_fs;
+  TEST_ASSERT_EQUAL(4, shi::size());
+  TEST_ASSERT_EQUAL(1, shi::top());
+  "DOES1"_fs;
+  TEST_ASSERT_EQUAL(4, shi::size());
+  "CR1"_fs;
+  TEST_ASSERT_EQUAL(5, shi::size());
+  TEST_ASSERT_EQUAL(2, shi::top());
+  "DOES2"_fs;
+  "CR1"_fs;
+  TEST_ASSERT_EQUAL(6, shi::size());
+  TEST_ASSERT_EQUAL(3, shi::top());
+
+  ": WEIRD: create does> 1 + does> 2 + ;"_fs;
+  TEST_ASSERT_EQUAL(6, shi::size());
+  "WEIRD: W1"_fs;
+  TEST_ASSERT_EQUAL(6, shi::size());
+  "' W1 >body"_fs;
+  TEST_ASSERT_EQUAL(7, shi::size());
+  auto const here{shi::top()};
+  "W1"_fs;
+  TEST_ASSERT_EQUAL(8, shi::size());
+  TEST_ASSERT_EQUAL(here + 1, shi::top());
+  "W1"_fs;
+  TEST_ASSERT_EQUAL(here + 2, shi::top());
+
+  shi::clear();
 }
 
 TEST(source__to_in__word) {
@@ -1101,7 +1185,7 @@ TEST(num_start__num__num_s__hold__sign__base__to_number__hex__decimal) {
   //  CREATE GN-BUF 0 C,
   //  : GN-STRING   GN-BUF 1 ;
   //  : GN-CONSUMED   GN-BUF CHAR+ 0 ;
-  //  : GN'      [CHAR] ' WORD CHAR+ C@ GN-BUF C!  GN-STRING ;
+  //  : GN'      [CHAR] ' WORD CHAR+ C@ GN-BUF c!  GN-STRING ;
   //
   //  T{ 0 0 GN' 0' >NUMBER -> 0 0 GN-CONSUMED }T
   //  T{ 0 0 GN' 1' >NUMBER -> 1 0 GN-CONSUMED }T

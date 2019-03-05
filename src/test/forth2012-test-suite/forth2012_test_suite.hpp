@@ -18,3 +18,24 @@
 #define TRUE -1
 
 int forth2012_test_suite();
+
+#ifdef __cplusplus
+
+#  include <utility>
+#  include "shi.hpp"
+
+namespace detail {
+
+template<typename... Ts, size_t... Is>
+void stack_equal_impl(std::index_sequence<Is...>, Ts... ts) {
+  (TEST_ASSERT_EQUAL(ts, shi::top(Is)), ...);
+}
+
+}  // namespace detail
+
+template<typename... Ts>
+void stack_equal(Ts... ts) {
+  detail::stack_equal_impl(std::make_index_sequence<sizeof...(Ts)>{}, ts...);
+}
+
+#endif
