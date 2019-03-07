@@ -12,7 +12,7 @@ TEST(s_to_d__m_times__um_times);
 TEST(
     fm_div_mod__sm_div_rem__um_div_mod__times_div__times_div_mod__div__div_mod__mod);
 TEST(
-    comma__fetch__store__cell_plus__cells__c_comma__c_fetch__c_store__chars__two_fetch__two_store__align__aligned__plus_store__allot);
+    here__comma__fetch__store__cell_plus__cells__c_comma__c_fetch__c_store__chars__two_fetch__two_store__align__aligned__plus_store__allot);
 TEST(
     tick__bracket_tick__find__execute__immediate__count__literal__postpone__state);
 TEST(if__else__then__begin__while__repeat__until__recurse);
@@ -50,7 +50,7 @@ int forth2012_test_suite() {
   RUN_TEST(
       fm_div_mod__sm_div_rem__um_div_mod__times_div__times_div_mod__div__div_mod__mod);
   RUN_TEST(
-      comma__fetch__store__cell_plus__cells__c_comma__c_fetch__c_store__chars__two_fetch__two_store__align__aligned__plus_store__allot);
+      here__comma__fetch__store__cell_plus__cells__c_comma__c_fetch__c_store__chars__two_fetch__two_store__align__aligned__plus_store__allot);
   RUN_TEST(
       tick__bracket_tick__find__execute__immediate__count__literal__postpone__state);
   RUN_TEST(if__else__then__begin__while__repeat__until__recurse);

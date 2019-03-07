@@ -3,11 +3,12 @@
 using shi::operator""_fs;
 
 TEST(basic_assumptions) {
+  // ( TEST IF ANY BITS ARE SET; ANSWER IN BASE 1 )
   ": BITSSET? if 0 0 else 0 then ;"_fs;
-  "0 BITSSET?"_fs;
+  "0 BITSSET?"_fs;  // ( ZERO IS ALL BITS CLEAR )
   TEST_ASSERT_EQUAL(1, shi::size());
   TEST_ASSERT_EQUAL(0, shi::top());
-  "1 BITSSET?"_fs;
+  "1 BITSSET?"_fs;  // ( OTHER NUMBER HAVE AT LEAST ONE BIT )
   TEST_ASSERT_EQUAL(3, shi::size());
   TEST_ASSERT_EQUAL(0, shi::top());
   TEST_ASSERT_EQUAL(0, shi::top(-1));
@@ -67,6 +68,7 @@ TEST(invert__and__or__xor) {
 }
 
 TEST(two_times__two_div__lshift__rshit) {
+  // ( WE TRUST 1S, INVERT, AND BITSSET?; WE WILL CONFIRM RSHIFT LATER )
   "1S 1 rshift invert constant MSB"_fs;
   "MSB BITSSET?"_fs;
   TEST_ASSERT_EQUAL(2, shi::size());
@@ -90,7 +92,7 @@ TEST(two_times__two_div__lshift__rshit) {
   TEST_ASSERT_EQUAL(0, shi::top());
   "4000 2/"_fs;
   TEST_ASSERT_EQUAL(2000, shi::top());
-  "1S 2/"_fs;
+  "1S 2/"_fs;  // \ MSB PROPOGATED
   TEST_ASSERT_EQUAL(_1S, shi::top());
   "1S 1 xor 2/"_fs;
   TEST_ASSERT_EQUAL(_1S, shi::top());
@@ -118,7 +120,7 @@ TEST(two_times__two_div__lshift__rshit) {
   "4 2 rshift"_fs;
   TEST_ASSERT_EQUAL(1, shi::top());
   // T{ 8000 F RSHIFT -> 1 }T \ BIGGEST
-  "MSB 1 rshift MSB and"_fs;
+  "MSB 1 rshift MSB and"_fs;  // \ RSHIFT ZERO FILLS MSBS
   TEST_ASSERT_EQUAL(0, shi::top());
   "MSB 1 rshift 2*"_fs;
   TEST_ASSERT_EQUAL(MSB, shi::top());
@@ -439,7 +441,7 @@ TEST(to_r__from_r__r_fetch) {
   TEST_ASSERT_EQUAL(123, shi::top());
   TEST_ASSERT_EQUAL(123, shi::top(-1));
 
-  "1S GR1"_fs;
+  "1S GR1"_fs;  // ( RETURN STACK HOLDS CELLS )
   TEST_ASSERT_EQUAL(_1S, shi::top());
 
   shi::clear();
@@ -790,7 +792,7 @@ TEST(
 }
 
 TEST(
-    comma__fetch__store__cell_plus__cells__c_comma__c_fetch__c_store__chars__two_fetch__two_store__align__aligned__plus_store__allot) {
+    here__comma__fetch__store__cell_plus__cells__c_comma__c_fetch__c_store__chars__two_fetch__two_store__align__aligned__plus_store__allot) {
   "here 1 allot"_fs;
   "here"_fs;
   "constant 2NDA"_fs;
@@ -980,16 +982,30 @@ TEST(if__else__then__begin__while__repeat__until__recurse) {
 }
 
 TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
-  //  T{ : GD1 DO I LOOP ; -> }T
-  //  T{ 4 1 GD1 -> 1 2 3 }T
-  //  T{ 2 -1 GD1 -> -1 0 1 }T
-  //  T{ MID-UINT+1 MID-UINT GD1 -> MID-UINT }T
-  //
+  ": GD1 do i loop ;"_fs;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "4 1 GD1"_fs;
+  TEST_ASSERT_EQUAL(3, shi::size());
+  TEST_ASSERT_EQUAL(3, shi::top());
+  TEST_ASSERT_EQUAL(2, shi::top(-1));
+  TEST_ASSERT_EQUAL(1, shi::top(-2));
+  "2 -1 GD1"_fs;
+  TEST_ASSERT_EQUAL(6, shi::size());
+  TEST_ASSERT_EQUAL(1, shi::top());
+  TEST_ASSERT_EQUAL(0, shi::top(-1));
+  TEST_ASSERT_EQUAL(-1, shi::top(-2));
+  TEST_ASSERT_EQUAL(3, shi::top(-3));
+  TEST_ASSERT_EQUAL(2, shi::top(-4));
+  TEST_ASSERT_EQUAL(1, shi::top(-5));
+  "MID-UINT+1 MID-UINT GD1"_fs;
+  TEST_ASSERT_EQUAL(7, shi::size());
+  TEST_ASSERT_EQUAL(MID_UINT, shi::top());
+
   //  T{ : GD2 DO I -1 +LOOP ; -> }T
   //  T{ 1 4 GD2 -> 4 3 2 1 }T
   //  T{ -1 2 GD2 -> 2 1 0 -1 }T
   //  T{ MID-UINT MID-UINT+1 GD2 -> MID-UINT+1 MID-UINT }T
-  //
+
   //  T{ : GD3 DO 1 0 DO J LOOP LOOP ; -> }T
   //  T{ 4 1 GD3 -> 1 2 3 }T
   //  T{ 2 -1 GD3 -> -1 0 1 }T
@@ -1012,6 +1028,8 @@ TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
   //  T{ 1 GD6 -> 1 }T
   //  T{ 2 GD6 -> 3 }T
   //  T{ 3 GD6 -> 4 1 2 }T
+
+  shi::clear();
 }
 
 TEST(colon__semicolon__constant__variable__create__does__to_body) {
@@ -1020,9 +1038,9 @@ TEST(colon__semicolon__constant__variable__create__does__to_body) {
   "X123"_fs;
   TEST_ASSERT_EQUAL(1, shi::size());
   TEST_ASSERT_EQUAL(123, shi::top());
-  ": EQU constant ;"_fs;  // }T
-  "X123 EQU Y123"_fs;     // }T
-  "Y123"_fs;              // 123 }T
+  ": EQU constant ;"_fs;
+  "X123 EQU Y123"_fs;
+  "Y123"_fs;
   TEST_ASSERT_EQUAL(2, shi::size());
   TEST_ASSERT_EQUAL(123, shi::top());
   TEST_ASSERT_EQUAL(123, shi::top(-1));

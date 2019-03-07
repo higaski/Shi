@@ -173,7 +173,11 @@ TEST(two_to_r__two_r_fetch__two_r_from) {
 }
 
 TEST(hex) {
-  //  T{ BASE @ HEX BASE @ DECIMAL BASE @ - SWAP BASE ! -> 6 }T
+  "base @ hex base @ decimal base @ - swap base !"_fs;
+  TEST_ASSERT_EQUAL(1, shi::size());
+  TEST_ASSERT_EQUAL(6, shi::top());
+
+  shi::clear();
 }
 
 TEST(within) {
@@ -319,8 +323,13 @@ TEST(unused) {
 }
 
 TEST(again) {
-  //  T{ : AG0 701 BEGIN DUP 7 MOD 0= IF EXIT THEN 1+ AGAIN ; -> }T
-  //  T{ AG0 -> 707 }T
+  ": AG0 701 begin dup 7 mod 0= if exit then 1+ again ;"_fs;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "AG0"_fs;
+  TEST_ASSERT_EQUAL(1, shi::size());
+  TEST_ASSERT_EQUAL(707, shi::top());
+
+  shi::clear();
 }
 
 TEST(marker) {

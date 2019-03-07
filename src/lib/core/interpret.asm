@@ -96,7 +96,7 @@ interpret_compile:
     mvns r4, r1                         @ Invert flags
     ands r4, r4, #BIT_FOLDS             @ Extract folds bits from flags
     beq 1f                              @ Goto literal
-        cmp r4, r3                      @ folds bits - number of literals
+        cmp r4, r3                      @ Folds bits - number of literals
         bls 3f                          @ Goto execute
 
 @ Literal

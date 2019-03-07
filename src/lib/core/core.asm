@@ -478,7 +478,7 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, ">", more
 @ a-addr is the data-field address corresponding to xt. An ambiguous condition
 @ exists if xt is not for a word defined via create.
 @ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE, ">body", to_body
+WORD FLAG_INTERPRET_COMPILE & FOLDS_1, ">body", to_body
     adds tos, #12                       @ align(xt + 12, 4)
     P2ALIGN2 align=tos, scratch=r12
     bx lr
@@ -514,7 +514,7 @@ WORD FLAG_COMPILE & FLAG_INLINE, ">r", to_r
 @ ( x -- 0 | x x )
 @ Duplicate x if it is non-zero.
 @ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "?dup", q_dup
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "?dup", q_dup
     Q_DUP
     bx lr
 
@@ -706,7 +706,7 @@ WORD FLAG_SKIP, "char"
 @ ( c-addr1 -- c-addr2 )
 @ Add the size in address units of a character to c-addr1, giving c-addr2.
 @ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE, "char+", char_plus
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "char+", char_plus
     adds tos, #1
     bx lr
 
@@ -715,7 +715,7 @@ WORD FLAG_INTERPRET_COMPILE, "char+", char_plus
 @ ( n1 -- n2 )
 @ n2 is the size in address units of n1 characters.
 @ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE, "chars"
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "chars"
     bx lr
 
 @ ------------------------------------------------------------------------------
@@ -1274,7 +1274,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "leave"
 @ ( -- x )
 @ Place x on the stack.
 @ ------------------------------------------------------------------------------
-WORD FLAG_SKIP, "literal", literal
+WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
     push {lr}
 
     PUSH_TOS
@@ -1586,7 +1586,7 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "min"
 @ result returned will be the same as that returned by either the phrase >r s>d
 @ r> fm/mod drop or the phrase >r s>d r> sm/rem drop.
 @ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE, "mod"
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "mod"
     ldr r0, [dsp], #4
     sdiv    r1, r0, tos
     mls     tos, r1, tos, r0
@@ -1691,7 +1691,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "repeat"
 @ ( x1 x2 x3 -- x2 x3 x1 )
 @ Rotate the top three stack entries.
 @ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE, "rot"
+WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "rot"
     ROT
     bx lr
 
@@ -1768,7 +1768,7 @@ WORD FLAG_SKIP, "state"
 @ ( x1 x2 -- x2 x1 )
 @ Exchange the top two stack items.
 @ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "swap"
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "swap"
     SWAP
     bx lr
 
