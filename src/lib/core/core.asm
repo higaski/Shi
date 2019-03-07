@@ -156,27 +156,60 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
     push {lr}
 
 @ pop {r0, r1}
-@ adds r0, tos
-    ldr r0, =0x1980BC03
+@ subs r2, r1, r0
+    ldr r0, =0x1A0ABC03
     PUSH_REGS r0                        @ ( -- opcode )
     bl comma
 
+@ adds r0, r0, tos
 @ ldmia dsp!, {tos}
-@ cmp r0, r1
-    ldr r0, =0x4288CF40
+    ldr r0, =0xCF401980
     PUSH_REGS r0                        @ ( -- opcode )
     bl comma
 
-@ it lt
-@ pushlt {r0, r1}
-    ldr r0, =0xB403BFB8
+@ subs r3, r1, r0
+@ cmp r2, #0
+    ldr r0, =0x2A001A0B
     PUSH_REGS r0                        @ ( -- opcode )
     bl comma
+
+@ ite le
+@ movle r2, #0
+    ldr r0, =0x2200BFD4
+    PUSH_REGS r0                        @ ( -- opcode )
+    bl comma
+
+@ movgt r2, #1
+@ cmp r3, #0
+    ldr r0, =0x2B002201
+    PUSH_REGS r0                        @ ( -- opcode )
+    bl comma
+
+@ ite gt
+@ movgt r3, r2
+    ldr r0, =0x4613BFCC
+    PUSH_REGS r0                        @ ( -- opcode )
+    bl comma
+
+@ eorle r3, r2, #1
+    ldr r0, =0x0301F082
+    PUSH_REGS r0                        @ ( -- opcode )
+    bl comma
+
+@ cmp r3, #0
+@ it ne
+    ldr r0, =0xBF182B00
+    PUSH_REGS r0                        @ ( -- opcode )
+    bl comma
+
+@ pushne {r0, r1}
+    PUSH_INT16 #0xB403                  @ ( -- opcode )
+    bl h_comma
 
 @ Call branch function
     bl here                             @ ( -- orig )
     SWAP
-    bl blt_comma
+    bl bne_comma
 
 @ Return
     pop {pc}
@@ -847,11 +880,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 @ ldmia dsp!, {r1, tos}
     ldr r0, =0xCF420030
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ push {r0, r1}
     PUSH_INT16 #0xB403                  @ ( -- opcode )
-    bl h_comma
+    bl h_comma                          @ Write opcode
 
 @ Do-sys
     bl here                             @ ( -- do-sys )
@@ -1490,19 +1523,19 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
     bl comma
 
 @ cmp r0, r1
-@ it lt
-    ldr r0, =0xBFB84288
+@ it ne
+    ldr r0, =0xBF184288
     PUSH_REGS r0                        @ ( -- opcode )
     bl comma
 
-@ pushlt {r0, r1}
+@ pushne {r0, r1}
     PUSH_INT16 #0xB403                  @ ( -- opcode )
     bl h_comma
 
 @ Call branch function
     bl here                             @ ( -- orig )
     SWAP
-    bl blt_comma
+    bl bne_comma
 
 @ Leave
 @ r0    csp address

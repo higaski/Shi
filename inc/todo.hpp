@@ -1,37 +1,5 @@
 /// \page page_todo TODO
-/// -# create sollte von Anfang an vollwertige Einträge erzeugen. Das war beim
-///    mecrisp ja nur limitierend weil die gleich ins Flash compilieren und ned
-///    zerst ins RAM. Das Problem is, dass momentan so Dinge wie "17 create
-///    seventeen ," nicht funktionieren, obwohl das ANS is. Dummerweise wird
-///    ohne diesem "end:;" was ich aus mecrisp übernommen hab weder Links noch
-///    Flags geschrieben... und alles was ohne :; Päärchen erzeugt wird hängt in
-///    da Luft.<br>
-///    Aktuell kommt "comma_q", sprich die Überprüfung ob RAM/FLASH übrigens an
-///    2x Stellen vor:
-///    - compile,
-///    - end:;
-///
-/// -# Künftig soll nicht mehr jede Definition einzeln ins Flash compiliert
-///    werden, sondern gleich ganze Blöcke. Jene Blöcke werden via ">text" und
-///    ">data" gekennzeichnet. Erst wenn nach einem >text wieder ein >data
-///    erfolgt wird des was bis dato im RAM steht ins Flash kopiert.
-///
-/// -# Folgende Funktionen müssen komplett umgeschrieben wern:
-///    - create: Schreibt gleich Links und ev. Flags
-///    - end_colon_semi: Braucht ma vermutlich gar nimma?
-///
-/// -# Wenn ma künftig in create gleich Links und Flags (ui, des könnt no
-///    problematisch wern) is fraglich ob ma den Anfang der aktuellen Definition
-///    überhaupt speichern muss? Der letzte Link wird ja quasi eh sofort
-///    geupdatet? damit hat ma die aktuelle Definition eh immer parat. Was ma
-///    aber auf alle Fälle speichern wird müssen is der Anfang von am ">text"
-///    Block.
-///
-/// -# Problematisch wird auch das Umschreiben der Links für an >text Block. Am
-///    Anfang wern dort wohl normale RAM Links drin stehen die ja auf die
-///    vorherige Definition zeigen. Jene Links müssen dann alle geändert werden.
-///
-/// -# does> fehlt no und is SAU kompliziert...
+/// -# Find die 4-byte vergleichsvariante streichen
 ///
 /// -# Die "defer" Familie an Wörter möcht ich glaub ich nicht unterstützen. Das
 ///    betrifft

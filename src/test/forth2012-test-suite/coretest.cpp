@@ -1001,33 +1001,92 @@ TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
   TEST_ASSERT_EQUAL(7, shi::size());
   TEST_ASSERT_EQUAL(MID_UINT, shi::top());
 
-  //  T{ : GD2 DO I -1 +LOOP ; -> }T
-  //  T{ 1 4 GD2 -> 4 3 2 1 }T
-  //  T{ -1 2 GD2 -> 2 1 0 -1 }T
-  //  T{ MID-UINT MID-UINT+1 GD2 -> MID-UINT+1 MID-UINT }T
+  ": GD2 do i -1 +loop ;"_fs;
+  TEST_ASSERT_EQUAL(7, shi::size());
+  "1 4 GD2"_fs;
+  TEST_ASSERT_EQUAL(11, shi::size());
+  TEST_ASSERT_EQUAL(1, shi::top());
+  TEST_ASSERT_EQUAL(2, shi::top(-1));
+  TEST_ASSERT_EQUAL(3, shi::top(-2));
+  TEST_ASSERT_EQUAL(4, shi::top(-3));
+  "-1 2 GD2"_fs;
+  TEST_ASSERT_EQUAL(15, shi::size());
+  TEST_ASSERT_EQUAL(-1, shi::top());
+  TEST_ASSERT_EQUAL(0, shi::top(-1));
+  TEST_ASSERT_EQUAL(1, shi::top(-2));
+  TEST_ASSERT_EQUAL(2, shi::top(-3));
+  "MID-UINT MID-UINT+1 GD2"_fs;
+  TEST_ASSERT_EQUAL(17, shi::size());
+  TEST_ASSERT_EQUAL(MID_UINT, shi::top(0));
+  TEST_ASSERT_EQUAL(MID_UINT_p1, shi::top(-1));
 
-  //  T{ : GD3 DO 1 0 DO J LOOP LOOP ; -> }T
-  //  T{ 4 1 GD3 -> 1 2 3 }T
-  //  T{ 2 -1 GD3 -> -1 0 1 }T
-  //  T{ MID-UINT+1 MID-UINT GD3 -> MID-UINT }T
-  //
-  //  T{ : GD4 DO 1 0 DO J LOOP -1 +LOOP ; -> }T
-  //  T{ 1 4 GD4 -> 4 3 2 1 }T
-  //  T{ -1 2 GD4 -> 2 1 0 -1 }T
-  //  T{ MID-UINT MID-UINT+1 GD4 -> MID-UINT+1 MID-UINT }T
-  //
-  //  T{ : GD5 123 SWAP 0 DO I 4 > IF DROP 234 LEAVE THEN LOOP ; -> }T
-  //  T{ 1 GD5 -> 123 }T
-  //  T{ 5 GD5 -> 123 }T
-  //  T{ 6 GD5 -> 234 }T
-  //
+  ": GD3 do 1 0 do j loop loop ;"_fs;
+  TEST_ASSERT_EQUAL(17, shi::size());
+  "4 1 GD3"_fs;
+  TEST_ASSERT_EQUAL(20, shi::size());
+  TEST_ASSERT_EQUAL(3, shi::top());
+  TEST_ASSERT_EQUAL(2, shi::top(-1));
+  TEST_ASSERT_EQUAL(1, shi::top(-2));
+  "2 -1 GD3"_fs;
+  TEST_ASSERT_EQUAL(23, shi::size());
+  TEST_ASSERT_EQUAL(1, shi::top());
+  TEST_ASSERT_EQUAL(0, shi::top(-1));
+  TEST_ASSERT_EQUAL(-1, shi::top(-2));
+  "MID-UINT+1 MID-UINT GD3"_fs;
+  TEST_ASSERT_EQUAL(24, shi::size());
+  TEST_ASSERT_EQUAL(MID_UINT, shi::top(0));
+
+  ": GD4 do 1 0 do j loop -1 +loop ;"_fs;
+  TEST_ASSERT_EQUAL(24, shi::size());
+  "1 4 GD4"_fs;
+  TEST_ASSERT_EQUAL(28, shi::size());
+  TEST_ASSERT_EQUAL(1, shi::top());
+  TEST_ASSERT_EQUAL(2, shi::top(-1));
+  TEST_ASSERT_EQUAL(3, shi::top(-2));
+  TEST_ASSERT_EQUAL(4, shi::top(-3));
+  "-1 2 GD4"_fs;
+  TEST_ASSERT_EQUAL(32, shi::size());
+  TEST_ASSERT_EQUAL(-1, shi::top());
+  TEST_ASSERT_EQUAL(0, shi::top(-1));
+  TEST_ASSERT_EQUAL(1, shi::top(-2));
+  TEST_ASSERT_EQUAL(2, shi::top(-3));
+  "MID-UINT MID-UINT+1 GD4"_fs;
+  TEST_ASSERT_EQUAL(34, shi::size());
+  TEST_ASSERT_EQUAL(MID_UINT, shi::top());
+  TEST_ASSERT_EQUAL(MID_UINT_p1, shi::top(-1));
+
+  ": GD5 123 swap 0 do i 4 > if drop 234 leave then loop ;"_fs;
+  TEST_ASSERT_EQUAL(34, shi::size());
+  "1 GD5"_fs;
+  TEST_ASSERT_EQUAL(35, shi::size());
+  TEST_ASSERT_EQUAL(123, shi::top());
+  "5 GD5"_fs;
+  TEST_ASSERT_EQUAL(36, shi::size());
+  TEST_ASSERT_EQUAL(123, shi::top());
+  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  "6 GD5"_fs;
+  TEST_ASSERT_EQUAL(37, shi::size());
+  TEST_ASSERT_EQUAL(234, shi::top());
+  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  TEST_ASSERT_EQUAL(123, shi::top(-2));
+
   //  T{ : GD6  ( PAT: T{0 0},{0 0}{1 0}{1 1},{0 0}{1 0}{1 1}{2 0}{2 1}{2 2} )
   //     0 SWAP 0 DO
   //        I 1+ 0 DO I J + 3 = IF I UNLOOP I UNLOOP EXIT THEN 1+ LOOP
   //      LOOP ; -> }T
-  //  T{ 1 GD6 -> 1 }T
-  //  T{ 2 GD6 -> 3 }T
-  //  T{ 3 GD6 -> 4 1 2 }T
+  ": GD6 0 swap 0 do i 1+ 0 do i j + 3 = if i unloop i unloop exit then 1+ loop loop ;"_fs;
+  TEST_ASSERT_EQUAL(37, shi::size());
+  "1 GD6"_fs;
+  TEST_ASSERT_EQUAL(38, shi::size());
+  TEST_ASSERT_EQUAL(1, shi::top());
+  "2 GD6"_fs;
+  TEST_ASSERT_EQUAL(39, shi::size());
+  TEST_ASSERT_EQUAL(3, shi::top());
+  "3 GD6"_fs;
+  TEST_ASSERT_EQUAL(42, shi::size());
+  TEST_ASSERT_EQUAL(2, shi::top());
+  TEST_ASSERT_EQUAL(1, shi::top(-1));
+  TEST_ASSERT_EQUAL(4, shi::top(-2));
 
   shi::clear();
 }
