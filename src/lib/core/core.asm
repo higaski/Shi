@@ -212,10 +212,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
     bl bne_comma
 
 @ Take care of leave(s)
-    bl leave_comma
+    bl csp_comma
 
 @ Return
     pop {pc}
+.ltorg
 
 @ ------------------------------------------------------------------------------
 @ ,
@@ -232,7 +233,6 @@ WORD FLAG_INTERPRET_COMPILE, ",", comma
     str r1, [r0]                        @ Update address in data_begin
     DROP                                @ ( x -- )
     bx lr
-.ltorg
 
 @ ------------------------------------------------------------------------------
 @ -
@@ -812,8 +812,8 @@ WORD FLAG_INTERPRET_COMPILE, "create"
 
 @ str tos, [dsp, #-4]!
     PUSH_TOS
-    ldr tos, =0xF8476D04                @ ( -- opcode )
-    bl rev_comma                        @ Write opcode
+    ldr tos, =0x6D04F847                @ ( -- opcode )
+    bl comma                            @ Write opcode
 
 @ Additions to pc can only be 4 byte aligned, add nop if necessary
 @ nop
@@ -825,8 +825,8 @@ WORD FLAG_INTERPRET_COMPILE, "create"
 
 @ add tos, pc, #4
 1:  PUSH_TOS
-    ldr tos, =0xF20F0604                @ ( -- opcode )
-    bl rev_comma                        @ Write opcode
+    ldr tos, =0x0604F20F                @ ( -- opcode )
+    bl comma                            @ Write opcode
 
 @ bx lr
     PUSH_INT16 #0x4770                  @ ( -- opcode )
@@ -1267,8 +1267,8 @@ WORD FLAG_SKIP, "key"
 
 @ ------------------------------------------------------------------------------
 @ leave
-@ (             -- )
-@ ( R: loop-sys -- )
+@ ( C:          -- loop-sys )
+@ ( R: loop-sys --          )
 @ Discard the current loop control parameters. An ambiguous condition exists if
 @ they are unavailable. Continue execution immediately following the innermost
 @ syntactically enclosing do...loop or do...+loop.
@@ -1314,8 +1314,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
     push {lr}
 
     PUSH_TOS
-    ldr tos, =0xF8476D04                @ ( -- opcode )
-    bl rev_comma                        @ Write opcode
+    ldr tos, =0x6D04F847                @ ( -- opcode )
+    bl comma                            @ Write opcode
 
 @ movs (t1)
 @ tos   x
@@ -1448,7 +1448,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
 
             b 6f                        @ Goto return
 
-// TODO ev. noch mvn checkn?
+// TODO mvn might offer some patterns as well?
 
 @ movw movt
 @ tos   opcode
@@ -1541,10 +1541,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
     bl bne_comma
 
 @ Take care of leave(s)
-    bl leave_comma
+    bl csp_comma
 
 @ Return
-6:  pop {pc}
+    pop {pc}
+.ltorg
 
 @ ------------------------------------------------------------------------------
 @ lshift

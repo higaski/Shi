@@ -388,6 +388,50 @@ bne_comma:
 6:  pop {pc}
 
 @ ------------------------------------------------------------------------------
+@ csp,
+@ ( C: case-sys | loop-sys -- )
+@ Resolve all unconditional jumps
+@ ------------------------------------------------------------------------------
+.thumb_func
+csp_comma:
+    push {lr}
+
+@ r0    csp address
+@ r1    csp
+@ r2    stack address
+    ldr r0, =csp
+    ldr r1, [r0]
+    ldr r2, =_s_shi_dstack
+    cmp r1, r2
+    beq 6f
+
+@ Check if csp and dsp clash
+@ r1    csp
+    cmp r1, dsp
+    blo 1f
+        PRINT "'shi' stack overflow >>>csp,<<<"
+        b 6f
+
+@ r0    csp address
+@ r1    csp
+@ r2    scratch
+1:  ldr r2, [r1, #-4]
+    PUSH_REGS r2                        @ ( -- orig )
+    movs r2, #0
+    str r2, [r1, #-4]!
+    push {r0, r1}
+    bl here                             @ ( -- dest )
+    bl b_comma
+    pop {r0, r1}
+    ldr r2, =_s_shi_dstack
+    cmp r1, r2
+    bhi 1b
+      str r2, [r0]
+
+@ Return
+6:  pop {pc}
+
+@ ------------------------------------------------------------------------------
 @ h,
 @ ( h -- )
 @ Reserve half a cell of data space and store x in the cell. If the data-space
@@ -434,44 +478,6 @@ inline_comma:
 6:  pop {pc}
 
 @ ------------------------------------------------------------------------------
-@ ------------------------------------------------------------------------------
-.thumb_func
-leave_comma:
-    push {lr}
-
-@ r0    csp address
-@ r1    csp
-@ r2    stack address
-    ldr r0, =csp
-    ldr r1, [r0]
-    ldr r2, =_s_shi_dstack
-    cmp r1, r2
-    beq 6f
-
-@ Check if csp and dsp clash
-@ r1    csp
-    cmp r1, dsp
-    blo 1f
-        PRINT "'shi' stack overflow >>>leave<<<"
-        b 6f
-
-@ Take care of leave(s)
-@ r0    csp address
-@ r1    csp
-@ r2    orig
-@ r3    scratch
-1:  ldr r2, [r1, #-4]
-    PUSH_REGS r2                        @ ( -- orig )
-    movs r3, #0
-    str r3, [r1, #-4]!
-    str r1, [r0]
-    bl here                             @ ( -- dest )
-    bl b_comma
-
-@ Return
-6:  pop {pc}
-
-@ ------------------------------------------------------------------------------
 @ rev,
 @ ( x -- )
 @ Reserve one cell of data space and store x in reverse order in the cell. If
@@ -492,6 +498,7 @@ rev_comma:
     bx lr
 
 @ ------------------------------------------------------------------------------
+@ word,
 @ ( source: "<spaces>name" -- )
 @ Skip leading space delimiters. Parse name delimited by a space. Create a
 @ definition for name with the execution semantics defined below. If the

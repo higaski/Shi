@@ -135,7 +135,7 @@ WORD FLAG_SKIP, "c\"", c_q
 
 @ ------------------------------------------------------------------------------
 @ case
-@ ( -- case-sys )
+@ ( C: -- case-sys )
 @ Mark the start of the case...of...endof...endcase structure. Append the
 @ run-time semantics given below to the current definition.
 @
@@ -311,7 +311,7 @@ WORD FLAG_SKIP, "defer@", defer_fetch
 
 @ ------------------------------------------------------------------------------
 @ endcase
-@ ( case-sys -- )
+@ ( C: case-sys -- )
 @ Mark the end of the case...of...endof...endcase structure. Use case-sys to
 @ resolve the entire structure. Append the run-time semantics given below to the
 @ current definition.
@@ -328,47 +328,15 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
     PUSH_INT16 #0xCF40
     bl h_comma
 
-@ Resolve branch(es) from endof(s)
-@ r0    csp address
-@ r1    csp
-@ r2    stack address
-    ldr r0, =csp
-    ldr r1, [r0]
-    ldr r2, =_s_shi_dstack
-    cmp r1, r2
-    beq 6f
-
-@ Check if csp and dsp clash
-@ r1    csp
-    cmp r1, dsp
-    blo 1f
-        PRINT "'shi' stack overflow >>>endcase<<<"
-        b 6f
-
 @ Take care of endof(s)
-@ r0    csp address
-@ r1    csp
-@ r2    scratch
-1:  ldr r2, [r1, #-4]
-    PUSH_REGS r2                        @ ( -- orig )
-    movs r2, #0
-    str r2, [r1, #-4]!
-    push {r0, r1}
-    bl here                             @ ( -- dest )
-    bl b_comma
-    pop {r0, r1}
-
-    ldr r2, =_s_shi_dstack
-    cmp r1, r2
-    bhi 1b
-    str r2, [r0]
+    bl csp_comma
 
 @ Return
-6:  pop {pc}
+    pop {pc}
 
 @ ------------------------------------------------------------------------------
 @ endof
-@ ( case-sys1 of-sys -- case-sys2 )
+@ ( C: case-sys1 of-sys -- case-sys2 )
 @ Mark the end of the of...endof part of the case structure. The next location
 @ for a transfer of control resolves the reference given by of-sys. Append the
 @ run-time semantics given below to the current definition. Replace case-sys1
@@ -453,7 +421,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "nip"
 
 @ ------------------------------------------------------------------------------
 @ of
-@ ( -- of-sys )
+@ ( C: -- of-sys )
 @ Put of-sys onto the stack. Append the run-time semantics given below to the
 @ current definition. The semantics are incomplete until resolved by a consumer
 @ of of-sys such as endof.

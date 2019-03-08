@@ -16,14 +16,6 @@ extern "C" int test() {
              .text_begin = SHI_FLASH_START,
              .text_end = SHI_FLASH_END});
 
-  ": GD2 do i 2 = if 2 leave then i -2 = if -2 leave then loop ;"_fs;
-//  "4 1"_fs;
-//  "GD2"_fs;
-  printf("size %d  top %d\n", shi::size(), shi::top());
-  "-1 -5"_fs;
-  "GD2"_fs;
-  printf("size %d  top %d\n", shi::size(), shi::top());
-
   //  asm volatile("nop");
   //  ": indexed-array create cells allot does> swap cells + ;"_fs;
   //  asm volatile("nop");
@@ -36,6 +28,5 @@ extern "C" int test() {
 
   // semihosting_example();
 
-  // return forth2012_test_suite();
-  return 0;
+  return forth2012_test_suite();
 }
