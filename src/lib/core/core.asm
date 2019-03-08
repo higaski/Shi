@@ -159,57 +159,60 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
 @ subs r2, r1, r0
     ldr r0, =0x1A0ABC03
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ adds r0, r0, tos
 @ ldmia dsp!, {tos}
     ldr r0, =0xCF401980
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ subs r3, r1, r0
 @ cmp r2, #0
     ldr r0, =0x2A001A0B
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ ite le
 @ movle r2, #0
     ldr r0, =0x2200BFD4
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ movgt r2, #1
 @ cmp r3, #0
     ldr r0, =0x2B002201
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ ite gt
 @ movgt r3, r2
     ldr r0, =0x4613BFCC
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ eorle r3, r2, #1
     ldr r0, =0x0301F082
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ cmp r3, #0
 @ it ne
     ldr r0, =0xBF182B00
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ pushne {r0, r1}
     PUSH_INT16 #0xB403                  @ ( -- opcode )
-    bl h_comma
+    bl h_comma                          @ Write opcode
 
 @ Call branch function
     bl here                             @ ( -- orig )
     SWAP
     bl bne_comma
+
+@ Take care of leave(s)
+    bl leave_comma
 
 @ Return
     pop {pc}
@@ -1520,52 +1523,25 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
 @ adds r0, #1
     ldr r0, =0x3001BC03
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ cmp r0, r1
 @ it ne
     ldr r0, =0xBF184288
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ pushne {r0, r1}
     PUSH_INT16 #0xB403                  @ ( -- opcode )
-    bl h_comma
+    bl h_comma                          @ Write opcode
 
 @ Call branch function
     bl here                             @ ( -- orig )
     SWAP
     bl bne_comma
 
-@ Leave
-@ r0    csp address
-@ r1    csp
-@ r2    stack address
-    ldr r0, =csp
-    ldr r1, [r0]
-    ldr r2, =_s_shi_dstack
-    cmp r1, r2
-    beq 6f
-
-@ Check if csp and dsp clash
-@ r1    csp
-    cmp r1, dsp
-    blo 1f
-        PRINT "'shi' stack overflow >>>leave<<<"
-        b 6f
-
 @ Take care of leave(s)
-@ r0    csp address
-@ r1    csp
-@ r2    orig
-@ r3    scratch
-1:  ldr r2, [r1, #-4]
-    PUSH_REGS r2                        @ ( -- orig )
-    movs r3, #0
-    str r3, [r1, #-4]!
-    str r1, [r0]
-    bl here                             @ ( -- dest )
-    bl b_comma
+    bl leave_comma
 
 @ Return
 6:  pop {pc}

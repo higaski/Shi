@@ -322,8 +322,8 @@ WORD FLAG_SKIP, "defer@", defer_fetch
 WORD FLAG_COMPILE_IMMEDIATE, "endcase"
     push {lr}
 
-@ If the case selector never matched, discard it now
-@ before we resolve the branch(es) from endof(s)
+@ If the case selector never matched, discard it now before we resolve the
+@ branch(es) from endof(s)
 @ ldmia dsp!, {tos}
     PUSH_INT16 #0xCF40
     bl h_comma

@@ -434,6 +434,44 @@ inline_comma:
 6:  pop {pc}
 
 @ ------------------------------------------------------------------------------
+@ ------------------------------------------------------------------------------
+.thumb_func
+leave_comma:
+    push {lr}
+
+@ r0    csp address
+@ r1    csp
+@ r2    stack address
+    ldr r0, =csp
+    ldr r1, [r0]
+    ldr r2, =_s_shi_dstack
+    cmp r1, r2
+    beq 6f
+
+@ Check if csp and dsp clash
+@ r1    csp
+    cmp r1, dsp
+    blo 1f
+        PRINT "'shi' stack overflow >>>leave<<<"
+        b 6f
+
+@ Take care of leave(s)
+@ r0    csp address
+@ r1    csp
+@ r2    orig
+@ r3    scratch
+1:  ldr r2, [r1, #-4]
+    PUSH_REGS r2                        @ ( -- orig )
+    movs r3, #0
+    str r3, [r1, #-4]!
+    str r1, [r0]
+    bl here                             @ ( -- dest )
+    bl b_comma
+
+@ Return
+6:  pop {pc}
+
+@ ------------------------------------------------------------------------------
 @ rev,
 @ ( x -- )
 @ Reserve one cell of data space and store x in reverse order in the cell. If
