@@ -945,28 +945,113 @@ TEST(
 }
 
 TEST(if__else__then__begin__while__repeat__until__recurse) {
-  //  T{ : GI1 IF 123 THEN ; -> }T
-  //  T{ : GI2 IF 123 ELSE 234 THEN ; -> }T
-  //  T{ 0 GI1 -> }T
-  //  T{ 1 GI1 -> 123 }T
-  //  T{ -1 GI1 -> 123 }T
-  //  T{ 0 GI2 -> 234 }T
-  //  T{ 1 GI2 -> 123 }T
-  //  T{ -1 GI1 -> 123 }T
-  //
-  //  T{ : GI3 BEGIN DUP 5 < WHILE DUP 1+ REPEAT ; -> }T
-  //  T{ 0 GI3 -> 0 1 2 3 4 5 }T
-  //  T{ 4 GI3 -> 4 5 }T
-  //  T{ 5 GI3 -> 5 }T
-  //  T{ 6 GI3 -> 6 }T
-  //
-  //  T{ : GI4 BEGIN DUP 1+ DUP 5 > UNTIL ; -> }T
-  //  T{ 3 GI4 -> 3 4 5 6 }T
-  //  T{ 5 GI4 -> 5 6 }T
-  //  T{ 6 GI4 -> 6 7 }T
-  //
+  ": GI1 if 123 then ;"_fs;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  ": GI2 if 123 else 234 then ;"_fs;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "0 GI1"_fs;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "1 GI1"_fs;
+  TEST_ASSERT_EQUAL(1, shi::size());
+  TEST_ASSERT_EQUAL(123, shi::top());
+  "-1 GI1"_fs;
+  TEST_ASSERT_EQUAL(2, shi::size());
+  TEST_ASSERT_EQUAL(123, shi::top());
+  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  "0 GI2"_fs;
+  TEST_ASSERT_EQUAL(3, shi::size());
+  TEST_ASSERT_EQUAL(234, shi::top());
+  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  TEST_ASSERT_EQUAL(123, shi::top(-2));
+  "1 GI2"_fs;
+  TEST_ASSERT_EQUAL(4, shi::size());
+  TEST_ASSERT_EQUAL(123, shi::top());
+  TEST_ASSERT_EQUAL(234, shi::top(-1));
+  TEST_ASSERT_EQUAL(123, shi::top(-2));
+  TEST_ASSERT_EQUAL(123, shi::top(-3));
+  "-1 GI1"_fs;
+  TEST_ASSERT_EQUAL(5, shi::size());
+  TEST_ASSERT_EQUAL(123, shi::top());
+  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  TEST_ASSERT_EQUAL(234, shi::top(-2));
+  TEST_ASSERT_EQUAL(123, shi::top(-3));
+  TEST_ASSERT_EQUAL(123, shi::top(-4));
+
+  ": GI3 begin dup 5 < while dup 1+ repeat ;"_fs;
+  TEST_ASSERT_EQUAL(5, shi::size());
+  "0 GI3"_fs;
+  TEST_ASSERT_EQUAL(11, shi::size());
+  TEST_ASSERT_EQUAL(5, shi::top());
+  TEST_ASSERT_EQUAL(4, shi::top(-1));
+  TEST_ASSERT_EQUAL(3, shi::top(-2));
+  TEST_ASSERT_EQUAL(2, shi::top(-3));
+  TEST_ASSERT_EQUAL(1, shi::top(-4));
+  TEST_ASSERT_EQUAL(0, shi::top(-5));
+  "4 GI3"_fs;
+  TEST_ASSERT_EQUAL(13, shi::size());
+  TEST_ASSERT_EQUAL(5, shi::top());
+  TEST_ASSERT_EQUAL(4, shi::top(-1));
+  TEST_ASSERT_EQUAL(5, shi::top(-2));
+  TEST_ASSERT_EQUAL(4, shi::top(-3));
+  TEST_ASSERT_EQUAL(3, shi::top(-4));
+  TEST_ASSERT_EQUAL(2, shi::top(-5));
+  TEST_ASSERT_EQUAL(1, shi::top(-6));
+  TEST_ASSERT_EQUAL(0, shi::top(-7));
+  "5 GI3"_fs;
+  TEST_ASSERT_EQUAL(14, shi::size());
+  TEST_ASSERT_EQUAL(5, shi::top());
+  TEST_ASSERT_EQUAL(5, shi::top(-1));
+  TEST_ASSERT_EQUAL(4, shi::top(-2));
+  TEST_ASSERT_EQUAL(5, shi::top(-3));
+  TEST_ASSERT_EQUAL(4, shi::top(-4));
+  TEST_ASSERT_EQUAL(3, shi::top(-5));
+  TEST_ASSERT_EQUAL(2, shi::top(-6));
+  TEST_ASSERT_EQUAL(1, shi::top(-7));
+  TEST_ASSERT_EQUAL(0, shi::top(-8));
+  "6 GI3"_fs;
+  TEST_ASSERT_EQUAL(15, shi::size());
+  TEST_ASSERT_EQUAL(6, shi::top());
+  TEST_ASSERT_EQUAL(5, shi::top(-1));
+  TEST_ASSERT_EQUAL(5, shi::top(-2));
+  TEST_ASSERT_EQUAL(4, shi::top(-3));
+  TEST_ASSERT_EQUAL(5, shi::top(-4));
+  TEST_ASSERT_EQUAL(4, shi::top(-5));
+  TEST_ASSERT_EQUAL(3, shi::top(-6));
+  TEST_ASSERT_EQUAL(2, shi::top(-7));
+  TEST_ASSERT_EQUAL(1, shi::top(-8));
+  TEST_ASSERT_EQUAL(0, shi::top(-9));
+
+  ": GI4 begin dup 1+ dup 5 > until ;"_fs;
+  TEST_ASSERT_EQUAL(15, shi::size());
+  "3 GI4"_fs;
+  TEST_ASSERT_EQUAL(19, shi::size());
+  TEST_ASSERT_EQUAL(6, shi::top());
+  TEST_ASSERT_EQUAL(5, shi::top(-1));
+  TEST_ASSERT_EQUAL(4, shi::top(-2));
+  TEST_ASSERT_EQUAL(3, shi::top(-3));
+  "5 GI4"_fs;
+  TEST_ASSERT_EQUAL(21, shi::size());
+  TEST_ASSERT_EQUAL(6, shi::top());
+  TEST_ASSERT_EQUAL(5, shi::top(-1));
+  TEST_ASSERT_EQUAL(6, shi::top(-2));
+  TEST_ASSERT_EQUAL(5, shi::top(-3));
+  TEST_ASSERT_EQUAL(4, shi::top(-4));
+  TEST_ASSERT_EQUAL(3, shi::top(-5));
+  "6 GI4"_fs;
+  TEST_ASSERT_EQUAL(23, shi::size());
+  TEST_ASSERT_EQUAL(7, shi::top());
+  TEST_ASSERT_EQUAL(6, shi::top(-1));
+  TEST_ASSERT_EQUAL(6, shi::top(-2));
+  TEST_ASSERT_EQUAL(5, shi::top(-3));
+  TEST_ASSERT_EQUAL(6, shi::top(-4));
+  TEST_ASSERT_EQUAL(5, shi::top(-5));
+  TEST_ASSERT_EQUAL(4, shi::top(-6));
+  TEST_ASSERT_EQUAL(3, shi::top(-7));
+
   //  T{ : GI5 BEGIN DUP 2 >
   //           WHILE DUP 5 < WHILE DUP 1+ REPEAT 123 ELSE 345 THEN ; -> }T
+  ": GI5 begin dup 2 > while dup 5 < while dup 1+ repeat 123 else 345 then ;"_fs;  // -> }T
+  TEST_ASSERT_EQUAL(23, shi::size());
   //  T{ 1 GI5 -> 1 345 }T
   //  T{ 2 GI5 -> 2 345 }T
   //  T{ 3 GI5 -> 3 4 5 123 }T
@@ -979,6 +1064,8 @@ TEST(if__else__then__begin__while__repeat__until__recurse) {
   //  T{ 2 GI6 -> 0 1 2 }T
   //  T{ 3 GI6 -> 0 1 2 3 }T
   //  T{ 4 GI6 -> 0 1 2 3 4 }T
+
+  shi::clear();
 }
 
 TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
