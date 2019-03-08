@@ -405,7 +405,7 @@ WORD FLAG_INTERPRET_COMPILE, "2swap", two_swap
 @ the dictionary until it is ended (or until the execution of DOES> in some
 @ systems).
 @ ------------------------------------------------------------------------------
-WORD FLAG_INTERPRET, ":", colon
+WORD FLAG_INTERPRET_COMPILE, ":", colon
     push {lr}
 
 // TODO check stack balance? (maybe even return stack?)
@@ -451,7 +451,7 @@ WORD FLAG_COMPILE_IMMEDIATE, ";", semi
 @ Write return
     bl exit
 
-@ Change flags set by create and make definition findable
+@ Change flags set by : and make definition findable
 @ r0    link
 @ r1    flags
     ldr r0, =link
@@ -1635,10 +1635,18 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "over"
     OVER
     bx lr
 
-/*
-WORD FLAG_SKIP, "postpone"
-    bx lr
-*/
+@ ------------------------------------------------------------------------------
+@ postpone
+@ ( "<spaces>name" -- )
+@ Skip leading space delimiters. Parse name delimited by a space. Find name.
+@ Append the compilation semantics of name to the current definition. An
+@ ambiguous condition exists if name is not found.
+@ ------------------------------------------------------------------------------
+WORD FLAG_COMPILE_IMMEDIATE, "postpone"
+    push {lr}
+    bl tick
+    bl compile_comma
+    pop {pc}
 
 /*
 WORD FLAG_SKIP, "quit"

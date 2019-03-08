@@ -1116,10 +1116,14 @@ TEST(colon__semicolon__constant__variable__create__does__to_body) {
 
   shi::clear();
 
-  //  T{ : NOP : POSTPONE ; ; -> }T
-  //  T{ NOP NOP1 NOP NOP2 -> }T
-  //  T{ NOP1 -> }T
-  //  T{ NOP2 -> }T
+  ": NOP : postpone ; ;"_fs;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "NOP NOP1 NOP NOP2"_fs;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "NOP1"_fs;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "NOP2"_fs;
+  TEST_ASSERT_EQUAL(0, shi::size());
 
   ": DOES1 does> @ 1 + ;"_fs;  // }T
   TEST_ASSERT_EQUAL(0, shi::size());
