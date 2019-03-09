@@ -50,8 +50,10 @@
 /// csp is im Prinzip ein Stackpointer... Im Gegensatz zum normalen Stackpointer
 /// (dsp) wächst der aber nicht nach unten in den Stack sondern fängt unten an
 /// und wächst nach oben. Von der Richtung her wird "Struktur" Info am Stack
-/// abgelegt, wie mas zum Beispiel für "leave" (break aus loop) oder "endcase"
-/// (break aus switch-case) braucht
+/// abgelegt, wie mas für "leave" (break aus loop) oder "endof" (break aus
+/// switch-case) braucht. Die stellen dabei die Ausnahme dar, weils von
+/// "leave(s)" und "endof(s)" beliebig viele geben kann. Alle anderen
+/// Kontrollstrukturen laufen übern normalen Stack.
 ///
 // clang-format off
 /// \page page_doc_stuff Doc stuff

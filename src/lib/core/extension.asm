@@ -135,7 +135,7 @@ WORD FLAG_SKIP, "c\"", c_q
 
 @ ------------------------------------------------------------------------------
 @ case
-@ ( C: -- case-sys )
+@ ( -- case-sys  \ technically there ain't nothing to "mark" )
 @ Mark the start of the case...of...endof...endcase structure. Append the
 @ run-time semantics given below to the current definition.
 @
@@ -311,7 +311,7 @@ WORD FLAG_SKIP, "defer@", defer_fetch
 
 @ ------------------------------------------------------------------------------
 @ endcase
-@ ( C: case-sys -- )
+@ ( case-sys -- )
 @ Mark the end of the case...of...endof...endcase structure. Use case-sys to
 @ resolve the entire structure. Append the run-time semantics given below to the
 @ current definition.
@@ -421,7 +421,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "nip"
 
 @ ------------------------------------------------------------------------------
 @ of
-@ ( C: -- of-sys )
+@ ( -- of-sys )
 @ Put of-sys onto the stack. Append the run-time semantics given below to the
 @ current definition. The semantics are incomplete until resolved by a consumer
 @ of of-sys such as endof.

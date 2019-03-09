@@ -37,7 +37,8 @@ TEST(value__to);
 TEST(case__of__endof__endcase);
 
 //
-TEST(own_leave);
+TEST(own_loop);
+TEST(own_case);
 
 int forth2012_test_suite() {
   UNITY_BEGIN();
@@ -76,7 +77,8 @@ int forth2012_test_suite() {
   RUN_TEST(value__to);
   RUN_TEST(case__of__endof__endcase);
 
-  RUN_TEST(own_leave);
+  RUN_TEST(own_loop);
+  RUN_TEST(own_case);
 
   return UNITY_END();
 }
