@@ -319,7 +319,8 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "1-", one_minus
 @ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "2!", two_store
     ldmia dsp!, {r0, r1}
-    stmia tos, {r0, r1}
+    str r0, [tos]
+    str r1, [tos, #4]
     DROP
     bx lr
 
