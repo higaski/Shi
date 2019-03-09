@@ -16,18 +16,6 @@ extern "C" int test() {
              .text_begin = SHI_FLASH_START,
              .text_end = SHI_FLASH_END});
 
-  ": GI1 if 123 then ;"_fs;
-  ": GI2 if 123 else 234 then ;"_fs;
-  "0"_fs;
-  "GI1"_fs;
-  "1"_fs;
-  "GI1"_fs;
-
-  "0"_fs;
-  "GI2"_fs;
-  "1"_fs;
-  "GI2"_fs;
-
   //  asm volatile("nop");
   //  ": indexed-array create cells allot does> swap cells + ;"_fs;
   //  asm volatile("nop");
@@ -40,6 +28,5 @@ extern "C" int test() {
 
   // semihosting_example();
 
-  // return forth2012_test_suite();
-  return 0;
+  return forth2012_test_suite();
 }

@@ -348,22 +348,22 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 WORD FLAG_COMPILE_IMMEDIATE, "endof"
     push {lr}
 
-@ Reverse push orig onto the stack
+@ Reverse push case-sys2 onto the stack
 @ r0    csp address
 @ r1    csp
-    bl here                             @ ( -- orig )
+    bl here
     ldr r0, =csp
     ldr r1, [r0]
     stmia r1!, {tos}
     str r1, [r0]
-    DROP                                @ ( orig -- )
+    DROP
 
 @ Reserve space for orig
     PUSH_INT8 #4
     bl allot
 
-@ Resolve branch from of
-    bl here                             @ ( -- dest )
+@ Resolve of-sys
+    bl here
     bl bne_comma
 
 @ Return
@@ -446,7 +446,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "of"
     bl h_comma
 
 @ of-sys
-    bl here                             @ ( -- of-sys )
+    bl here
     PUSH_INT8 #4
     bl allot
 

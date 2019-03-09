@@ -206,8 +206,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
     PUSH_INT16 #0xB403                  @ ( -- opcode )
     bl h_comma                          @ Write opcode
 
-@ Call branch function
-    bl here                             @ ( -- orig )
+@ Resolve do-sys
+    bl here
     SWAP
     bl bne_comma
 
@@ -664,8 +664,8 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "base"
 WORD FLAG_COMPILE_IMMEDIATE, "begin"
     push {lr}
 
-@ Destination for branch
-    bl here                             @ ( -- dest )
+@ dest
+    bl here
 
 @ Return
     pop {pc}
@@ -820,8 +820,8 @@ WORD FLAG_INTERPRET_COMPILE, "create"
     bl here
     ands tos, #3
     beq 1f
-      PUSH_INT16 #0xBF00                @ ( -- opcode )
-      bl h_comma                        @ Write opcode
+        PUSH_INT16 #0xBF00              @ ( -- opcode )
+        bl h_comma                      @ Write opcode
 
 @ add tos, pc, #4
 1:  PUSH_TOS
@@ -890,7 +890,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
     bl h_comma                          @ Write opcode
 
 @ Do-sys
-    bl here                             @ ( -- do-sys )
+    bl here
 
 @ Return
     pop {pc}                          
@@ -950,7 +950,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "dup"
 
 @ ------------------------------------------------------------------------------
 @ else
-@ ( orig1 fp-to-branch1 -- orig2 fp-to-branch2 )
+@ ( orig1 -- orig2 )
 @ Put the location of a new unresolved forward reference orig2 and it's function
 @ pointer onto the stack. Append the run-time semantics given below to the
 @ current definition. The semantics will be incomplete until orig2 is resolved
@@ -963,23 +963,21 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "dup"
 WORD FLAG_COMPILE_IMMEDIATE, "else"
     push {lr}
 
+@ orig2
+@ This is tricky as then needs to compile different branches depending on if its
+@ resolving orig1 or orig2. We use the LSB of orig2 to signal that we want then
+@ to compile an unconditional instead of a conditional branch.
+    bl here
+    orrs tos, #1
+
 @ Reserve space for orig2
-    bl here                             @ ( -- orig2)
     PUSH_INT8 #4
     bl allot
 
-@ Resolve branch from pointer from if or else
-@ tos   dest
-@ r0    fp-to-branch1
-@ r1    dest
-@ r2    orig1
-@ r3    fp-to-branch2
-@ r4    orig2
-    POP_REGS top=r4, to="r0,r2"         @ (orig1 fp-to-branch1 orig2 -- )
-    adds r1, r4, #4                     @ dest = orig2 + 4
-    ldr r3, =b_comma
-    PUSH_REGS top=r1, from="r2-r4"      @ ( -- orig2 fp-to-branch2 orig1 dest )
-    blx r0
+@ Resolve orig1
+    SWAP                                @ ( orig1 orig2 -- orig2 orig1 )
+    bl here
+    bl beq_comma
 
 @ Return
     pop {pc}
@@ -1187,7 +1185,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "i"
 
 @ ------------------------------------------------------------------------------
 @ if
-@ ( -- orig fp-to-branch )
+@ ( -- orig1 )
 @ Put the location of a new unresolved forward reference orig and it's function
 @ pointer onto the stack. Append the run-time semantics given below to the
 @ current definition. The semantics are incomplete until orig is resolved, e.g.,
@@ -1205,19 +1203,17 @@ WORD FLAG_COMPILE_IMMEDIATE, "if"
 @ ldmia dsp!, {tos}
     ldr r0, =0xCF400030
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ cmp r0, #0
     PUSH_INT16 #0x2800                  @ ( -- opcode )
-    bl h_comma
+    bl h_comma                          @ Write opcode
 
-@ Orig and pointer to branch function
-    bl here                             @ ( -- orig )
-    ldr r0, =beq_comma
-    PUSH_REGS r0                        @ ( -- fp-to-branch)
+@ orig1
+    bl here
 
-@ Reserve space for orig
-    PUSH_INT8 #4                        @ Reserve space for branch instruction
+@ Reserve space for orig1
+    PUSH_INT8 #4
     bl allot
 
 @ Return
@@ -1535,8 +1531,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
     PUSH_INT16 #0xB403                  @ ( -- opcode )
     bl h_comma                          @ Write opcode
 
-@ Call branch function
-    bl here                             @ ( -- orig )
+@ Resolve do-sys
+    bl here
     SWAP
     bl bne_comma
 
@@ -1692,13 +1688,13 @@ WORD FLAG_SKIP, "recurse"
 WORD FLAG_COMPILE_IMMEDIATE, "repeat"
     push {lr}
 
-@ Resolve branch to begin
-    bl here                             @ ( -- orig )
+@ Resolve dest
+    bl here
     SWAP
     bl b_comma
 
-@ Resolve branch from while
-    bl here                             @ ( -- dest )
+@ Resolve orig
+    bl here
     bl beq_comma
 
 @ Return
@@ -1792,7 +1788,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "swap"
 
 @ ------------------------------------------------------------------------------
 @ then
-@ ( orig fp-to-branch -- )
+@ ( orig1 | orig2 -- )
 @ Append the run-time semantics given below to the current definition. Resolve
 @ the forward reference orig using the location of the appended run-time
 @ semantics.
@@ -1803,18 +1799,20 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "swap"
 WORD FLAG_COMPILE_IMMEDIATE, "then"
     push {lr}
 
-@ Destination for branch
-    bl here                             @ ( -- dest )
+@ Resolve orig1 or orig2 based on whether LSB is set
+    ands r0, tos, #1
+    bne 1f
+        bl here
+        bl beq_comma
+        b 6f                            @ Goto return
 
-@ Resolve branch from pointer from if or else
-@ r0    fp-to-branch
-@ r1    dest
-    POP_REGS top=r1, to=r0              @ ( orig fp-to-branch dest -- )
-    PUSH_REGS r1
-    blx r0
+@ Resolve orig2
+1:  eors tos, r0                        @ Clear bit0
+    bl here
+    bl b_comma
 
 @ Return
-    pop {pc}
+6:  pop {pc}
 
 /*
 WORD FLAG_SKIP, "type"
@@ -1885,14 +1883,14 @@ WORD FLAG_COMPILE_IMMEDIATE, "until"
 @ ldmia dsp!, {tos}
     ldr r0, =0xCF400030
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ Write opcode
 
 @ cmp r0, #0
     PUSH_INT16 #0x2800                  @ ( -- opcode )
-    bl h_comma
+    bl h_comma                          @ Write opcode
 
-@ Resolve branch to begin
-    bl here                             @ ( -- orig )
+@ Resolve dest
+    bl here
     SWAP
     bl beq_comma
 
@@ -1967,7 +1965,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "while"
     bl h_comma
 
 @ Reserve space for orig
-    bl here                             @ ( -- orig )
+    bl here
     SWAP
     PUSH_INT8 #4                        @ Reserve space for branch instruction
     bl allot
