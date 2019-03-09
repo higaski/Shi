@@ -57,3 +57,22 @@ TEST(own_case) {
 
   shi::clear();
 }
+
+TEST(own_while) {
+  ": GI7 10 begin 1- dup while 1- dup while 1- dup 0= until then then ;"_fs;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "1 GI7"_fs;
+  TEST_ASSERT_EQUAL(2, shi::size());
+  TEST_ASSERT_EQUAL(0, shi::top());
+  TEST_ASSERT_EQUAL(1, shi::top(-1));
+  "2 GI7"_fs;
+  TEST_ASSERT_EQUAL(4, shi::size());
+  TEST_ASSERT_EQUAL(0, shi::top());
+  TEST_ASSERT_EQUAL(2, shi::top(-1));
+  "333 GI7"_fs;
+  TEST_ASSERT_EQUAL(6, shi::size());
+  TEST_ASSERT_EQUAL(0, shi::top());
+  TEST_ASSERT_EQUAL(333, shi::top(-1));
+
+  shi::clear();
+}

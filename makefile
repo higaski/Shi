@@ -26,6 +26,7 @@ clean:
 # Flags
 include mk/debugging.mk
 include mk/optimizations.mk
+include mk/preprocessor.mk
 include mk/verbose.mk
 include mk/warnings.mk
 

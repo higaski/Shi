@@ -7,15 +7,6 @@ OBJCOPY = arm-none-eabi-objcopy
 OBJDUMP = arm-none-eabi-objdump
 SIZE = arm-none-eabi-size
 
-# Manually add arm-none-eabi include folders
-INC_DIRS += /usr/arm-none-eabi/include
-INC_DIRS += /usr/arm-none-eabi/include/c++/8.2.0
-INC_DIRS += /usr/arm-none-eabi/include/c++/8.2.0/arm-none-eabi/thumb/v7e-m/nofp
-#INC_DIRS += /usr/arm-none-eabi/include/c++/8.2.0/arm-none-eabi/thumb/v7e-m+fp/hard/
-INC_DIRS += /usr/arm-none-eabi/include/c++/8.2.0/backward
-INC_DIRS += /usr/lib/gcc/arm-none-eabi/8.2.0/include
-INC_DIRS += /usr/lib/gcc/arm-none-eabi/8.2.0/include-fixed
-
 # Create include flags
 INC_FLAGS = $(addprefix -I,$(INC_DIRS))
 

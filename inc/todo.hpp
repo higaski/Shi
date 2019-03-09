@@ -95,3 +95,29 @@
 /// Die Sprünge von orig nach dest compilieren. Innerhalb der Funktion wird
 /// manchmal data_begin kurzzeitig überschrieben, damit die anderen Comma
 /// Funktionen den Sprung an die richtige Stelle schreiben.
+///
+/// \page page_control_structures Control structures
+/// Blabla
+///
+/// if...else...then
+///
+/// case...of...endof...endcase
+///
+/// begin...until
+/// begin...while...repeat
+///
+/// do...loop/+loop
+/// do...if...leave then...loop/+loop
+///
+///
+///
+/// if -> ( -- orig1 )
+/// else -> ( orig1 -- orig2 )
+/// then -> ( orig1 | orig2 -- )
+///
+/// begin -> ( -- dest )
+/// until -> ( dest -- )
+///
+/// begin -> ( -- dest )
+/// while -> ( dest -- orig dest )
+/// repeat -> ( orig dest -- )

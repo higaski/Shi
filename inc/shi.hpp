@@ -482,65 +482,6 @@ inline void evaluate(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
-/// Print stack elements with fp
-///
-/// \param  fp      Print function
-/// \return Number of characters written if successful or a negative value if an
-///         error occurred
-inline int stack_print(int (*fp)(char const* const format, ...)) {
-  struct {
-    float f;
-    int32_t i;
-  } cell;
-
-  uint32_t n{depth()};
-
-  if (!n)
-    fp("\n*** Forth stack empty ***\n");
-  else
-    fp("\n*** Forth stack has %d elements ***\n", n);
-
-  for (auto i{0u}; i < n; i++) {
-    asm volatile("cmp %[i], #0"
-                 "\n\t"
-                 "bne 1f"
-                 "\n\t"
-
-                 "ldr %[cell_i], =_s_shi_context"
-                 "\n\t"
-                 "ldr %[cell_i], [%[cell_i]]"
-                 "\n\t"
-                 "b 2f"
-                 "\n\t"
-
-                 "1:"
-                 "\n\t"
-                 "subs r0, %[i], 1"
-                 "\n\t"
-                 "ldr %[cell_i], =_s_shi_context+4"
-                 "\n\t"
-                 "ldr %[cell_i], [%[cell_i]]"
-                 "\n\t"
-                 "ldr %[cell_i], [%[cell_i], r0, lsl #2]"
-                 "\n\t"
-
-                 "2:"
-                 "\n\t"
-                 "movs %[cell_f], %[cell_i]"
-                 "\n\t"
-                 : [cell_f] "=r"(cell.f), [cell_i] "=r"(cell.i)
-                 : [i] "r"(i)
-                 : "cc", "r0");
-
-    if (!i)
-      fp("tos:\t\t%d\t\t%f\n", cell.i, cell.f);
-    else
-      fp("%d:\t\t%d\t\t%f\n", i, cell.i, cell.f);
-  }
-
-  return 0;
-}
-
 inline void operator"" _fs(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }

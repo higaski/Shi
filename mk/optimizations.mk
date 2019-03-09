@@ -1,20 +1,20 @@
 # Clang has an -Oz flag which is basically the same as GCCs -Os
 ifeq ($(CXX),$(filter $(CXX),g++ arm-none-eabi-g++))
-ifdef OPTIMIZE
+ifeq ($(OPTIMIZE),1)
 	OPTFLAGS += -Os
 	OPTFLAGS += -finline-small-functions
 else
 	OPTFLAGS += -O0
 endif
 else
-ifdef OPTIMIZE
+ifeq ($(OPTIMIZE),1)
 	OPTFLAGS += -Oz
 else	
-	OPTFLAGS += -O0	
+	OPTFLAGS += -O0
 endif
 endif
 
-ifdef LTO
+ifeq ($(LTO),1)
 	OPTFLAGS+= -flto
 endif
 

@@ -248,10 +248,10 @@ void shi_test_compile_to_flash() {
 
 void shi_test() {
   // Tick (returns xt of definition)
-  shi::evaluate("' cs1");  // some ... ram address
-  shi::stack_print(printf);
+  shi::evaluate("' cs1");              // some ... ram address
+                                       //  shi::stack_print(printf);
   shi::evaluate("' gagsi_undefined");  // should get error message
-  shi::stack_print(printf);
+                                       //  shi::stack_print(printf);
   shi::clear();
   asm volatile("nop");
 
@@ -264,7 +264,7 @@ void shi_test() {
   // ( -- xt flags )         if the definition was found
   asm volatile("nop");
   shi::evaluate("source parse cs1 find");
-  shi::stack_print(printf);
+  //  shi::stack_print(printf);
 
   // In theory we can now create a new definition, based upon if cs1 exists or
   // not
@@ -274,11 +274,11 @@ void shi_test() {
   else
     printf("definition cs1 not found\n");
   shi::evaluate("2drop");
-  shi::stack_print(printf);
+  //  shi::stack_print(printf);
 
   // Lets try that again with a function we haven't defined yet
   shi::evaluate("source parse foo find");
-  shi::stack_print(printf);
+  //  shi::stack_print(printf);
   f_exists = shi::top();
   if (f_exists)
     printf("definition foo found\n");
@@ -292,11 +292,11 @@ void shi_test() {
   volatile uint32_t stars = 42;
   // equal to push(&stars) and evaluate("c-variable stars");
   shi::cvariable("stars", &stars);
-  shi::stack_print(printf);
+  //  shi::stack_print(printf);
   shi::evaluate("stars @");
-  shi::stack_print(printf);
+  //  shi::stack_print(printf);
   shi::evaluate("1 + stars !");
-  shi::stack_print(printf);
+  //  shi::stack_print(printf);
   printf("Forth look how stars (our c-variable) turned out: %d\n", stars);
   shi::clear();
 
@@ -305,11 +305,11 @@ void shi_test() {
   volatile int32_t int32{};
   volatile float f32_1{};
   volatile float f32_2{};
-  shi::push(10);  // Push integer
-  shi::stack_print(printf);
+  shi::push(10);       // Push integer
+                       //  shi::stack_print(printf);
   int32 = shi::top();  // Read integer
   shi::push(32.4f);    // Push float
-  shi::stack_print(printf);
+                       //  shi::stack_print(printf);
   //  f32_1 = shi::top<float>();  // Read float
   //  shi::top(f32_2);            // Read float another (safer) way
   shi::clear();

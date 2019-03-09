@@ -5,7 +5,7 @@ TEST(basic_assumptions);
 TEST(invert__and__or__xor);
 TEST(two_times__two_div__lshift__rshit);
 TEST(zero_equal__equal__zero_less__less__more__u_less__min__max);
-TEST(_2drop__2dup__2over__2swap_q_dup__depth__drop__dup__over__rot__swap);
+TEST(__2drop__2dup__2over__2swap_q_dup__depth__drop__dup__over__rot__swap);
 TEST(to_r__from_r__r_fetch);
 TEST(plus__minus__one_plus__one_minus__abs__negate);
 TEST(s_to_d__m_times__um_times);
@@ -39,6 +39,7 @@ TEST(case__of__endof__endcase);
 //
 TEST(own_loop);
 TEST(own_case);
+TEST(own_while);
 
 int forth2012_test_suite() {
   UNITY_BEGIN();
@@ -47,7 +48,8 @@ int forth2012_test_suite() {
   RUN_TEST(invert__and__or__xor);
   RUN_TEST(two_times__two_div__lshift__rshit);
   RUN_TEST(zero_equal__equal__zero_less__less__more__u_less__min__max);
-  RUN_TEST(_2drop__2dup__2over__2swap_q_dup__depth__drop__dup__over__rot__swap);
+  RUN_TEST(
+      __2drop__2dup__2over__2swap_q_dup__depth__drop__dup__over__rot__swap);
   RUN_TEST(to_r__from_r__r_fetch);
   RUN_TEST(plus__minus__one_plus__one_minus__abs__negate);
   RUN_TEST(s_to_d__m_times__um_times);
@@ -79,6 +81,7 @@ int forth2012_test_suite() {
 
   RUN_TEST(own_loop);
   RUN_TEST(own_case);
+  RUN_TEST(own_while);
 
   return UNITY_END();
 }

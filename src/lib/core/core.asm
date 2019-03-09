@@ -917,8 +917,8 @@ WORD FLAG_COMPILE, "does>", does
     ldr r0, =link
     ldr r0, [r0]
     ldrb r1, [r0, #5]                   @ c-addr
-    adds r0, r1
-    adds r0, #12+2                      @ align(link + c-addr + 12 + 2, 4)
+    adds r0, r0, r1
+    adds r0, #4+2+8                     @ align(link + c-addr + 8 + 2, 4)
     P2ALIGN2 align=r0, scratch=r12
 
 @ Replace bx lr of create with branch to code after does>
@@ -1671,10 +1671,32 @@ WORD FLAG_COMPILE & FLAG_INLINE, "r@", r_fetch
     ldr tos, [sp]
     bx lr
 
-/*
-WORD FLAG_SKIP, "recurse"
-    bx lr
-*/
+@ ------------------------------------------------------------------------------
+@ recurse
+@ ( -- )
+@ Append the execution semantics of the current definition to the current
+@ definition. An ambiguous condition exists if recurse appears in a definition
+@ after does>.
+@ ------------------------------------------------------------------------------
+WORD FLAG_COMPILE_IMMEDIATE, "recurse"
+    push {lr}
+
+@ xt of latest definition
+@ r0    link address
+@ r1    link
+@ r2    c-addr
+@ tos   xt
+    PUSH_TOS
+    ldr r0, =link
+    ldr r1, [r0]
+    ldrb r2, [r1, #5]                   @ c-addr
+    adds tos, r1, r2
+    adds tos, #4+2                      @ align(link + c-addr + 2, 4)
+    P2ALIGN1 align=tos, scratch=r12
+    bl compile_comma
+
+@ Return
+    pop {pc}
 
 @ ------------------------------------------------------------------------------
 @ repeat
@@ -1773,7 +1795,7 @@ WORD FLAG_SKIP, "spaces"
 @ words alter the value in state: : (colon), ; (semicolon), abort, quit,
 @ :noname, [ (left-bracket), ] (right-bracket).
 @ ------------------------------------------------------------------------------
-WORD FLAG_SKIP, "state"
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "state"
     PUSH_TOS
     ldr tos, =status
     bx lr
