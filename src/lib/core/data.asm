@@ -5,7 +5,7 @@
 @ \date   02/12/2018
 
 @ C/C++ interface
-.global _s_shi_dstack, _e_shi_dstack, _s_shi_context
+.global s_shi_stack, s_shi_context
 
 .section .data
 
@@ -13,14 +13,13 @@
 @ Stack
 @ ------------------------------------------------------------------------------
 .p2align 2                              @ Make sure the stack is 4-byte aligned (ldm and stm operations need 4-byte alignment)
-_s_shi_dstack:                          @ Data-stack start
+s_shi_stack:                            @ Data-stack start
 .space DATASTACK_SIZE                   @ Data-stack size in bytes
-_e_shi_dstack:                          @ Data-stack end
+e_shi_stack:                            @ Data-stack end
 
 .p2align 2
-_s_shi_context:                         @ Used to store the forth context
+s_shi_context:                          @ Used to store the forth context
 .space 12                               @ Save tos, dsp and lfp
-_e_forth_context:
 
 @ ------------------------------------------------------------------------------
 @ Data-space pointers
@@ -39,7 +38,7 @@ text_end:
 
 @ Control-stack pointer
 csp:                                    @ Inside loop: points to leave addresses from the current loop on the stack
-.word _s_shi_dstack                     @ Inside case: points to endof addresses from the current case on the stack
+.word s_shi_stack                       @ Inside case: points to endof addresses from the current case on the stack
 
 @ ------------------------------------------------------------------------------
 @ Contains address of link of the last definition
@@ -47,7 +46,7 @@ csp:                                    @ Inside loop: points to leave addresses
 @ first definition that gets created in data has an actual link back to text.
 @ ------------------------------------------------------------------------------
 link:                                   @ Last link
-.word _s_shi_dict
+.word s_shi_dict
 
 @ ------------------------------------------------------------------------------
 @ Core variables

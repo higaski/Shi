@@ -467,7 +467,7 @@ TEST(plus__minus__one_plus__one_minus__abs__negate) {
   "-1 1 +"_fs;
   TEST_ASSERT_EQUAL(0, shi::top());
   "MID-UINT 1 +"_fs;
-  TEST_ASSERT_EQUAL(MID_UINT_p1, shi::top());
+  TEST_ASSERT_EQUAL_UINT32(MID_UINT_p1, shi::top());
 
   "0 5 -"_fs;
   TEST_ASSERT_EQUAL(-5, shi::top());
@@ -497,7 +497,7 @@ TEST(plus__minus__one_plus__one_minus__abs__negate) {
   "1 1+"_fs;
   TEST_ASSERT_EQUAL(2, shi::top());
   "MID-UINT 1+"_fs;
-  TEST_ASSERT_EQUAL(MID_UINT_p1, shi::top());
+  TEST_ASSERT_EQUAL_UINT32(MID_UINT_p1, shi::top());
 
   "2 1-"_fs;
   TEST_ASSERT_EQUAL(1, shi::top());
@@ -526,7 +526,7 @@ TEST(plus__minus__one_plus__one_minus__abs__negate) {
   "-1 abs"_fs;
   TEST_ASSERT_EQUAL(1, shi::top());
   "MIN-INT abs"_fs;
-  TEST_ASSERT_EQUAL(MID_UINT_p1, shi::top());
+  TEST_ASSERT_EQUAL_UINT32(MID_UINT_p1, shi::top());
 
   shi::clear();
 }
@@ -1147,7 +1147,7 @@ TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
   "MID-UINT MID-UINT+1 GD2"_fs;
   TEST_ASSERT_EQUAL(17, shi::size());
   TEST_ASSERT_EQUAL(MID_UINT, shi::top(0));
-  TEST_ASSERT_EQUAL(MID_UINT_p1, shi::top(-1));
+  TEST_ASSERT_EQUAL_UINT32(MID_UINT_p1, shi::top(-1));
 
   ": GD3 do 1 0 do j loop loop ;"_fs;
   TEST_ASSERT_EQUAL(17, shi::size());
@@ -1182,7 +1182,7 @@ TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
   "MID-UINT MID-UINT+1 GD4"_fs;
   TEST_ASSERT_EQUAL(34, shi::size());
   TEST_ASSERT_EQUAL(MID_UINT, shi::top());
-  TEST_ASSERT_EQUAL(MID_UINT_p1, shi::top(-1));
+  TEST_ASSERT_EQUAL_UINT32(MID_UINT_p1, shi::top(-1));
 
   ": GD5 123 swap 0 do i 4 > if drop 234 leave then loop ;"_fs;
   TEST_ASSERT_EQUAL(34, shi::size());

@@ -755,14 +755,14 @@ WORD FLAG_INTERPRET, ">data", to_data
 
 @ Push data links to return stack
 @ r0    to_text_begin
-@ r1    _s_shi_dict
+@ r1    s_shi_dict
 @ r2    link
 @ r3    count links
     ldr r0, =to_text_begin
     ldr r0, [r0]
     cmp r0, #0
     beq 6f                              @ Goto return
-    ldr r1, =_s_shi_dict
+    ldr r1, =s_shi_dict
     ldr r2, =link
     movs r3, #0
 1:  ldr r2, [r2]

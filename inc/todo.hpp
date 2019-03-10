@@ -59,10 +59,9 @@
 /// \page page_doc_stuff Doc stuff
 /// | Symbols         | Responsibility                                                                     |
 /// | ----------------| ---------------------------------------------------------------------------------- |
-/// | _s_shi_dstack   | Symbol at start of stack                                                           |
-/// | _e_shi_dstack   | Symbol at end of stack                                                             |
-/// | _s_shi_context  | Symbol at start of context (tos, dsp and lfp)                                      |
-/// | _s_shi_context  | Symbol at end of context                                                           |
+/// | s_shi_stack     | Symbol at start of stack                                                           |
+/// | e_shi_stack     | Symbol at end of stack                                                             |
+/// | s_shi_context   | Symbol at start of context (tos, dsp and lfp)                                      |
 /// | data_begin      | Pointer to ram begin                                                               |
 /// | data_end        | Pointer to ram end, used for reserving ram for variables                           |
 /// | text_begin      | Pointer to flash begin                                                             |

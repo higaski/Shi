@@ -9,7 +9,7 @@
 .arch armv7-m
 
 @ C/C++ interface
-.global shi_init_asm, shi_c_variable_asm, shi_evaluate_asm
+.global shi_init_asm, shi_c_variable_asm, shi_evaluate_asm, shi_clear_asm
 
 .section .text
 
@@ -42,8 +42,8 @@ lfp .req r8                             @ Literal-folding pointer
 @ ------------------------------------------------------------------------------
 @ Dictionary
 @ ------------------------------------------------------------------------------
-WORD FLAG_SKIP, "_s_shi"
-_s_shi_dict:                            @ Start of dictionaty
+WORD FLAG_SKIP, "s_shi"
+s_shi_dict:                             @ Start of dictionaty
 
 .include "core.asm"
 .include "number.asm"
@@ -51,8 +51,8 @@ _s_shi_dict:                            @ Start of dictionaty
 
 .section .data
 
-_e_shi_dict:                            @ End of dictionary
-WORD_TAIL FLAG_SKIP, "_e_shi"
+e_shi_dict:                             @ End of dictionary
+WORD_TAIL FLAG_SKIP, "e_shi"
 
 .section .text
 
@@ -82,7 +82,7 @@ shi_init_asm:
     stmia r3, {r1, r2}
     cmp r1, r2
     itt ne
-    ldrne r3, =_e_shi_dict              @ Set last link of core to user dictionary
+    ldrne r3, =e_shi_dict               @ Set last link of core to user dictionary
     strne r1, [r3]
 
 @ Store text alignment
@@ -104,7 +104,7 @@ shi_init_asm:
 @ Set tos dsp and lfp
     movs lfp, #0                        @ Put zero into lfp...
     movs tos, #'*'                      @ Put stars onto tos ;)
-    ldr dsp, =_e_shi_dstack             @ Reset data-stack pointer
+    ldr dsp, =e_shi_stack               @ Reset data-stack pointer
 
 @ Return
     EXIT                                @ Store context
@@ -140,7 +140,7 @@ sweep_text:
 @ r2    flags
 @ r3    data_end address
 @ r12   data_end
-    ldr r1, =_s_shi_dict
+    ldr r1, =s_shi_dict
     ldr r3, =data_end
     ldr r12, [r3]
 1:  ldrb r2, [r1, #4]                   @ Flags
@@ -225,19 +225,23 @@ shi_evaluate_asm:
 @ Clear stack
 @ ------------------------------------------------------------------------------
 .thumb_func
-clear:
+shi_clear_asm:
+    push {tos-lfp, lr}
+
 @ tos   0
-@ dsp   _e_shi_dstack
-@ r0    _s_shi_dstack
+@ dsp   e_shi_stack
+@ r0    s_shi_stack
     movs tos, #0
-    ldr dsp, =_e_shi_dstack
-    ldr r0, =_s_shi_dstack
+    ldr dsp, =e_shi_stack
+    ldr r0, =s_shi_stack
 1:  cmp r0, dsp
     beq 6f                              @ Goto return
         str tos, [r0], #4
         b 1b
 
 @ Return
-6:  movs tos, #'*'
-    bx lr
+6:  movs lfp, #0                        @ Put zero into lfp...
+    movs tos, #'*'                      @ Put stars onto tos ;)
+    EXIT
+    pop {tos-lfp, pc}
 .ltorg

@@ -139,8 +139,11 @@
 extern "C" {
 #  endif
 
-void shi_c_variable_asm(char const* name, size_t len);
-void shi_evaluate_asm(char const* str, size_t len);
+extern void shi_clear_asm();
+extern void shi_c_variable_asm(char const* name, size_t len);
+extern void shi_evaluate_asm(char const* str, size_t len);
+extern uint32_t s_shi_stack;
+extern uint32_t s_shi_context;
 
 #  ifdef __cplusplus
 }
@@ -281,6 +284,7 @@ inline void shi_cvariable(char const* str, void* adr) {
 // C++ only
 #  else
 
+#    include <cstdio>
 #    include <type_traits>
 
 namespace shi {
@@ -300,67 +304,7 @@ inline void init(init_t s) {
 }
 
 inline void clear() {
-  asm volatile("ldr r0, =_s_shi_dstack"
-               "\n\t"
-               "movs r1, #0"
-               "\n\t"
-               "ldr r2, =_e_shi_dstack"
-               "\n\t"
-
-               "1:"
-               "\n\t"
-               "cmp r0, r2"
-               "\n\t"
-               "beq 2f"
-               "\n\t"
-               "str r1, [r0], #4"
-               "\n\t"
-               "b   1b"
-               "\n\t"
-
-               "2:"
-               "\n\t"
-               "movs r1, #'*'"
-               "\n\t"
-               "ldr r0, =_s_shi_context"
-               "\n\t"
-               "stmia r0, {r1, r2}"
-               "\n\t"
-               ".ltorg"
-               "\n\t"
-               :
-               :
-               : "cc", "r0", "r1", "r2");
-}
-
-/// Returns true if the stack is empty
-///
-/// \return true    Stack empty
-/// \return false   Stack not empty
-inline bool empty() {
-  bool flag;
-
-  asm volatile("ldr r0, =_e_shi_dstack"
-               "\n\t"
-               "ldr %[flag], =_s_shi_context+4"
-               "\n\t"
-               "ldr %[flag], [%[flag]]"
-               "\n\t"
-               "cmp %[flag], r0"
-               "\n\t"
-               "ite eq"
-               "\n\t"
-               "moveq %[flag], #1"
-               "\n\t"
-               "movne %[flag], #0"
-               "\n\t"
-               ".ltorg"
-               "\n\t"
-               : [flag] "=r"(flag)
-               :
-               : "cc", "r0");
-
-  return flag;
+  shi_clear_asm();
 }
 
 /// Returns the number of elements on the stack
@@ -369,19 +313,12 @@ inline bool empty() {
 inline size_t depth() {
   size_t size;
 
-  asm volatile("ldr r0, =_e_shi_dstack"
-               "\n\t"
-               "ldr %[size], =_s_shi_context+4"
-               "\n\t"
-               "ldr %[size], [%[size]]"
-               "\n\t"
-               "rsb %[size], r0"
-               "\n\t"
-               "lsrs %[size], #2"
-               "\n\t"
-               : [size] "=r"(size)
-               :
-               : "cc", "r0");
+  asm volatile("ldr r0, [%1, #4] \n"
+               "subs %0, %1, r0 \n"
+               "lsrs %0, %0, #2 \n"
+               : "=r"(size)
+               : "r"(&s_shi_context)
+               : "cc", "memory", "r0");
 
   return size;
 }
@@ -397,69 +334,39 @@ inline size_t size() {
 ///
 /// \param    cell    Value to push
 inline void push(int32_t cell) {
-  asm volatile("ldr r0, =_s_shi_context"
-               "\n\t"
-               "ldmia r0, {r1, r2}"
-               "\n\t"
-               "str r1, [r2, #-4]!"
-               "\n\t"
-               "movs r1, %[cell]"
-               "\n\t"
-               "stmia r0, {r1, r2}"
-               "\n\t"
+  asm volatile("ldmia %0, {r0, r1} \n"
+               "str r0, [r1, #-4]! \n"
+               "movs r0, %1 \n"
+               "stmia %0, {r0, r1} \n"
                :
-               : [cell] "r"(cell)
-               : "cc", "r0", "r1", "r2");
+               : "r"(&s_shi_context), "r"(cell)
+               : "cc", "memory", "r0", "r1");
 }
 
 /// Removes first element
 inline void pop() {
-  asm volatile("ldr r0, =_s_shi_context"
-               "\n\t"
-               "ldmia r0, {r1, r2}"
-               "\n\t"
-               "ldmia r2!, {r1}"
-               "\n\t"
-               "stmia r0, {r1, r2}"
-               "\n\t"
+  asm volatile("ldmia %0, {r0, r1} \n"
+               "ldmia r1!, {r0} \n"
+               "stmia %0, {r0, r1} \n"
                :
-               :
-               : "cc", "r0", "r1", "r2");
+               : "r"(&s_shi_context)
+               : "cc", "memory", "r0", "r1");
 }
 
 inline int32_t top(int32_t offset = 0) {
   int32_t cell;
 
-  asm volatile("ldr r0, =_s_shi_context"
-               "\n\t"
-               //"ldmia r0, {%[cell], r0}"
-               "ldr %[cell], [r0]"
-               "\n\t"
-               "ldr r0, [r0, #4]"
-               "\n\t"
-
-               "cmp %[offset], #0"
-               "\n\t"
-               "beq 1f"
-               "\n\t"
-
-               "itee ge"
-               "\n\t"
-               "subge %[offset], #1"
-               "\n\t"
-               "addlt %[offset], #1"
-               "\n\t"
-               "neglt %[offset], %[offset]"
-               "\n\t"
-
-               "ldr %[cell], [r0, %[offset], lsl #2]"
-               "\n\t"
-
-               "1:"
-               "\n\t"
-               : [cell] "=&r"(cell)
-               : [offset] "r"(offset)
-               : "cc", "r0");
+  asm volatile("eor r0, %2, %2, asr #31 \n"
+               "sub r0, r0, %2, asr #31 \n"
+               "cmp r0, #0 \n"
+               "iteee eq \n"
+               "ldreq %0, [%1] \n"
+               "subne r0, #1 \n"
+               "ldrne %0, [%1, #4] \n"
+               "ldrne %0, [%0, r0, lsl #2] \n"
+               : "=r"(cell)
+               : "r"(&s_shi_context), "r"(offset)
+               : "cc", "memory", "r0");
 
   return cell;
 }
