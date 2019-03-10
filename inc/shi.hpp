@@ -379,8 +379,6 @@ inline size_t depth() {
                "\n\t"
                "lsrs %[size], #2"
                "\n\t"
-               ".ltorg"
-               "\n\t"
                : [size] "=r"(size)
                :
                : "cc", "r0");
@@ -409,8 +407,6 @@ inline void push(int32_t cell) {
                "\n\t"
                "stmia r0, {r1, r2}"
                "\n\t"
-               ".ltorg"
-               "\n\t"
                :
                : [cell] "r"(cell)
                : "cc", "r0", "r1", "r2");
@@ -426,8 +422,6 @@ inline void pop() {
                "\n\t"
                "stmia r0, {r1, r2}"
                "\n\t"
-               ".ltorg"
-               "\n\t"
                :
                :
                : "cc", "r0", "r1", "r2");
@@ -436,9 +430,12 @@ inline void pop() {
 inline int32_t top(int32_t offset = 0) {
   int32_t cell;
 
-  asm volatile("ldr r7, =_s_shi_context"
+  asm volatile("ldr r0, =_s_shi_context"
                "\n\t"
-               "ldmia r7, {%[cell], r7}"
+               //"ldmia r0, {%[cell], r0}"
+               "ldr %[cell], [r0]"
+               "\n\t"
+               "ldr r0, [r0, #4]"
                "\n\t"
 
                "cmp %[offset], #0"
@@ -455,17 +452,14 @@ inline int32_t top(int32_t offset = 0) {
                "neglt %[offset], %[offset]"
                "\n\t"
 
-               "ldr %[cell], [r7, %[offset], lsl #2]"
+               "ldr %[cell], [r0, %[offset], lsl #2]"
                "\n\t"
 
                "1:"
                "\n\t"
-
-               ".ltorg"
-               "\n\t"
                : [cell] "=&r"(cell)
                : [offset] "r"(offset)
-               : "cc", "r7");
+               : "cc", "r0");
 
   return cell;
 }
