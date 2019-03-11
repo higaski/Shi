@@ -1,6 +1,4 @@
 /// \page page_todo TODO
-/// -# Find die 4-byte vergleichsvariante streichen
-///
 /// -# Die "defer" Familie an Wörter möcht ich glaub ich nicht unterstützen. Das
 ///    betrifft
 ///    - defer
@@ -9,6 +7,15 @@
 ///    - is (setzt bestehenden Namen auf x-beliebiges xt)
 ///    Das macht in meinen Augen nur Sinn wenn ma Forth als System nutzt und
 ///    irgnedwas dynamisch macht.
+///
+/// -# Eigene ERROR ein/ausschalt-Flags für:
+///    - Stringlänge
+///    - Stackoverflow generell
+///    - Stackoverflow csp<->dsp
+///    - Branchoffsets
+///    - Undefined word
+///    - interpreting compile-only word
+///    - compiling interpret-only word
 ///
 /// \page page_doc_stuff Doc stuff
 /// Data-stack -> Selbst gemanaged via tos und dsp, normal im RAM<br>

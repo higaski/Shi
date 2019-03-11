@@ -14,15 +14,15 @@
 @ ------------------------------------------------------------------------------
 .thumb_func
 number:
-    push {lr}
+    push {r4, lr}
 
-@ tos   token-addr
 @ r0    token-addr + token-u
 @ r1    token-u
 @ r2    base
 @ r3    character
 @ r4    pointer & return flag
-@ r5    sign
+@ tos   token-addr
+@ r12   sign
     POP_REGS r1
     adds r0, tos, r1                    @ Get token-addr + token-u
 
@@ -63,11 +63,11 @@ number:
 1:  ldr r4, =cstring2num_base_10        @ Load pointer to base <=10 conversion (by default)
 
 @ Check and set sign
-2:  movs r5, #1
+2:  movs r12, #1
     ldrb r3, [tos]
     cmp r3, #'-'
     bne 1f                              @ Goto conversion
-        movs r5, #-1                    @ Negative sign
+        movs r12, #-1                   @ Negative sign
         adds tos, #1                    @ Increment token-addr
 
 @ Conversion
@@ -78,25 +78,24 @@ number:
     bne 1f
         movs tos, #0                    @ Ascii character was not in range, return false
         b 6f                            @ Goto return
-1:  mul tos, r1, r5                     @ Multiply result with sign to tos
+1:  mul tos, r1, r12                    @ Multiply result with sign to tos
     PUSH_REGS #-1                       @ return ( -- n true )
 
 @ Return
-6:  pop {pc}
+6:  pop {r4, pc}
 
 @ ------------------------------------------------------------------------------
 @ cstring2num_base_10
 @ Convert a cstring with bases <=10 into a decimal number.
-@ tos   token-addr
 @ r0    token-addr + token-u
 @ r2    base
 @ r4    return flag
 @       true:   conversion successful
 @       false:  conversion failed
+@ tos   token-addr
 @ ------------------------------------------------------------------------------
 .thumb_func
 cstring2num_base_10:
-
 @ r1    result
 @ r3    character
     movs r1, #0                         @ Make room for result
@@ -125,16 +124,15 @@ cstring2num_base_10:
 @ ------------------------------------------------------------------------------
 @ cstring2num_base_36
 @ Convert a cstring with bases <=36 into a decimal number.
-@ tos   token-addr
 @ r0    token-addr + token-u
 @ r2    base
 @ r4    return flag
 @       true:   conversion successful
 @       false:  conversion failed
+@ tos   token-addr
 @ ------------------------------------------------------------------------------
 .thumb_func
 cstring2num_base_36:
-
 @ r1    result
 @ r3    character
     movs r1, #0                         @ Make room for result

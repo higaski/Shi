@@ -166,7 +166,7 @@ sweep_text:
 @ ------------------------------------------------------------------------------
 .thumb_func
 shi_c_variable_asm:
-    push {r4-r9, lr}
+    push {tos-lfp, lr}
 
 @ Check if string length is reasonable (>0)
     cmp r1, #0
@@ -191,7 +191,7 @@ shi_c_variable_asm:
     EXIT                                @ Store context
 
 @ Return
-6:  pop {r4-r9, pc}
+6:  pop {tos-lfp, pc}
 
 @ ------------------------------------------------------------------------------
 @ Forth evaluate
@@ -200,7 +200,7 @@ shi_c_variable_asm:
 @ ------------------------------------------------------------------------------
 .thumb_func
 shi_evaluate_asm:
-    push {r4-r9, lr}
+    push {tos-lfp, lr}
 
 @ Check if string length is reasonable (>0)
     cmp r1, #0
@@ -219,7 +219,7 @@ shi_evaluate_asm:
     EXIT                                @ Store context
 
 @ Return
-6:  pop {r4-r9, pc}
+6:  pop {tos-lfp, pc}
 
 @ ------------------------------------------------------------------------------
 @ Clear stack
@@ -228,9 +228,9 @@ shi_evaluate_asm:
 shi_clear_asm:
     push {tos-lfp, lr}
 
+@ r0    s_shi_stack
 @ tos   0
 @ dsp   e_shi_stack
-@ r0    s_shi_stack
     movs tos, #0
     ldr dsp, =e_shi_stack
     ldr r0, =s_shi_stack

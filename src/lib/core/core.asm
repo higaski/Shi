@@ -1017,9 +1017,9 @@ WORD FLAG_INTERPRET_COMPILE, "evaluate"
     push {lr}
 
 @ Store source
-@ tos   u
 @ r0    c-addr
 @ r1    src address
+@ tos   u
     ldr r0, [dsp]
     ldr r1, =src
     stmia r1, {r0, tos}
@@ -1312,9 +1312,9 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
 
 @ movs (t2)
 @ Pattern 0x00XY00XY
-@ tos   x
 @ r0    bottom
 @ r1    top
+@ tos   x
 1:  ands r0, tos, #0x00FF00FF
     cmp r0, tos
     bne 1f                              @ Goto pattern 0xXY00XY00
@@ -1330,9 +1330,9 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
             b 6f                        @ Goto return
 
 @ Pattern 0xXY00XY00
-@ tos   x
 @ r0    bottom
 @ r1    top
+@ tos   x
 1:  ands r0, tos, #0xFF00FF00
     cmp r0, tos
     bne 1f                              @ Goto pattern 0xXYXYXYXY
@@ -1348,8 +1348,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
             b 6f                        @ Goto return
 
 @ Pattern 0xXYXYXYXY
-@ tos   x
 @ r0    rotated copy of tos
+@ tos   x
 1:  movs r0, tos
     rors r0, #16
     cmp r0, tos
@@ -1436,10 +1436,10 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
 // TODO mvn might offer some patterns as well?
 
 @ movw movt
-@ tos   opcode
 @ r0    bottom | top
 @ r1    intermediate
 @ r2    x
+@ tos   opcode
 1:  movs r2, tos
 
 @ movw

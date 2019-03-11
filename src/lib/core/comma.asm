@@ -16,9 +16,9 @@
 b_comma:
     push {lr}
 
-@ tos   orig
 @ r0    dest
 @ r1    pc-relative address (dest - (orig + 4))
+@ tos   orig
     POP_REGS r0                         @ ( dest -- )
     subs r1, r0, tos                    @ dest - orig
     subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
@@ -39,25 +39,25 @@ b_comma:
         b 6f                            @ Goto return
 
 @ Temporarily set data_begin to orig if necessary
-@ tos   orig
 @ r0    dest
 @ r2    data_begin address
 @ r3    data_begin
-@ r4    flag to indicate whether data_begin is overwritten or not
-1:  movs r4, #0                         @ Reset flag
+@ tos   orig
+@ r12   flag to indicate whether data_begin is overwritten or not
+1:  movs r12, #0                        @ Reset flag
     ldr r2, =data_begin
     ldr r3, [r2]
     cmp tos, r3
     bhs 1f
-        movs r4, #1                     @ Set flag
+        movs r12, #1                    @ Set flag
         str tos, [r2]                   @ Temporarily store orig as data_begin
         movs tos, r3
         PUSH_TOS                        @ ( -- data_begin )
 
 @ b
-@ tos   opcode
 @ r1    pc-relative address (dest - (orig + 4))
 @ r2    J1 | J2 | imm11 | imm10
+@ tos   opcode
 1:  ldr tos, =0xF0009000                @ Opcode template
 
     cmp r1, #0                          @ pc-relative address - 0
@@ -95,8 +95,8 @@ b_comma:
     orrs tos, tos, r2, lsl #16          @ Or imm10 into template
 
 @ Write opcode, do not reset data_begin
-@ r4    flag to indicate whether data_begin is overwritten or not
-    cmp r4, #0
+@ r12   flag to indicate whether data_begin is overwritten or not
+    cmp r12, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
@@ -121,9 +121,9 @@ b_comma:
 beq_comma:
     push {lr}
 
-@ tos   orig
 @ r0    dest
 @ r1    pc-relative address (dest - (orig + 4))
+@ tos   orig
     POP_REGS r0                         @ ( dest -- )
     subs r1, r0, tos                    @ dest - orig
     subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
@@ -144,25 +144,25 @@ beq_comma:
         b 6f                            @ Goto return
 
 @ Temporarily set data_begin to orig if necessary
-@ tos   orig
 @ r0    dest
 @ r2    data_begin address
 @ r3    data_begin
-@ r4    flag to indicate whether data_begin is overwritten or not
-1:  movs r4, #0                         @ Reset flag
+@ tos   orig
+@ r12   flag to indicate whether data_begin is overwritten or not
+1:  movs r12, #0                        @ Reset flag
     ldr r2, =data_begin
     ldr r3, [r2]
     cmp tos, r3
     bhs 1f
-        movs r4, #1                     @ Set flag
+        movs r12, #1                    @ Set flag
         str tos, [r2]                   @ Temporarily store orig as data_begin
         movs tos, r3
         PUSH_TOS                        @ ( -- data_begin)
 
 @ beq
-@ tos   opcode
 @ r1    pc-relative address (dest - (orig + 4))
 @ r2    J2 | J1 | imm11| imm6
+@ tos   opcode
 1:  ldr tos, =0xF0008000                @ Opcode template
 
     cmp r1, #0
@@ -187,8 +187,8 @@ beq_comma:
     orrs tos, tos, r2, lsl #16          @ Or imm6 into template
 
 @ Write opcode, do not reset data_begin
-@ r4    flag to indicate whether data_begin is overwritten or not
-    cmp r4, #0
+@ r12   flag to indicate whether data_begin is overwritten or not
+    cmp r12, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
@@ -213,9 +213,9 @@ beq_comma:
 blt_comma:
     push {lr}
 
-@ tos   orig
 @ r0    dest
 @ r1    pc-relative address (dest - (orig + 4))
+@ tos   orig
     POP_REGS r0                         @ ( dest -- )
     subs r1, r0, tos                    @ dest - orig
     subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
@@ -236,25 +236,25 @@ blt_comma:
         b 6f                            @ Goto return
 
 @ Temporarily set data_begin to orig if necessary
-@ tos   orig
 @ r0    dest
 @ r2    data_begin address
 @ r3    data_begin
-@ r4    flag to indicate whether data_begin is overwritten or not
-1:  movs r4, #0                         @ Reset flag
+@ tos   orig
+@ r12   flag to indicate whether data_begin is overwritten or not
+1:  movs r12, #0                        @ Reset flag
     ldr r2, =data_begin
     ldr r3, [r2]
     cmp tos, r3
     bhs 1f
-        movs r4, #1                     @ Set flag
+        movs r12, #1                    @ Set flag
         str tos, [r2]                   @ Temporarily store orig as data_begin
         movs tos, r3
         PUSH_TOS                        @ ( -- data_begin)
 
 @ blt
-@ tos   opcode
 @ r1    pc-relative address (dest - (orig + 4))
 @ r2    J2 | J1 | imm11| imm6
+@ tos   opcode
 1:  ldr tos, =0xF2C08000                @ Opcode template
 
     cmp r1, #0
@@ -279,8 +279,8 @@ blt_comma:
     orrs tos, tos, r2, lsl #16          @ Or imm6 into template
 
 @ Write opcode, do not reset data_begin
-@ r4    flag to indicate whether data_begin is overwritten or not
-    cmp r4, #0
+@ r12   flag to indicate whether data_begin is overwritten or not
+    cmp r12, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
@@ -305,9 +305,9 @@ blt_comma:
 bne_comma:
     push {lr}
 
-@ tos   orig
 @ r0    dest
 @ r1    pc-relative address (dest - (orig + 4))
+@ tos   orig
     POP_REGS r0                         @ ( dest -- )
     subs r1, r0, tos                    @ dest - orig
     subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
@@ -328,25 +328,25 @@ bne_comma:
         b 6f                            @ Goto return
 
 @ Temporarily set data_begin to orig if necessary
-@ tos   orig
 @ r0    dest
 @ r2    data_begin address
 @ r3    data_begin
-@ r4    flag to indicate whether data_begin is overwritten or not
-1:  movs r4, #0                         @ Reset flag
+@ tos   orig
+@ r12   flag to indicate whether data_begin is overwritten or not
+1:  movs r12, #0                        @ Reset flag
     ldr r2, =data_begin
     ldr r3, [r2]
     cmp tos, r3
     bhs 1f
-        movs r4, #1                     @ Set flag
+        movs r12, #1                    @ Set flag
         str tos, [r2]                   @ Temporarily store orig as data_begin
         movs tos, r3
         PUSH_TOS                        @ ( -- data_begin)
 
 @ bne
-@ tos   opcode
 @ r1    pc-relative address (dest - (orig + 4))
 @ r2    J2 | J1 | imm11| imm6
+@ tos   opcode
 1:  ldr tos, =0xF0408000                @ Opcode template
 
     cmp r1, #0
@@ -371,8 +371,8 @@ bne_comma:
     orrs tos, tos, r2, lsl #16          @ Or imm6 into template
 
 @ Write opcode, do not reset data_begin
-@ r4    flag to indicate whether data_begin is overwritten or not
-    cmp r4, #0
+@ r12   flag to indicate whether data_begin is overwritten or not
+    cmp r12, #0
     bne 1f
         bl rev_comma                    @ Write opcode
         b 6f
@@ -553,11 +553,11 @@ word_comma:
     strb r2, [r1], #1
 
 @ Write cstring
-@ tos   token-u
 @ r0    data_begin address
 @ r1    data_begin
 @ r2    token-addr
 @ r3    token-addr + token-u
+@ tos   token-u
 @ r12   character
     strb tos, [r1], #1                  @ Write length
     POP_REGS top=r3, to=r2              @ ( token-addr token-u -- )

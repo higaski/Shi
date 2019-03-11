@@ -161,9 +161,9 @@ WORD FLAG_COMPILE, "compile,", compile_comma
         b 2f                            @ Goto compile, text
 
 @ compile, data
-@ tos   data_begin
 @ r0    pc-relative address
 @ r2    xt
+@ tos   data_begin
 1:  DROP                                @ ( false -- )
     bl here                             @ ( -- data_begin )
     SWAP                                @ ( xt data_begin -- data_begin xt )
@@ -173,9 +173,9 @@ WORD FLAG_COMPILE, "compile,", compile_comma
     b 1f                                @ Goto range check for bl
 
 @ compile, text
-@ tos   xt
 @ r0    pc-relative address
 @ r2    xt
+@ tos   xt
 2:  DROP                                @ ( true -- )
     ldr r0, =to_text_begin
     ldmia r0, {r1, r2}
@@ -197,9 +197,9 @@ WORD FLAG_COMPILE, "compile,", compile_comma
     bgt 3f                              @ Goto movw movt blx
 
 @ bl
-@ tos   opcode
 @ r0    pc-relative address (xt - (data-space pointer + 4))
 @ r1    J1 | J2 | imm11 | imm10
+@ tos   opcode
     ldr tos, =0xF000D000                @ Opcode template
 
     cmp r0, #0                          @ pc-relative address - 0
@@ -241,10 +241,10 @@ WORD FLAG_COMPILE, "compile,", compile_comma
 
 @ movw movt blx
 @ bl coudln't cover our range, do movw movt blx
-@ tos   opcode
 @ r0    bottom | top
 @ r1    intermediate
 @ r2    xt + 1
+@ tos   opcode
 3:  adds r2, #1                         @ Make xt odd (thumb)
 
 @ movw
@@ -475,11 +475,11 @@ WORD FLAG_SKIP, "pad"
 @ then simply throws the found token, also as cstring, back onto the stack.
 @ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "parse"
-@ tos   c-addr + >in            (= start address)
 @ r0    c-addr + >in advanced   (= current address)
 @ r1    c-addr + u              (= end address)
 @ r2    >in
 @ r3    character
+@ tos   c-addr + >in            (= start address)
     ldr r2, =in                         @ >in
     ldr r2, [r2]
     POP_REGS r1                         @ ( u -- )
