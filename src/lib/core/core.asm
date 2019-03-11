@@ -96,11 +96,11 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "*/", times_div
 @ r1    n2
 @ r2    n3
 @ r3    bottom
-@ r4    top
+@ r12   top
     POP_REGS top=r2, to="r0-r1"
     PUSH_TOS
-    smull r3, r4, r0, r1;
-    cmp r4, #0
+    smull r3, r12, r0, r1;
+    cmp r12, #0
     beq 1f                              @ Goto 32bit division
     // TODO 64bit division
 

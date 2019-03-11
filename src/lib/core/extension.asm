@@ -818,28 +818,28 @@ WORD FLAG_INTERPRET, ">data", to_data
 @ r1    link n
 @ r2    text_align
 @ r3    text_align - 1
-@ r4    unaligned bits
+@ r12   unaligned bits
     ldr r2, =text_align
     ldrb r2, [r2]
     subs r3, r2, #1
-    ands r4, r0, r3                     @ "Unaligned" bits
+    ands r12, r0, r3                    @ "Unaligned" bits
     itt ne
-    subne r2, r4                        @ Alignment - "unaligned" bits
+    subne r2, r12                       @ Alignment - "unaligned" bits
     addne r0, r2
     str r0, [r1]                        @ Write last text link
-    movs r4, r0
+    movs r12, r0
 
 @ Store new text_begin and call shi_write_text
 @ r0    to_text_begin
 @ r1    data_begin
 @ r2    text_begin
 @ r3    text_begin address
-@ r4    text_begin after write
+@ r12   text_begin after write
     ldr r2, =to_text_begin
     ldmia r2, {r0, r1}
     ldr r3, =text_begin
     ldr r2, [r3]
-    str r4, [r3]
+    str r12, [r3]
     bl shi_write_text
 
 @ Clear >text block from data
