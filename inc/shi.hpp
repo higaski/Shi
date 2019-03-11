@@ -160,7 +160,7 @@ typedef struct {
   uint8_t text_p2align;
 } shi_init_t;
 
-void shi_init_asm(init_t*);
+void shi_init_asm(shi_init_t*);
 
 inline void shi_init(shi_init_t s) {
   shi_init_asm(&s);
@@ -353,12 +353,10 @@ inline void pop() {
                : "cc", "memory", "r0", "r1");
 }
 
-inline int32_t top(int32_t offset = 0) {
+inline int32_t top(size_t offset = 0) {
   int32_t cell;
 
-  asm volatile("eor r0, %2, %2, asr #31 \n"
-               "sub r0, r0, %2, asr #31 \n"
-               "cmp r0, #0 \n"
+  asm volatile("cmp r0, #0 \n"
                "iteee eq \n"
                "ldreq %0, [%1] \n"
                "subne r0, #1 \n"

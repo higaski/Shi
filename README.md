@@ -1,14 +1,29 @@
 # ![](doc/img/logo.png)
-Shi is a fast and tiny [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) implementation written for the [Thumb-2 instruction set](https://infocenter.arm.com/help/topic/com.arm.doc.qrc0001m/QRC0001_UAL.pdf) which runs on ARMv7-M architecture and newer. It currently fits into 8kB of flash and 320B of ram. Some of it's features are
-* A
-* B
+Shi is a fast and tiny **embeddable** [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) implementation written for the [Thumb-2 ISA](https://infocenter.arm.com/help/topic/com.arm.doc.qrc0001m/QRC0001_UAL.pdf) (ARMv7-M and newer). It currently fits into 8kB of flash and 320B of ram. Some of it's features are
+* Blabla interface C/C++
+* Blabla compiles to flash/ram usw. usf.
+* Inlining
+* Folding
+* Und was weiß i no alles
 
-# Introduction
-Forth is an imperative explicitly stack-based language mostly known for its quirky [RPN](https://en.wikipedia.org/wiki/Reverse_Polish_notation) syntax. Explicitly stack-based means that everything in Forth either consumes or creates elements on a gobal data-stack upon execution. While other languages differ between expressions, operators, functions and so on Forth only has the notion of *words*. A word can be any combination of characters but a whitespace and simply denotes an executable entry in a collection of words called a *dictionary*. A word not found by the parser must be a number or results in an *undefined word* error. The dictionary is extensible and allows for the addition of new words.
+# Quick'n'dirty
+```c++
+// SHOW code here
+class T {
+};
+```
+
+# Forth...
+Forth is an imperative explicitly stack-based language mostly known for its quirky [RPN](https://en.wikipedia.org/wiki/Reverse_Polish_notation) syntax. Explicitly stack-based means that everything either consumes or creates elements on a gobal data-stack upon execution. While other languages differ between expressions, operators, functions and so on Forth only has the notion of *words*. A word can be any combination of characters but a whitespace and simply denotes an executable entry in a collection of words called a *dictionary*. A word not found by the parser must be a number or results in an *undefined word* error. The dictionary is extensible and allows for the addition of new words.
 
 For further information or a comprehensive tutorial refer to
-* [Starting Forth](doc/books/Starting-FORTH.pdf)
-* [Thinking Forth](doc/books/thinking-forth-color.pdf)
+* [Starting Forth](https://www.forth.com/starting-forth/)
+* [Thinking Forth](http://thinking-forth.sourceforge.net/) 
+
+# ...as embedded language
+Although extensibility gives Forth a slightly functional touch it's otherwise procedural. There is no type system, no scope, no encapsulation nor any other achievement computer science made over the past four decades. This is why I'm not overly enthusiastic that most implementations out there act as system with a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop). The standard way of doing so is implementing the words [key](http://forth-standard.org/standard/core/KEY) and [emit](http://forth-standard.org/standard/core/EMIT) to constantly read and write from a serial interface. Two of the best known Forth's for ARM, [CoreForth](https://github.com/ekoeppen/CoreForth) and [Mecrisp-Stellaris](http://mecrisp.sourceforge.net/>Mecrisp-Stellaris), are following this path. Specially the latter is an amazing piece of software and really stands out with tons of features and a relatively big [ecosystem](https://github.com/jeelabs/embello/tree/master/explore/1608-forth).
+
+But so does [MicroPython](http://micropython.org/) and it also comes with a type system, functions, classes, scope, encapsulation, a comprehensive standard library and pretty much everything else you'd expect from a modern language.
 
 ## "Reverse Polish" ![](doc/img/polish_flag.png)
 Although Forth is quite a unique language in all of its aspects it is the complementary RPN and stack which really let it shine in very restricted environments. To understand why let's create a real world example by writing a linear interpolation function we'd like to parse and interpret or even compile.

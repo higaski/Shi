@@ -11,15 +11,15 @@ TEST(basic_assumptions) {
   "1 BITSSET?"_fs;  // ( OTHER NUMBER HAVE AT LEAST ONE BIT )
   TEST_ASSERT_EQUAL(3, shi::size());
   TEST_ASSERT_EQUAL(0, shi::top());
-  TEST_ASSERT_EQUAL(0, shi::top(-1));
-  TEST_ASSERT_EQUAL(0, shi::top(-2));
+  TEST_ASSERT_EQUAL(0, shi::top(1));
+  TEST_ASSERT_EQUAL(0, shi::top(2));
   "-1 BITSSET?"_fs;
   TEST_ASSERT_EQUAL(5, shi::size());
   TEST_ASSERT_EQUAL(0, shi::top());
-  TEST_ASSERT_EQUAL(0, shi::top(-1));
-  TEST_ASSERT_EQUAL(0, shi::top(-2));
-  TEST_ASSERT_EQUAL(0, shi::top(-3));
-  TEST_ASSERT_EQUAL(0, shi::top(-4));
+  TEST_ASSERT_EQUAL(0, shi::top(1));
+  TEST_ASSERT_EQUAL(0, shi::top(2));
+  TEST_ASSERT_EQUAL(0, shi::top(3));
+  TEST_ASSERT_EQUAL(0, shi::top(4));
 
   shi::clear();
 }
@@ -73,7 +73,7 @@ TEST(two_times__two_div__lshift__rshit) {
   "MSB BITSSET?"_fs;
   TEST_ASSERT_EQUAL(2, shi::size());
   TEST_ASSERT_EQUAL(0, shi::top());
-  TEST_ASSERT_EQUAL(0, shi::top(-1));
+  TEST_ASSERT_EQUAL(0, shi::top(1));
 
   "0S 2*"_fs;
   TEST_ASSERT_EQUAL(_0S, shi::top());
@@ -345,42 +345,42 @@ TEST(__2drop__2dup__2over__2swap_q_dup__depth__drop__dup__over__rot__swap) {
   "1 2 2dup"_fs;
   TEST_ASSERT_EQUAL(4, shi::size());
   TEST_ASSERT_EQUAL(2, shi::top());
-  TEST_ASSERT_EQUAL(1, shi::top(-1));
-  TEST_ASSERT_EQUAL(2, shi::top(-2));
-  TEST_ASSERT_EQUAL(1, shi::top(-3));
+  TEST_ASSERT_EQUAL(1, shi::top(1));
+  TEST_ASSERT_EQUAL(2, shi::top(2));
+  TEST_ASSERT_EQUAL(1, shi::top(3));
 
   "1 2 3 4 2over"_fs;
   TEST_ASSERT_EQUAL(10, shi::size());
   TEST_ASSERT_EQUAL(2, shi::top());
-  TEST_ASSERT_EQUAL(1, shi::top(-1));
-  TEST_ASSERT_EQUAL(4, shi::top(-2));
-  TEST_ASSERT_EQUAL(3, shi::top(-3));
-  TEST_ASSERT_EQUAL(2, shi::top(-4));
-  TEST_ASSERT_EQUAL(1, shi::top(-5));
-  TEST_ASSERT_EQUAL(2, shi::top(-6));
-  TEST_ASSERT_EQUAL(1, shi::top(-7));
-  TEST_ASSERT_EQUAL(2, shi::top(-8));
-  TEST_ASSERT_EQUAL(1, shi::top(-9));
+  TEST_ASSERT_EQUAL(1, shi::top(1));
+  TEST_ASSERT_EQUAL(4, shi::top(2));
+  TEST_ASSERT_EQUAL(3, shi::top(3));
+  TEST_ASSERT_EQUAL(2, shi::top(4));
+  TEST_ASSERT_EQUAL(1, shi::top(5));
+  TEST_ASSERT_EQUAL(2, shi::top(6));
+  TEST_ASSERT_EQUAL(1, shi::top(7));
+  TEST_ASSERT_EQUAL(2, shi::top(8));
+  TEST_ASSERT_EQUAL(1, shi::top(9));
 
   shi::clear();
 
   "1 2 3 4 2swap"_fs;
   TEST_ASSERT_EQUAL(4, shi::size());
   TEST_ASSERT_EQUAL(2, shi::top());
-  TEST_ASSERT_EQUAL(1, shi::top(-1));
-  TEST_ASSERT_EQUAL(4, shi::top(-2));
-  TEST_ASSERT_EQUAL(3, shi::top(-3));
+  TEST_ASSERT_EQUAL(1, shi::top(1));
+  TEST_ASSERT_EQUAL(4, shi::top(2));
+  TEST_ASSERT_EQUAL(3, shi::top(3));
 
   "0 ?dup"_fs;
   TEST_ASSERT_EQUAL(0, shi::top());
 
   "1 ?dup"_fs;
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(1, shi::top(-1));
+  TEST_ASSERT_EQUAL(1, shi::top(1));
 
   "-1 ?dup"_fs;
   TEST_ASSERT_EQUAL(-1, shi::top());
-  TEST_ASSERT_EQUAL(-1, shi::top(-1));
+  TEST_ASSERT_EQUAL(-1, shi::top(1));
 
   shi::clear();
 
@@ -391,14 +391,14 @@ TEST(__2drop__2dup__2over__2swap_q_dup__depth__drop__dup__over__rot__swap) {
 
   "0 depth"_fs;
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(0, shi::top(-1));
+  TEST_ASSERT_EQUAL(0, shi::top(1));
 
   shi::clear();
 
   "0 1 depth"_fs;
   TEST_ASSERT_EQUAL(2, shi::top());
-  TEST_ASSERT_EQUAL(1, shi::top(-1));
-  TEST_ASSERT_EQUAL(0, shi::top(-2));
+  TEST_ASSERT_EQUAL(1, shi::top(1));
+  TEST_ASSERT_EQUAL(0, shi::top(2));
 
   shi::clear();
 
@@ -411,21 +411,21 @@ TEST(__2drop__2dup__2over__2swap_q_dup__depth__drop__dup__over__rot__swap) {
 
   "1 dup"_fs;
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(1, shi::top(-1));
+  TEST_ASSERT_EQUAL(1, shi::top(1));
 
   "1 2 over"_fs;
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(2, shi::top(-1));
-  TEST_ASSERT_EQUAL(1, shi::top(-2));
+  TEST_ASSERT_EQUAL(2, shi::top(1));
+  TEST_ASSERT_EQUAL(1, shi::top(2));
 
   "1 2 3 rot"_fs;
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(3, shi::top(-1));
-  TEST_ASSERT_EQUAL(2, shi::top(-2));
+  TEST_ASSERT_EQUAL(3, shi::top(1));
+  TEST_ASSERT_EQUAL(2, shi::top(2));
 
   "1 2 swap"_fs;
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(2, shi::top(-1));
+  TEST_ASSERT_EQUAL(2, shi::top(1));
 
   shi::clear();
 }
@@ -439,7 +439,7 @@ TEST(to_r__from_r__r_fetch) {
 
   "123 GR2"_fs;
   TEST_ASSERT_EQUAL(123, shi::top());
-  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  TEST_ASSERT_EQUAL(123, shi::top(1));
 
   "1S GR1"_fs;  // ( RETURN STACK HOLDS CELLS )
   TEST_ASSERT_EQUAL(_1S, shi::top());
@@ -802,7 +802,7 @@ TEST(
   TEST_ASSERT_EQUAL(TRUE, shi::top());
   "1STA 1+"_fs;
   "2NDA"_fs;
-  TEST_ASSERT_EQUAL(shi::top(), shi::top(-1));
+  TEST_ASSERT_EQUAL(shi::top(), shi::top(1));
   // ( MISSING TEST: NEGATIVE ALLOT )
 
   "1 aligned constant ALMNT"_fs;  // 1|2|4|8 for 8|16|32|64 bit alignment
@@ -824,22 +824,22 @@ TEST(
   TEST_ASSERT_EQUAL(_2ND, shi::top());
   "1ST @ 2ND @"_fs;
   TEST_ASSERT_EQUAL(2, shi::top());
-  TEST_ASSERT_EQUAL(1, shi::top(-1));
+  TEST_ASSERT_EQUAL(1, shi::top(1));
   "5 1ST !"_fs;
   "1ST @ 2ND @"_fs;
   TEST_ASSERT_EQUAL(2, shi::top());
-  TEST_ASSERT_EQUAL(5, shi::top(-1));
+  TEST_ASSERT_EQUAL(5, shi::top(1));
   "6 2ND !"_fs;
   "1ST @ 2ND @"_fs;
   TEST_ASSERT_EQUAL(6, shi::top());
-  TEST_ASSERT_EQUAL(5, shi::top(-1));
+  TEST_ASSERT_EQUAL(5, shi::top(1));
   "1ST 2@"_fs;
   TEST_ASSERT_EQUAL(5, shi::top());
-  TEST_ASSERT_EQUAL(6, shi::top(-1));
+  TEST_ASSERT_EQUAL(6, shi::top(1));
   "2 1 1ST 2!"_fs;
   "1ST 2@"_fs;
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(2, shi::top(-1));
+  TEST_ASSERT_EQUAL(2, shi::top(1));
   "1S 1ST ! 1ST @"_fs;
   TEST_ASSERT_EQUAL(_1S, shi::top());
 
@@ -857,15 +857,15 @@ TEST(
   TEST_ASSERT_EQUAL(_2NDC, shi::top());
   "1STC c@ 2NDC c@"_fs;
   TEST_ASSERT_EQUAL(2, shi::top());
-  TEST_ASSERT_EQUAL(1, shi::top(-1));
+  TEST_ASSERT_EQUAL(1, shi::top(1));
   "3 1STC c!"_fs;
   "1STC c@ 2NDC c@"_fs;
   TEST_ASSERT_EQUAL(2, shi::top());
-  TEST_ASSERT_EQUAL(3, shi::top(-1));
+  TEST_ASSERT_EQUAL(3, shi::top(1));
   "4 2NDC c!"_fs;
   "1STC c@ 2NDC c@"_fs;
   TEST_ASSERT_EQUAL(4, shi::top());
-  TEST_ASSERT_EQUAL(3, shi::top(-1));
+  TEST_ASSERT_EQUAL(3, shi::top(1));
 
   "align 1 allot here align here 3 cells allot"_fs;
   "constant A-ADDR constant UA-ADDR"_fs;
@@ -879,7 +879,7 @@ TEST(
   TEST_ASSERT_EQUAL(1234, shi::top());
   "123 456 A-ADDR 2! A-ADDR 2@"_fs;
   TEST_ASSERT_EQUAL(456, shi::top());
-  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  TEST_ASSERT_EQUAL(123, shi::top(1));
   "2 A-ADDR char+ c! A-ADDR char+ c@"_fs;
   TEST_ASSERT_EQUAL(2, shi::top());
   "3 A-ADDR cell+ c! A-ADDR cell+ c@"_fs;
@@ -888,7 +888,7 @@ TEST(
   TEST_ASSERT_EQUAL(1234, shi::top());
   "123 456 A-ADDR cell+ 2! A-ADDR cell+ 2@"_fs;
   TEST_ASSERT_EQUAL(456, shi::top());
-  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  TEST_ASSERT_EQUAL(123, shi::top(1));
 
   ": BITS 0 swap begin dup while dup MSB and if >r 1+ r> then 2* repeat drop ;"_fs;
   //  ( CHARACTERS >= 1 AU, <= SIZE OF CELL, >= 8 BITS )
@@ -957,96 +957,96 @@ TEST(if__else__then__begin__while__repeat__until__recurse) {
   "-1 GI1"_fs;
   TEST_ASSERT_EQUAL(2, shi::size());
   TEST_ASSERT_EQUAL(123, shi::top());
-  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  TEST_ASSERT_EQUAL(123, shi::top(1));
   "0 GI2"_fs;
   TEST_ASSERT_EQUAL(3, shi::size());
   TEST_ASSERT_EQUAL(234, shi::top());
-  TEST_ASSERT_EQUAL(123, shi::top(-1));
-  TEST_ASSERT_EQUAL(123, shi::top(-2));
+  TEST_ASSERT_EQUAL(123, shi::top(1));
+  TEST_ASSERT_EQUAL(123, shi::top(2));
   "1 GI2"_fs;
   TEST_ASSERT_EQUAL(4, shi::size());
   TEST_ASSERT_EQUAL(123, shi::top());
-  TEST_ASSERT_EQUAL(234, shi::top(-1));
-  TEST_ASSERT_EQUAL(123, shi::top(-2));
-  TEST_ASSERT_EQUAL(123, shi::top(-3));
+  TEST_ASSERT_EQUAL(234, shi::top(1));
+  TEST_ASSERT_EQUAL(123, shi::top(2));
+  TEST_ASSERT_EQUAL(123, shi::top(3));
   "-1 GI1"_fs;
   TEST_ASSERT_EQUAL(5, shi::size());
   TEST_ASSERT_EQUAL(123, shi::top());
-  TEST_ASSERT_EQUAL(123, shi::top(-1));
-  TEST_ASSERT_EQUAL(234, shi::top(-2));
-  TEST_ASSERT_EQUAL(123, shi::top(-3));
-  TEST_ASSERT_EQUAL(123, shi::top(-4));
+  TEST_ASSERT_EQUAL(123, shi::top(1));
+  TEST_ASSERT_EQUAL(234, shi::top(2));
+  TEST_ASSERT_EQUAL(123, shi::top(3));
+  TEST_ASSERT_EQUAL(123, shi::top(4));
 
   ": GI3 begin dup 5 < while dup 1+ repeat ;"_fs;
   TEST_ASSERT_EQUAL(5, shi::size());
   "0 GI3"_fs;
   TEST_ASSERT_EQUAL(11, shi::size());
   TEST_ASSERT_EQUAL(5, shi::top());
-  TEST_ASSERT_EQUAL(4, shi::top(-1));
-  TEST_ASSERT_EQUAL(3, shi::top(-2));
-  TEST_ASSERT_EQUAL(2, shi::top(-3));
-  TEST_ASSERT_EQUAL(1, shi::top(-4));
-  TEST_ASSERT_EQUAL(0, shi::top(-5));
+  TEST_ASSERT_EQUAL(4, shi::top(1));
+  TEST_ASSERT_EQUAL(3, shi::top(2));
+  TEST_ASSERT_EQUAL(2, shi::top(3));
+  TEST_ASSERT_EQUAL(1, shi::top(4));
+  TEST_ASSERT_EQUAL(0, shi::top(5));
   "4 GI3"_fs;
   TEST_ASSERT_EQUAL(13, shi::size());
   TEST_ASSERT_EQUAL(5, shi::top());
-  TEST_ASSERT_EQUAL(4, shi::top(-1));
-  TEST_ASSERT_EQUAL(5, shi::top(-2));
-  TEST_ASSERT_EQUAL(4, shi::top(-3));
-  TEST_ASSERT_EQUAL(3, shi::top(-4));
-  TEST_ASSERT_EQUAL(2, shi::top(-5));
-  TEST_ASSERT_EQUAL(1, shi::top(-6));
-  TEST_ASSERT_EQUAL(0, shi::top(-7));
+  TEST_ASSERT_EQUAL(4, shi::top(1));
+  TEST_ASSERT_EQUAL(5, shi::top(2));
+  TEST_ASSERT_EQUAL(4, shi::top(3));
+  TEST_ASSERT_EQUAL(3, shi::top(4));
+  TEST_ASSERT_EQUAL(2, shi::top(5));
+  TEST_ASSERT_EQUAL(1, shi::top(6));
+  TEST_ASSERT_EQUAL(0, shi::top(7));
   "5 GI3"_fs;
   TEST_ASSERT_EQUAL(14, shi::size());
   TEST_ASSERT_EQUAL(5, shi::top());
-  TEST_ASSERT_EQUAL(5, shi::top(-1));
-  TEST_ASSERT_EQUAL(4, shi::top(-2));
-  TEST_ASSERT_EQUAL(5, shi::top(-3));
-  TEST_ASSERT_EQUAL(4, shi::top(-4));
-  TEST_ASSERT_EQUAL(3, shi::top(-5));
-  TEST_ASSERT_EQUAL(2, shi::top(-6));
-  TEST_ASSERT_EQUAL(1, shi::top(-7));
-  TEST_ASSERT_EQUAL(0, shi::top(-8));
+  TEST_ASSERT_EQUAL(5, shi::top(1));
+  TEST_ASSERT_EQUAL(4, shi::top(2));
+  TEST_ASSERT_EQUAL(5, shi::top(3));
+  TEST_ASSERT_EQUAL(4, shi::top(4));
+  TEST_ASSERT_EQUAL(3, shi::top(5));
+  TEST_ASSERT_EQUAL(2, shi::top(6));
+  TEST_ASSERT_EQUAL(1, shi::top(7));
+  TEST_ASSERT_EQUAL(0, shi::top(8));
   "6 GI3"_fs;
   TEST_ASSERT_EQUAL(15, shi::size());
   TEST_ASSERT_EQUAL(6, shi::top());
-  TEST_ASSERT_EQUAL(5, shi::top(-1));
-  TEST_ASSERT_EQUAL(5, shi::top(-2));
-  TEST_ASSERT_EQUAL(4, shi::top(-3));
-  TEST_ASSERT_EQUAL(5, shi::top(-4));
-  TEST_ASSERT_EQUAL(4, shi::top(-5));
-  TEST_ASSERT_EQUAL(3, shi::top(-6));
-  TEST_ASSERT_EQUAL(2, shi::top(-7));
-  TEST_ASSERT_EQUAL(1, shi::top(-8));
-  TEST_ASSERT_EQUAL(0, shi::top(-9));
+  TEST_ASSERT_EQUAL(5, shi::top(1));
+  TEST_ASSERT_EQUAL(5, shi::top(2));
+  TEST_ASSERT_EQUAL(4, shi::top(3));
+  TEST_ASSERT_EQUAL(5, shi::top(4));
+  TEST_ASSERT_EQUAL(4, shi::top(5));
+  TEST_ASSERT_EQUAL(3, shi::top(6));
+  TEST_ASSERT_EQUAL(2, shi::top(7));
+  TEST_ASSERT_EQUAL(1, shi::top(8));
+  TEST_ASSERT_EQUAL(0, shi::top(9));
 
   ": GI4 begin dup 1+ dup 5 > until ;"_fs;
   TEST_ASSERT_EQUAL(15, shi::size());
   "3 GI4"_fs;
   TEST_ASSERT_EQUAL(19, shi::size());
   TEST_ASSERT_EQUAL(6, shi::top());
-  TEST_ASSERT_EQUAL(5, shi::top(-1));
-  TEST_ASSERT_EQUAL(4, shi::top(-2));
-  TEST_ASSERT_EQUAL(3, shi::top(-3));
+  TEST_ASSERT_EQUAL(5, shi::top(1));
+  TEST_ASSERT_EQUAL(4, shi::top(2));
+  TEST_ASSERT_EQUAL(3, shi::top(3));
   "5 GI4"_fs;
   TEST_ASSERT_EQUAL(21, shi::size());
   TEST_ASSERT_EQUAL(6, shi::top());
-  TEST_ASSERT_EQUAL(5, shi::top(-1));
-  TEST_ASSERT_EQUAL(6, shi::top(-2));
-  TEST_ASSERT_EQUAL(5, shi::top(-3));
-  TEST_ASSERT_EQUAL(4, shi::top(-4));
-  TEST_ASSERT_EQUAL(3, shi::top(-5));
+  TEST_ASSERT_EQUAL(5, shi::top(1));
+  TEST_ASSERT_EQUAL(6, shi::top(2));
+  TEST_ASSERT_EQUAL(5, shi::top(3));
+  TEST_ASSERT_EQUAL(4, shi::top(4));
+  TEST_ASSERT_EQUAL(3, shi::top(5));
   "6 GI4"_fs;
   TEST_ASSERT_EQUAL(23, shi::size());
   TEST_ASSERT_EQUAL(7, shi::top());
-  TEST_ASSERT_EQUAL(6, shi::top(-1));
-  TEST_ASSERT_EQUAL(6, shi::top(-2));
-  TEST_ASSERT_EQUAL(5, shi::top(-3));
-  TEST_ASSERT_EQUAL(6, shi::top(-4));
-  TEST_ASSERT_EQUAL(5, shi::top(-5));
-  TEST_ASSERT_EQUAL(4, shi::top(-6));
-  TEST_ASSERT_EQUAL(3, shi::top(-7));
+  TEST_ASSERT_EQUAL(6, shi::top(1));
+  TEST_ASSERT_EQUAL(6, shi::top(2));
+  TEST_ASSERT_EQUAL(5, shi::top(3));
+  TEST_ASSERT_EQUAL(6, shi::top(4));
+  TEST_ASSERT_EQUAL(5, shi::top(5));
+  TEST_ASSERT_EQUAL(4, shi::top(6));
+  TEST_ASSERT_EQUAL(3, shi::top(7));
 
   //  T{ : GI5 BEGIN DUP 2 >
   //           WHILE DUP 5 < WHILE DUP 1+ REPEAT 123 ELSE 345 THEN ; -> }T
@@ -1055,26 +1055,26 @@ TEST(if__else__then__begin__while__repeat__until__recurse) {
   "1 GI5"_fs;
   TEST_ASSERT_EQUAL(25, shi::size());
   TEST_ASSERT_EQUAL(345, shi::top());
-  TEST_ASSERT_EQUAL(1, shi::top(-1));
+  TEST_ASSERT_EQUAL(1, shi::top(1));
   "2 GI5"_fs;
   TEST_ASSERT_EQUAL(27, shi::size());
   TEST_ASSERT_EQUAL(345, shi::top());
-  TEST_ASSERT_EQUAL(2, shi::top(-1));
+  TEST_ASSERT_EQUAL(2, shi::top(1));
   "3 GI5"_fs;
   TEST_ASSERT_EQUAL(31, shi::size());
   TEST_ASSERT_EQUAL(123, shi::top());
-  TEST_ASSERT_EQUAL(5, shi::top(-1));
-  TEST_ASSERT_EQUAL(4, shi::top(-2));
-  TEST_ASSERT_EQUAL(3, shi::top(-3));
+  TEST_ASSERT_EQUAL(5, shi::top(1));
+  TEST_ASSERT_EQUAL(4, shi::top(2));
+  TEST_ASSERT_EQUAL(3, shi::top(3));
   "4 GI5"_fs;
   TEST_ASSERT_EQUAL(34, shi::size());
   TEST_ASSERT_EQUAL(123, shi::top());
-  TEST_ASSERT_EQUAL(5, shi::top(-1));
-  TEST_ASSERT_EQUAL(4, shi::top(-2));
+  TEST_ASSERT_EQUAL(5, shi::top(1));
+  TEST_ASSERT_EQUAL(4, shi::top(2));
   "5 GI5"_fs;
   TEST_ASSERT_EQUAL(36, shi::size());
   TEST_ASSERT_EQUAL(123, shi::top());
-  TEST_ASSERT_EQUAL(5, shi::top(-1));
+  TEST_ASSERT_EQUAL(5, shi::top(1));
 
   shi::clear();
 
@@ -1087,25 +1087,25 @@ TEST(if__else__then__begin__while__repeat__until__recurse) {
   "1 GI6"_fs;
   TEST_ASSERT_EQUAL(3, shi::size());
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(0, shi::top(-1));
+  TEST_ASSERT_EQUAL(0, shi::top(1));
   "2 GI6"_fs;
   TEST_ASSERT_EQUAL(6, shi::size());
   TEST_ASSERT_EQUAL(2, shi::top());
-  TEST_ASSERT_EQUAL(1, shi::top(-1));
-  TEST_ASSERT_EQUAL(0, shi::top(-2));
+  TEST_ASSERT_EQUAL(1, shi::top(1));
+  TEST_ASSERT_EQUAL(0, shi::top(2));
   "3 GI6"_fs;
   TEST_ASSERT_EQUAL(10, shi::size());
   TEST_ASSERT_EQUAL(3, shi::top());
-  TEST_ASSERT_EQUAL(2, shi::top(-1));
-  TEST_ASSERT_EQUAL(1, shi::top(-2));
-  TEST_ASSERT_EQUAL(0, shi::top(-3));
+  TEST_ASSERT_EQUAL(2, shi::top(1));
+  TEST_ASSERT_EQUAL(1, shi::top(2));
+  TEST_ASSERT_EQUAL(0, shi::top(3));
   "4 GI6"_fs;
   TEST_ASSERT_EQUAL(15, shi::size());
   TEST_ASSERT_EQUAL(4, shi::top());
-  TEST_ASSERT_EQUAL(3, shi::top(-1));
-  TEST_ASSERT_EQUAL(2, shi::top(-2));
-  TEST_ASSERT_EQUAL(1, shi::top(-3));
-  TEST_ASSERT_EQUAL(0, shi::top(-4));
+  TEST_ASSERT_EQUAL(3, shi::top(1));
+  TEST_ASSERT_EQUAL(2, shi::top(2));
+  TEST_ASSERT_EQUAL(1, shi::top(3));
+  TEST_ASSERT_EQUAL(0, shi::top(4));
 
   shi::clear();
 }
@@ -1116,16 +1116,16 @@ TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
   "4 1 GD1"_fs;
   TEST_ASSERT_EQUAL(3, shi::size());
   TEST_ASSERT_EQUAL(3, shi::top());
-  TEST_ASSERT_EQUAL(2, shi::top(-1));
-  TEST_ASSERT_EQUAL(1, shi::top(-2));
+  TEST_ASSERT_EQUAL(2, shi::top(1));
+  TEST_ASSERT_EQUAL(1, shi::top(2));
   "2 -1 GD1"_fs;
   TEST_ASSERT_EQUAL(6, shi::size());
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(0, shi::top(-1));
-  TEST_ASSERT_EQUAL(-1, shi::top(-2));
-  TEST_ASSERT_EQUAL(3, shi::top(-3));
-  TEST_ASSERT_EQUAL(2, shi::top(-4));
-  TEST_ASSERT_EQUAL(1, shi::top(-5));
+  TEST_ASSERT_EQUAL(0, shi::top(1));
+  TEST_ASSERT_EQUAL(-1, shi::top(2));
+  TEST_ASSERT_EQUAL(3, shi::top(3));
+  TEST_ASSERT_EQUAL(2, shi::top(4));
+  TEST_ASSERT_EQUAL(1, shi::top(5));
   "MID-UINT+1 MID-UINT GD1"_fs;
   TEST_ASSERT_EQUAL(7, shi::size());
   TEST_ASSERT_EQUAL(MID_UINT, shi::top());
@@ -1135,32 +1135,32 @@ TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
   "1 4 GD2"_fs;
   TEST_ASSERT_EQUAL(11, shi::size());
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(2, shi::top(-1));
-  TEST_ASSERT_EQUAL(3, shi::top(-2));
-  TEST_ASSERT_EQUAL(4, shi::top(-3));
+  TEST_ASSERT_EQUAL(2, shi::top(1));
+  TEST_ASSERT_EQUAL(3, shi::top(2));
+  TEST_ASSERT_EQUAL(4, shi::top(3));
   "-1 2 GD2"_fs;
   TEST_ASSERT_EQUAL(15, shi::size());
   TEST_ASSERT_EQUAL(-1, shi::top());
-  TEST_ASSERT_EQUAL(0, shi::top(-1));
-  TEST_ASSERT_EQUAL(1, shi::top(-2));
-  TEST_ASSERT_EQUAL(2, shi::top(-3));
+  TEST_ASSERT_EQUAL(0, shi::top(1));
+  TEST_ASSERT_EQUAL(1, shi::top(2));
+  TEST_ASSERT_EQUAL(2, shi::top(3));
   "MID-UINT MID-UINT+1 GD2"_fs;
   TEST_ASSERT_EQUAL(17, shi::size());
   TEST_ASSERT_EQUAL(MID_UINT, shi::top(0));
-  TEST_ASSERT_EQUAL_UINT32(MID_UINT_p1, shi::top(-1));
+  TEST_ASSERT_EQUAL_UINT32(MID_UINT_p1, shi::top(1));
 
   ": GD3 do 1 0 do j loop loop ;"_fs;
   TEST_ASSERT_EQUAL(17, shi::size());
   "4 1 GD3"_fs;
   TEST_ASSERT_EQUAL(20, shi::size());
   TEST_ASSERT_EQUAL(3, shi::top());
-  TEST_ASSERT_EQUAL(2, shi::top(-1));
-  TEST_ASSERT_EQUAL(1, shi::top(-2));
+  TEST_ASSERT_EQUAL(2, shi::top(1));
+  TEST_ASSERT_EQUAL(1, shi::top(2));
   "2 -1 GD3"_fs;
   TEST_ASSERT_EQUAL(23, shi::size());
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(0, shi::top(-1));
-  TEST_ASSERT_EQUAL(-1, shi::top(-2));
+  TEST_ASSERT_EQUAL(0, shi::top(1));
+  TEST_ASSERT_EQUAL(-1, shi::top(2));
   "MID-UINT+1 MID-UINT GD3"_fs;
   TEST_ASSERT_EQUAL(24, shi::size());
   TEST_ASSERT_EQUAL(MID_UINT, shi::top(0));
@@ -1170,19 +1170,19 @@ TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
   "1 4 GD4"_fs;
   TEST_ASSERT_EQUAL(28, shi::size());
   TEST_ASSERT_EQUAL(1, shi::top());
-  TEST_ASSERT_EQUAL(2, shi::top(-1));
-  TEST_ASSERT_EQUAL(3, shi::top(-2));
-  TEST_ASSERT_EQUAL(4, shi::top(-3));
+  TEST_ASSERT_EQUAL(2, shi::top(1));
+  TEST_ASSERT_EQUAL(3, shi::top(2));
+  TEST_ASSERT_EQUAL(4, shi::top(3));
   "-1 2 GD4"_fs;
   TEST_ASSERT_EQUAL(32, shi::size());
   TEST_ASSERT_EQUAL(-1, shi::top());
-  TEST_ASSERT_EQUAL(0, shi::top(-1));
-  TEST_ASSERT_EQUAL(1, shi::top(-2));
-  TEST_ASSERT_EQUAL(2, shi::top(-3));
+  TEST_ASSERT_EQUAL(0, shi::top(1));
+  TEST_ASSERT_EQUAL(1, shi::top(2));
+  TEST_ASSERT_EQUAL(2, shi::top(3));
   "MID-UINT MID-UINT+1 GD4"_fs;
   TEST_ASSERT_EQUAL(34, shi::size());
   TEST_ASSERT_EQUAL(MID_UINT, shi::top());
-  TEST_ASSERT_EQUAL_UINT32(MID_UINT_p1, shi::top(-1));
+  TEST_ASSERT_EQUAL_UINT32(MID_UINT_p1, shi::top(1));
 
   ": GD5 123 swap 0 do i 4 > if drop 234 leave then loop ;"_fs;
   TEST_ASSERT_EQUAL(34, shi::size());
@@ -1192,12 +1192,12 @@ TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
   "5 GD5"_fs;
   TEST_ASSERT_EQUAL(36, shi::size());
   TEST_ASSERT_EQUAL(123, shi::top());
-  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  TEST_ASSERT_EQUAL(123, shi::top(1));
   "6 GD5"_fs;
   TEST_ASSERT_EQUAL(37, shi::size());
   TEST_ASSERT_EQUAL(234, shi::top());
-  TEST_ASSERT_EQUAL(123, shi::top(-1));
-  TEST_ASSERT_EQUAL(123, shi::top(-2));
+  TEST_ASSERT_EQUAL(123, shi::top(1));
+  TEST_ASSERT_EQUAL(123, shi::top(2));
 
   //  T{ : GD6  ( PAT: T{0 0},{0 0}{1 0}{1 1},{0 0}{1 0}{1 1}{2 0}{2 1}{2 2} )
   //     0 SWAP 0 DO
@@ -1214,8 +1214,8 @@ TEST(do__loop__plus_loop__i__j__unloop__leave__exit) {
   "3 GD6"_fs;
   TEST_ASSERT_EQUAL(42, shi::size());
   TEST_ASSERT_EQUAL(2, shi::top());
-  TEST_ASSERT_EQUAL(1, shi::top(-1));
-  TEST_ASSERT_EQUAL(4, shi::top(-2));
+  TEST_ASSERT_EQUAL(1, shi::top(1));
+  TEST_ASSERT_EQUAL(4, shi::top(2));
 
   shi::clear();
 }
@@ -1231,7 +1231,7 @@ TEST(colon__semicolon__constant__variable__create__does__to_body) {
   "Y123"_fs;
   TEST_ASSERT_EQUAL(2, shi::size());
   TEST_ASSERT_EQUAL(123, shi::top());
-  TEST_ASSERT_EQUAL(123, shi::top(-1));
+  TEST_ASSERT_EQUAL(123, shi::top(1));
 
   "variable V1"_fs;
   TEST_ASSERT_EQUAL(2, shi::size());
@@ -1240,8 +1240,8 @@ TEST(colon__semicolon__constant__variable__create__does__to_body) {
   "V1 @"_fs;
   TEST_ASSERT_EQUAL(3, shi::size());
   TEST_ASSERT_EQUAL(123, shi::top());
-  TEST_ASSERT_EQUAL(123, shi::top(-1));
-  TEST_ASSERT_EQUAL(123, shi::top(-2));
+  TEST_ASSERT_EQUAL(123, shi::top(1));
+  TEST_ASSERT_EQUAL(123, shi::top(2));
 
   shi::clear();
 
@@ -1264,10 +1264,10 @@ TEST(colon__semicolon__constant__variable__create__does__to_body) {
 
   "CR1"_fs;
   TEST_ASSERT_EQUAL(2, shi::size());
-  TEST_ASSERT_EQUAL(shi::top(), shi::top(-1));
+  TEST_ASSERT_EQUAL(shi::top(), shi::top(1));
   "' CR1 >body"_fs;
   TEST_ASSERT_EQUAL(3, shi::size());
-  TEST_ASSERT_EQUAL(shi::top(), shi::top(-1));
+  TEST_ASSERT_EQUAL(shi::top(), shi::top(1));
   "1 ,"_fs;
   TEST_ASSERT_EQUAL(3, shi::size());
   "CR1 @"_fs;
