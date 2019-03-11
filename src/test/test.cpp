@@ -1,5 +1,6 @@
 #include <cstdio>
 #include "forth2012_test_suite.hpp"
+#include "main.h"
 #include "shi.hpp"
 
 using shi::operator""_fs;
@@ -16,6 +17,16 @@ extern "C" int test() {
              .text_begin = SHI_FLASH_START,
              .text_end = SHI_FLASH_END});
 
+  auto retval = forth2012_test_suite();
+
+  //  while (1) {
+  //    HAL_Delay(10);
+  //    HAL_GPIO_WritePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin, GPIO_PIN_SET);
+  //    "' CS7"_fs;
+  //    HAL_GPIO_WritePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin, GPIO_PIN_RESET);
+  //    shi::clear();
+  //  }
+
   //  asm volatile("nop");
   //  ": indexed-array create cells allot does> swap cells + ;"_fs;
   //  asm volatile("nop");
@@ -28,5 +39,6 @@ extern "C" int test() {
 
   // semihosting_example();
 
-  return forth2012_test_suite();
+  // return forth2012_test_suite();
+  return 0;
 }

@@ -114,9 +114,9 @@
 #ifdef __ASSEMBLER__
 
 /// Data-stack size in bytes
-#  define SHI_DATASTACK_SIZE 256
-#  if SHI_DATASTACK_SIZE % 4
-#    error SHI_DATASTACK_SIZE must be a multiple of 4
+#  define SHI_STACK_SIZE 256
+#  if SHI_STACK_SIZE % 4
+#    error SHI_STACK_SIZE must be a multiple of 4
 #  endif
 
 /// Most flash types are 0xFF erased
