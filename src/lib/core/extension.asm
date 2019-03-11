@@ -475,7 +475,6 @@ WORD FLAG_SKIP, "pad"
 @ then simply throws the found token, also as cstring, back onto the stack.
 @ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "parse"
-
 @ tos   c-addr + >in            (= start address)
 @ r0    c-addr + >in advanced   (= current address)
 @ r1    c-addr + u              (= end address)

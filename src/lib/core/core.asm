@@ -1077,69 +1077,57 @@ WORD FLAG_SKIP, "fill"
 @ its execution token xt and its flags.
 @ ------------------------------------------------------------------------------
 WORD FLAG_INTERPRET_COMPILE, "find"
-@ tos   token-addr
-@ r0    token-u
-@ r1    link
-@ r2    flags
-@ r3    word-u
-@ r4    c-addr incremented
-@ r5    token-addr incremented
-@ r9    character
-@ r12   character
-    ldr r1, =link                       @ Begin search at latest link
-    POP_REGS r0                         @ ( token-u -- )
+    push {r4}
 
 @ Search
-1:  ldr r1, [r1]                        @ Link
-    cmp r1, #LINK_INVALID               @ link - LINK_INVALID
-    beq 4f                              @ Goto found nothing
-        ldrb r2, [r1, #4]               @ Flags
-        cmp r2, #FLAG_SKIP              @ Check if word should be skipped
+@ r0    link
+@ r1    flags
+    ldr r0, =link
+1:  ldr r0, [r0]                        @ Link
+    cmp r0, #LINK_INVALID               @ link - LINK_INVALID
+    beq 3f                              @ Goto found nothing
+        ldrb r1, [r0, #4]               @ Flags
+        cmp r1, #FLAG_SKIP              @ Check if word should be skipped
         beq 1b                          @ Goto search
 
-@ String compare
-    ldrb r3, [r1, #5]                   @ u
-    cmp r0, r3                          @ token-u - (c-addr incremented)
+@ Length compare
+@ r0    link
+@ r1    u
+@ r2    c-addr incremented
+@ r3    token-addr incremented
+@ tos   token-u
+    ldrb r1, [r0, #5]                   @ u
+    cmp r1, tos                         @ u - token-u
     bne 1b                              @ Goto search
-        adds r4, r1, #6                 @ c-addr
-        movs r5, tos                    @ token-addr
-        cmp r3, #4                      @ token-u - 4
-        bhs 3f                          @ Goto wordwise compare
+        adds r2, r0, #6                 @ c-addr incremented
+        ldr r3, [dsp]                   @ token-addr incremented
 
 @ Bytewise compare
-2:      ldrb r9, [r4], #1               @ Character
-        ldrb r12, [r5], #1
-        cmp r9, r12                     @ character - character
+@ r1    u
+@ r2    c-addr incremented
+@ r3    token-addr incremented
+@ r4    character
+@ r12   character
+2:      ldrb r4, [r2], #1               @ Character
+        ldrb r12, [r3], #1
+        cmp r4, r12                     @ character - character
         bne 1b                          @ Goto search
-            subs r3, #1
-            cmp r3, #0
+            subs r1, #1
             bhi 2b                      @ Goto bytewise compare
-                b 5f                    @ Goto found something
-
-@ Wordwise compare
-3:      ldr r9, [r4], #4                @ 4x Characters
-        ldr r12, [r5], #4               @ 4x Characters
-        cmp r9, r12                     @ character - character
-        bne 1b
-            subs r3, #4
-            cmp r3, #4                  @ token-u - 4
-            bhs 3b                      @ Goto wordwise compare
-                cmp r3, #0              @ token-u - 0
-                bhi 2b                  @ Goto bytewise compare
-                    b 5f                @ Goto found something
+            b 4f                        @ Goto found something
 
 @ Found nothing
-4:  PUSH_INT8 #0                        @ ( -- 0 )
-    b 6f                                @ Goto return
+3:  movs tos, #0                        @ ( token-addr token-u -- token-addr false )
+    b 6f
 
 @ Found something
-@ Only keep tos, r2 and r4
-5:  P2ALIGN1 align=r4, scratch=r0       @ xt is at next 2-byte aligned address
-    DROP                                @ ( token-addr -- )
-    PUSH_REGS top=r2, from=r4           @ ( -- xt flags )
+4:  P2ALIGN1 align=r2, scratch=r12      @ xt is at next 2-byte aligned address
+    str r2, [dsp]
+    ldrb tos, [r0, #4]                  @ ( token-addr token-u -- xt flags )
 
 @ Return
-6:  bx lr
+6:  pop {r4}
+    bx lr
 
 /*
 WORD FLAG_SKIP, "fm/mod", fm_div_mod
