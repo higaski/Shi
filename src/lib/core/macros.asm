@@ -260,20 +260,11 @@ link\@\():                              @ Label the link
 .endm
 
 @ Last word of core dictionary
-.macro WORD_TAIL flags, name, label
+.macro WORD_TAIL flags
     .p2align 1
 link\@\():
 9:  .word ERASED_WORD                   @ Last link in core dictionary points to user flash
     .byte \flags
-    .byte 8f - 7f
-7:  .ascii "\name"
-8:  .p2align 1                          @ Align before code
-.thumb_func
-.ifnb \label
-\label\():
-.else
-\name\():
-.endif
 .endm
 
 @ ------------------------------------------------------------------------------
@@ -341,7 +332,7 @@ link\@\():
 @ Print messages
 @ ------------------------------------------------------------------------------
 .macro PRINT msg
-.ifdef PRINT_ENABLED
+.if ENABLE_PRINT == 1
     mov r0, pc
     b 8f
     .asciz "\msg\n"

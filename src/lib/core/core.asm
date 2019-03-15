@@ -11,26 +11,25 @@
 @ ( x a-addr -- )
 @ Store x at a-addr.
 @ ------------------------------------------------------------------------------
+.if ENABLE_STORE == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "!", store
     ldmia dsp!, {r0, r1}
     str r0, [tos]
     movs tos, r1
     bx lr
+.endif
 
-/*
+.if ENABLE_NUM == 1
 WORD FLAG_SKIP, "#", num
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_NUM_END == 1
 WORD FLAG_SKIP, "#>", num_end
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_NUM_S == 1
 WORD FLAG_SKIP, "#s", num_s
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ '
@@ -40,6 +39,7 @@ WORD FLAG_SKIP, "#s", num_s
 @ return xt, the execution token for name. An ambiguous condition exists if name
 @ is not found. When interpreting, ' xyz execute is equivalent to xyz.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TICK == 1
 WORD FLAG_INTERPRET, "'", tick
     push {lr}
 
@@ -65,21 +65,23 @@ WORD FLAG_INTERPRET, "'", tick
 
 @ Return
 6:  pop {pc}
+.endif
 
-/*
+.if ENABLE_P == 1
 WORD FLAG_SKIP, "(", p
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ *
 @ ( n1 n2 -- n3 )
 @ Multiply n1 by n2 giving the product n3
 @ ------------------------------------------------------------------------------
+.if ENABLE_TIMES == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "*", times
     ldmia dsp!, {r0}
     muls tos, r0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ * /
@@ -91,6 +93,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "*", times
 @ as that returned by either the phrase >r m* r> fm/mod swap drop or the phrase
 @ >r m* r> sm/rwm swap drop.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TIMES_DIV == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "*/", times_div
 @ r0    n1
 @ r1    n2
@@ -109,25 +112,30 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "*/", times_div
 
 @ Return
     bx lr
+.endif
 
-@WORD FLAG_SKIP, "*/mod", times_div_mod
-@    bx lr
+.if ENABLE_TIMES_DIV_MOD == 1
+WORD FLAG_SKIP, "*/mod", times_div_mod
+.endif
 
 @ ------------------------------------------------------------------------------
 @ +
 @ ( n1 n2 -- n3 )
 @ Add n2 to n1, giving the sum n3
 @ ------------------------------------------------------------------------------
+.if ENABLE_PLUS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "+", plus
     ldmia dsp!, {r0}
     adds tos, r0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ +!
 @ ( n a-addr -- )
 @ Add n to the single-cell number at a-addr.
 @ ------------------------------------------------------------------------------
+.if ENABLE_PLUS_STORE == 1
 WORD FLAG_INTERPRET_COMPILE, "+!", plus_store
     ldmia dsp!, {r0, r1}
     ldr r2, [tos]
@@ -135,6 +143,7 @@ WORD FLAG_INTERPRET_COMPILE, "+!", plus_store
     str r0, [tos]
     movs tos, r1
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ +loop
@@ -152,6 +161,7 @@ WORD FLAG_INTERPRET_COMPILE, "+!", plus_store
 @ beginning of the loop. Otherwise, discard the current loop control parameters
 @ and continue execution immediately following the loop.
 @ ------------------------------------------------------------------------------
+.if ENABLE_PLUS_LOOP == 1
 WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
     push {lr}
 
@@ -217,6 +227,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
 @ Return
     pop {pc}
 .ltorg
+.endif
 
 @ ------------------------------------------------------------------------------
 @ ,
@@ -226,6 +237,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
 @ finishes execution. An ambiguous condition exists if the data-space pointer
 @ is not aligned prior to execution of ,.
 @ ------------------------------------------------------------------------------
+.if ENABLE_COMMA == 1
 WORD FLAG_INTERPRET_COMPILE, ",", comma
     ldr r0, =data_begin
     ldr r1, [r0]
@@ -233,83 +245,93 @@ WORD FLAG_INTERPRET_COMPILE, ",", comma
     str r1, [r0]                        @ Update address in data_begin
     DROP                                @ ( x -- )
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ -
 @ ( n1 n2 -- n3 )
 @ Subtract n2 from n1, giving the difference n3
 @ ------------------------------------------------------------------------------
+.if ENABLE_MINUS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "-", minus
     ldmia dsp!, {r0}
     subs tos, r0, tos
     bx lr
+.endif
 
-/*
+.if ENABLE_D == 1
 WORD FLAG_SKIP, ".", d
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_DOT_Q == 1
 WORD FLAG_SKIP, ".\"", dot_q
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ /
 @ ( n1 n2 -- n3 )
 @ Divide n1 by n2, giving the single-cell quotient n3
 @ ------------------------------------------------------------------------------
+.if ENABLE_DIV == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "/", div
     ldmia dsp!, {r0}
     sdiv tos, r0, tos
     bx lr
+.endif
 
-/*
+.if ENABLE_DIV_MOD == 1
 WORD FLAG_SKIP, "/mod", div_mod
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 0<
 @ ( n -- flag )
 @ flag is true if and only if n is less than zero.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ZERO_LESS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0<", zero_less
     cmp tos, #0
     ite lt
     movlt tos, #-1
     movge tos, #0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 0<
 @ ( n -- flag )
 @ flag is true if and only if x is equal to zero.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ZERO_EQUAL == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0=", zero_equal
     cmp tos, #0
     ite eq
     moveq tos, #-1
     movne tos, #0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 1+
 @ ( n1 -- n2 )
 @ Add one (1) to n1 giving the sum n2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ONE_PLUS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "1+", one_plus
     adds tos, #1
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 1-
 @ ( n1 -- n2 )
 @ Subtract one (1) from n1 giving the difference n2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ONE_MINUS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "1-", one_minus
     subs tos, #1
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 2!
@@ -317,12 +339,14 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "1-", one_minus
 @ Store the cell pair x1 x2 at a-addr, with x2 at a-addr and x1 at the next
 @ consecutive cell. It is equivalent to the sequence swap over ! cell+ !.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TWO_STORE == 1
 WORD FLAG_INTERPRET_COMPILE, "2!", two_store
     ldmia dsp!, {r0, r1}
     str r0, [tos]
     str r1, [tos, #4]
     DROP
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 2*
@@ -330,9 +354,11 @@ WORD FLAG_INTERPRET_COMPILE, "2!", two_store
 @ x2 is the result of shifting x1 one bit toward the most-significant bit,
 @ filling the vacated least-significant bit with zero.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TWO_TIMES == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "2*", two_times
     lsl tos, #1
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 2/
@@ -340,9 +366,11 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "2*", two_times
 @ x2 is the result of shifting x1 one bit toward the least-significant bit,
 @ leaving the most-significant bit unchanged.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TWO_DIV == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "2/", two_div
     asr tos, #1
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 2@
@@ -351,47 +379,57 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "2/", two_div
 @ the next consecutive cell. It is equivalent to the sequence dup cell+ @ swap
 @ @.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TWO_FETCH == 1
 WORD FLAG_INTERPRET_COMPILE, "2@", two_fetch
     ldr r0, [tos, #4]
     str r0, [dsp, #-4]!
     ldr tos, [tos]
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 2drop
 @ ( x1 x2 -- )
 @ Drop cell pair x1 x2 from the stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TWO_DROP == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "2drop", two_drop
     TWO_DROP
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 2dup
 @ ( x1 x2 -- x1 x2 x1 x2 )
 @ Duplicate cell pair x1 x2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TWO_DUP == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "2dup", two_dup
     TWO_DUP
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 2over
 @ ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )
 @ Copy cell pair x1 x2 to the top of the stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TWO_OVER == 1
 WORD FLAG_INTERPRET_COMPILE, "2over", two_over
     TWO_OVER
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 2swap
 @ ( x1 x2 x3 x4 -- x3 x4 x1 x2 )
 @ Exchange the top two cell pairs.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TWO_SWAP == 1
 WORD FLAG_INTERPRET_COMPILE, "2swap", two_swap
     TWO_SWAP
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ :
@@ -406,6 +444,7 @@ WORD FLAG_INTERPRET_COMPILE, "2swap", two_swap
 @ the dictionary until it is ended (or until the execution of DOES> in some
 @ systems).
 @ ------------------------------------------------------------------------------
+.if ENABLE_COLON == 1
 WORD FLAG_INTERPRET_COMPILE, ":", colon
     push {lr}
 
@@ -432,6 +471,7 @@ WORD FLAG_INTERPRET_COMPILE, ":", colon
 @ Return
     pop {pc}
 .ltorg
+.endif
 
 @ ------------------------------------------------------------------------------
 @ ;
@@ -444,6 +484,7 @@ WORD FLAG_INTERPRET_COMPILE, ":", colon
 @ ( -- ) ( R: nest-sys -- )
 @ Return to the calling definition specified by nest-sys.
 @ ------------------------------------------------------------------------------
+.if ENABLE_SEMI == 1
 WORD FLAG_COMPILE_IMMEDIATE, ";", semi
     push {lr}
 
@@ -465,12 +506,14 @@ WORD FLAG_COMPILE_IMMEDIATE, ";", semi
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ <
 @ ( n1 n2 -- flag )
 @ Flag is true if and only if n1 is less than n2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_LESS == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<", less
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -478,17 +521,18 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<", less
     movlt tos, #-1
     movge tos, #0
     bx lr
+.endif
 
-/*
+.if ENABLE_NUM_START == 1
 WORD FLAG_SKIP, "<#", num_start
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ =
 @ ( x1 x2 -- flag )
 @ Flag is true if and only if x1 is bit-for-bit the same as x2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_EQUAL == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "=", equal
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -496,12 +540,14 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "=", equal
     moveq tos, #-1
     movne tos, #0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ >
 @ ( n1 n2 -- flag )
 @ Flag is true if and only if n1 is greater than n2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_MORE == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, ">", more
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -509,16 +555,19 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, ">", more
     movgt tos, #-1
     movle tos, #0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ ( xt -- a-addr )
 @ a-addr is the data-field address corresponding to xt. An ambiguous condition
 @ exists if xt is not for a word defined via create.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TO_BODY == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_1, ">body", to_body
     adds tos, #12                       @ align(xt + 12, 4)
     P2ALIGN2 align=tos, scratch=r12
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ >in
@@ -526,15 +575,16 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_1, ">body", to_body
 @ a-addr is the address of a cell containing the offset in characters from the
 @ start of the input buffer to the start of the parse area.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TO_IN == 1
 WORD FLAG_INTERPRET_COMPILE, ">in", to_in
     PUSH_TOS
     ldr tos, =in
     bx lr
+.endif
 
-/*
+.if ENABLE_TO_NUMBER == 1
 WORD FLAG_SKIP, ">number", to_number
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ >r
@@ -542,74 +592,83 @@ WORD FLAG_SKIP, ">number", to_number
 @ ( R:   -- x )
 @ Move x to the return stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TO_R == 1
 WORD FLAG_COMPILE & FLAG_INLINE, ">r", to_r
     TO_R
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ >r
 @ ( x -- 0 | x x )
 @ Duplicate x if it is non-zero.
 @ ------------------------------------------------------------------------------
+.if ENABLE_Q_DUP == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "?dup", q_dup
     Q_DUP
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ @
 @ ( a-addr -- x )
 @ x is the value stored at a-addr.
 @ ------------------------------------------------------------------------------
+.if ENABLE_FETCH == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "@", fetch
     ldr tos, [tos]
     bx lr
+.endif
 
-/*
+.if ENABLE_ABORT == 1
 WORD FLAG_SKIP, "abort"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_ABORT_Q == 1
 WORD FLAG_SKIP, "abort\"", abort_q
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ abs
 @ ( n -- u )
 @ u is the absolute value of n.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ABS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "abs"
     asrs r0, tos, #31
     adds tos, r0
     eors tos, r0
     bx lr
+.endif
 
-/*
+.if ENABLE_ACCEPT == 1
 WORD FLAG_SKIP, "accept"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ align
 @ ( -- )
 @ If the data-space pointer is not aligned, reserve enough space to align it.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ALIGN == 1
 WORD FLAG_INTERPRET_COMPILE, "align"
     ldr r0, =data_begin
     ldr r1, [r0]
     P2ALIGN1 align=r1, scratch=r12
     str r1, [r0]
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ aligned
 @ ( addr -- a-addr )
 @ a-addr is the first aligned address greater than or equal to addr.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ALIGNED == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "aligned"
     P2ALIGN1 align=tos, scratch=r12
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ allot
@@ -624,6 +683,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "aligned"
 @ of a character when allot begins execution, it will remain character aligned
 @ when allot finishes execution.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ALLOT == 1
 WORD FLAG_INTERPRET_COMPILE, "allot"
     ldr r0, =data_begin
     ldr r1, [r0]
@@ -631,16 +691,19 @@ WORD FLAG_INTERPRET_COMPILE, "allot"
     str r1, [r0]
     DROP                                @ ( n -- )
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ and
 @ ( x1 x2 -- x3 )
 @ x3 is the bit-by-bit logical "and" of x1 with x2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_AND == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "and"
     ldmia dsp!, {r0}
     ands tos, r0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ base
@@ -648,10 +711,12 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "and"
 @ a-addr is the address of a cell containing the current number-conversion radix
 @ {{2...36}}.
 @ ------------------------------------------------------------------------------
+.if ENABLE_BASE == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "base"
     PUSH_TOS
     ldr tos, =radix                     @ ( -- a-addr )
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ begin
@@ -662,6 +727,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "base"
 @ ( -- )
 @ Continue execution.
 @ ------------------------------------------------------------------------------
+.if ENABLE_BEGIN == 1
 WORD FLAG_COMPILE_IMMEDIATE, "begin"
     push {lr}
 
@@ -670,11 +736,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "begin"
 
 @ Return
     pop {pc}
+.endif
 
-/*
+.if ENABLE_BL == 1
 WORD FLAG_SKIP, "bl"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ c!
@@ -682,11 +748,13 @@ WORD FLAG_SKIP, "bl"
 @ Store char at c-addr. When character size is smaller than cell size, only the
 @ number of low-order bits corresponding to character size are transferred.
 @ ------------------------------------------------------------------------------
+.if ENABLE_C_STORE == 1
 WORD FLAG_INTERPRET_COMPILE, "c!", c_store
     ldrb r0, [dsp], #4
     strb r0, [tos]
     DROP
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ c,
@@ -697,6 +765,7 @@ WORD FLAG_INTERPRET_COMPILE, "c!", c_store
 @ condition exists if the data-space pointer is not character-aligned prior to
 @ execution of c,.
 @ ------------------------------------------------------------------------------
+.if ENABLE_C_COMMA == 1
 WORD FLAG_INTERPRET_COMPILE, "c,", c_comma
     ldr r0, =data_begin
     ldr r1, [r0]
@@ -704,6 +773,7 @@ WORD FLAG_INTERPRET_COMPILE, "c,", c_comma
     str r1, [r0]                        @ Update address in data_begin
     DROP                                @ ( char -- )
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ c@
@@ -711,49 +781,58 @@ WORD FLAG_INTERPRET_COMPILE, "c,", c_comma
 @ Fetch the character stored at c-addr. When the cell size is greater than
 @ character size, the unused high-order bits are all zeroes.
 @ ------------------------------------------------------------------------------
+.if ENABLE_C_FETCH == 1
 WORD FLAG_INTERPRET_COMPILE, "c@", c_fetch
     ldrb tos, [tos]
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ cell+
 @ ( a-addr1 -- a-addr2 )
 @ Add the size in address units of a cell to a-addr1, giving a-addr2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_CELL_PLUS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "cell+", cell_plus
     adds tos, #4
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ cells
 @ ( n1 -- n2 )
 @ n2 is the size in address units of n1 cells.
 @ ------------------------------------------------------------------------------
+.if ENABLE_CELLS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "cells", cells
     lsl tos, #2
     bx lr
+.endif
 
-/*
+.if ENABLE_CHAR == 1
 WORD FLAG_SKIP, "char"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ char+
 @ ( c-addr1 -- c-addr2 )
 @ Add the size in address units of a character to c-addr1, giving c-addr2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_CHAR_PLUS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "char+", char_plus
     adds tos, #1
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ chars
 @ ( n1 -- n2 )
 @ n2 is the size in address units of n1 characters.
 @ ------------------------------------------------------------------------------
+.if ENABLE_CHARS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "chars"
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ constant
@@ -766,6 +845,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "chars"
 @ ( -- x )
 @ Place x on the stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_CONSTANT == 1
 WORD FLAG_INTERPRET_COMPILE, "constant"
     push {lr}
 
@@ -781,16 +861,15 @@ WORD FLAG_INTERPRET_COMPILE, "constant"
 
 @ Return
     pop {pc}
+.endif
 
-/*
+.if ENABLE_COUNT == 1
 WORD FLAG_SKIP, "count"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_CR == 1
 WORD FLAG_SKIP, "cr"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ create
@@ -805,6 +884,7 @@ WORD FLAG_SKIP, "cr"
 @ a-addr is the address of name's data field. The execution semantics of name
 @ may be extended by using does>.
 @ ------------------------------------------------------------------------------
+.if ENABLE_CREATE == 1
 WORD FLAG_INTERPRET_COMPILE, "create"
     push {lr}
 
@@ -840,17 +920,20 @@ WORD FLAG_INTERPRET_COMPILE, "create"
 @ Return
     DROP
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ decimal
 @ ( -- )
 @ Set contents of radix to ten.
 @ ------------------------------------------------------------------------------
+.if ENABLE_DECIMAL == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "decimal"
     ldr r0, =radix
     movs r1, #10
     str r1, [r0]
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ depth
@@ -858,9 +941,11 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "decimal"
 @ +n is the number of single-cell values contained in the data stack before +n
 @ was placed on the stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_DEPTH == 1
 WORD FLAG_INTERPRET_COMPILE, "depth"
     DEPTH
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ do
@@ -876,6 +961,7 @@ WORD FLAG_INTERPRET_COMPILE, "depth"
 @ the return stack becomes unavailable until the loop-control parameters are
 @ discarded.
 @ ------------------------------------------------------------------------------
+.if ENABLE_DO == 1
 WORD FLAG_COMPILE_IMMEDIATE, "do"
     push {lr}
 
@@ -895,6 +981,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 
 @ Return
     pop {pc}                          
+.endif
 
 @ ------------------------------------------------------------------------------
 @ does>
@@ -911,6 +998,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 @ calling definition specified by nest-sys1. An ambiguous condition exists if
 @ name was not defined with create or a user-defined word that calls create.
 @ ------------------------------------------------------------------------------
+.if ENABLE_DOES == 1
 WORD FLAG_COMPILE, "does>", does
 @ Get address of bx lr of latest definition's create
 @ r0    bx lr address
@@ -930,24 +1018,29 @@ WORD FLAG_COMPILE, "does>", does
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ drop
 @ ( x -- )
 @ Remove x from the stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_DROP == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "drop"
     DROP
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ dup
 @ ( x -- x x )
 @ Duplicate x.
 @ ------------------------------------------------------------------------------
+.if ENABLE_DUP == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "dup"
     DUP
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ else
@@ -961,6 +1054,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "dup"
 @ ( -- )
 @ Continue execution at the location given by the resolution of orig2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ELSE == 1
 WORD FLAG_COMPILE_IMMEDIATE, "else"
     push {lr}
 
@@ -982,27 +1076,15 @@ WORD FLAG_COMPILE_IMMEDIATE, "else"
 
 @ Return
     pop {pc}
+.endif
 
-/*
+.if ENABLE_EMIT == 1
 WORD FLAG_SKIP, "emit"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_ENVIRONMENT_Q == 1
 WORD FLAG_SKIP, "environment?", environment_q
-    bx lr
-*/
-
-@ ------------------------------------------------------------------------------
-@ erase
-@ ( addr u -- )
-@ If u is greater than zero, clear all bits in each of u consecutive address
-@ units of memory beginning at addr.
-@ ------------------------------------------------------------------------------
-/*
-WORD FLAG_SKIP, "erase"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ evaluate
@@ -1013,6 +1095,7 @@ WORD FLAG_SKIP, "erase"
 @ is empty, restore the prior input source specification. Other stack effects
 @ are due to the words EVALUATEd.
 @ ------------------------------------------------------------------------------
+.if ENABLE_EVALUATE == 1
 WORD FLAG_INTERPRET_COMPILE, "evaluate"
     push {lr}
 
@@ -1033,6 +1116,7 @@ WORD FLAG_INTERPRET_COMPILE, "evaluate"
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ execute
@@ -1040,9 +1124,11 @@ WORD FLAG_INTERPRET_COMPILE, "evaluate"
 @ Remove xt from the stack and perform the semantics identified by it. Other
 @ stack effects are due to the word executed.
 @ ------------------------------------------------------------------------------
+.if ENABLE_EXECUTE == 1
 WORD FLAG_INTERPRET, "execute"
     POP_REGS r0
     mov pc, r0
+.endif
 
 @ ------------------------------------------------------------------------------
 @ exit
@@ -1052,6 +1138,7 @@ WORD FLAG_INTERPRET, "execute"
 @ executing exit within a do-loop, a program shall discard the loop-control
 @ parameters by executing unloop.
 @ ------------------------------------------------------------------------------
+.if ENABLE_EXIT == 1
 WORD FLAG_COMPILE_IMMEDIATE, "exit"
     push {lr}
 
@@ -1063,11 +1150,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "exit"
 
 @ Return
     pop {pc}
+.endif
 
-/*
+.if ENABLE_FILL == 1
 WORD FLAG_SKIP, "fill"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ find
@@ -1076,6 +1163,7 @@ WORD FLAG_SKIP, "fill"
 @ is not found, return token-addr and zero. If the definition is found, return
 @ its execution token xt and its flags.
 @ ------------------------------------------------------------------------------
+.if ENABLE_FIND == 1
 WORD FLAG_INTERPRET_COMPILE, "find"
     push {r4}
 
@@ -1128,27 +1216,28 @@ WORD FLAG_INTERPRET_COMPILE, "find"
 @ Return
 6:  pop {r4}
     bx lr
+.endif
 
-/*
+.if ENABLE_FM_DIV_MOD == 1
 WORD FLAG_SKIP, "fm/mod", fm_div_mod
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ here
 @ ( -- addr )
 @ addr is the data-space pointer.
 @ ------------------------------------------------------------------------------
+.if ENABLE_HERE == 1
 WORD FLAG_INTERPRET_COMPILE, "here"
     PUSH_TOS
     ldr tos, =data_begin
     ldr tos, [tos]
     bx lr
+.endif
 
-/*
+.if ENABLE_HOLD == 1
 WORD FLAG_SKIP, "hold"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ i
@@ -1157,6 +1246,7 @@ WORD FLAG_SKIP, "hold"
 @ n is a copy of the current (innermost) loop index. An ambiguous condition
 @ exists if the loop control parameters are unavailable.
 @ ------------------------------------------------------------------------------
+.if ENABLE_I == 1
 WORD FLAG_COMPILE_IMMEDIATE, "i"
     push {lr}
 
@@ -1171,6 +1261,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "i"
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ if
@@ -1184,6 +1275,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "i"
 @ If all bits of x are zero, continue execution at the location specified by the
 @ resolution of orig.
 @ ------------------------------------------------------------------------------
+.if ENABLE_IF == 1
 WORD FLAG_COMPILE_IMMEDIATE, "if"
     push {lr}
 
@@ -1208,20 +1300,22 @@ WORD FLAG_COMPILE_IMMEDIATE, "if"
 @ Return
     pop {pc}
 .ltorg
+.endif
 
-/*
+.if ENABLE_IMMEDIATE == 1
 WORD FLAG_SKIP, "immediate"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ invert
 @ ( x1 -- x2 )
 @ Invert all bits of x1, giving its logical inverse x2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_INVERT == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "invert"
     mvns tos, tos
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ j
@@ -1230,6 +1324,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "invert"
 @ n is a copy of the next-outer loop index. An ambiguous condition exists if the
 @ loop control parameters of the next-outer loop, loop-sys1, are unavailable.
 @ ------------------------------------------------------------------------------
+.if ENABLE_J == 1
 WORD FLAG_COMPILE_IMMEDIATE, "j"
     push {lr}
 
@@ -1244,11 +1339,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "j"
 
 @ Return
     pop {pc}
+.endif
 
-/*
+.if ENABLE_KEY == 1
 WORD FLAG_SKIP, "key"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ leave
@@ -1258,6 +1353,7 @@ WORD FLAG_SKIP, "key"
 @ they are unavailable. Continue execution immediately following the innermost
 @ syntactically enclosing do...loop or do...+loop.
 @ ------------------------------------------------------------------------------
+.if ENABLE_LEAVE == 1
 WORD FLAG_COMPILE_IMMEDIATE, "leave"
     push {lr}
 
@@ -1282,6 +1378,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "leave"
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ literal
@@ -1295,6 +1392,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "leave"
 @ ( -- x )
 @ Place x on the stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_LITERAL == 1
 WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
     push {lr}
 
@@ -1485,6 +1583,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
 @ Return
 6:  pop {pc}
 .ltorg
+.endif
 
 @ ------------------------------------------------------------------------------
 @ loop
@@ -1501,6 +1600,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
 @ discard the loop parameters and continue execution immediately following the
 @ loop. Otherwise continue execution at the beginning of the loop.
 @ ------------------------------------------------------------------------------
+.if ENABLE_LOOP == 1
 WORD FLAG_COMPILE_IMMEDIATE, "loop"
     push {lr}
 
@@ -1531,6 +1631,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
 @ Return
     pop {pc}
 .ltorg
+.endif
 
 @ ------------------------------------------------------------------------------
 @ lshift
@@ -1539,39 +1640,44 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
 @ the least significant bits vacated by the shift. An ambiguous condition exists
 @ if u is greater than or equal to the number of bits in a cell.
 @ ------------------------------------------------------------------------------
+.if ENABLE_LSHIFT == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "lshift"
     ldmia dsp!, {r0}
     lsls tos, r0, tos
     bx lr
+.endif
 
-/*
+.if ENABLE_M_TIMES == 1
 WORD FLAG_SKIP, "m*", m_times
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ max
 @ ( n1 n2 -- n3 )
 @ n3 is the greater of n1 and n2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_MAX == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "max"
     ldmia dsp!, {r0}
     cmp r0, tos
     it gt
     movgt tos, r0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ min
 @ ( n1 n2 -- n3 )
 @ n3 is the lesser of n1 and n2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_MIN == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "min"
     ldmia dsp!, {r0}
     cmp r0, tos
     it lt
     movlt tos, r0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ mod
@@ -1581,44 +1687,51 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "min"
 @ result returned will be the same as that returned by either the phrase >r s>d
 @ r> fm/mod drop or the phrase >r s>d r> sm/rem drop.
 @ ------------------------------------------------------------------------------
+.if ENABLE_MOD == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "mod"
     ldr r0, [dsp], #4
     sdiv    r1, r0, tos
     mls     tos, r1, tos, r0
     bx lr
+.endif
 
-/*
+.if ENABLE_MOVE == 1
 WORD FLAG_SKIP, "move"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ negate
 @ ( n1 -- n2 )
 @ n2 is the negated value of n1.
 @ ------------------------------------------------------------------------------
+.if ENABLE_NEGATE == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "negate"
     rsbs tos, tos, #0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ or
 @ ( x1 x2 -- x3 )
 @ x3 is the bit-by-bit inclusive-or of x1 with x2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_OR == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "or"
     ldmia dsp!, {r0}
     orrs tos, r0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ over
 @ ( x1 x2 -- x1 x2 x1 )
 @ Place a copy of x1 on top of the stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_OVER == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "over"
     OVER
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ postpone
@@ -1627,16 +1740,17 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "over"
 @ Append the compilation semantics of name to the current definition. An
 @ ambiguous condition exists if name is not found.
 @ ------------------------------------------------------------------------------
+.if ENABLE_POSTPONE == 1
 WORD FLAG_COMPILE_IMMEDIATE, "postpone"
     push {lr}
     bl tick
     bl compile_comma
     pop {pc}
+.endif
 
-/*
+.if ENABLE_QUIT == 1
 WORD FLAG_SKIP, "quit"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ >r
@@ -1644,9 +1758,11 @@ WORD FLAG_SKIP, "quit"
 @ ( R: x --   )
 @ Move x from the return stack to the data-stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_R_FROM == 1
 WORD FLAG_COMPILE & FLAG_INLINE, "r>", r_from
     R_FROM
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ r@
@@ -1654,10 +1770,12 @@ WORD FLAG_COMPILE & FLAG_INLINE, "r>", r_from
 @ ( R: x -- x )
 @ Copy x from the return stack to the data stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_R_FETCH == 1
 WORD FLAG_COMPILE & FLAG_INLINE, "r@", r_fetch
     PUSH_TOS
     ldr tos, [sp]
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ recurse
@@ -1666,6 +1784,7 @@ WORD FLAG_COMPILE & FLAG_INLINE, "r@", r_fetch
 @ definition. An ambiguous condition exists if recurse appears in a definition
 @ after does>.
 @ ------------------------------------------------------------------------------
+.if ENABLE_RECURSE == 1
 WORD FLAG_COMPILE_IMMEDIATE, "recurse"
     push {lr}
 
@@ -1685,6 +1804,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "recurse"
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ repeat
@@ -1696,6 +1816,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "recurse"
 @ ( -- )
 @ Continue execution at the location given by dest.
 @ ------------------------------------------------------------------------------
+.if ENABLE_REPEAT == 1
 WORD FLAG_COMPILE_IMMEDIATE, "repeat"
     push {lr}
 
@@ -1710,15 +1831,18 @@ WORD FLAG_COMPILE_IMMEDIATE, "repeat"
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ rot
 @ ( x1 x2 x3 -- x2 x3 x1 )
 @ Rotate the top three stack entries.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ROT == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "rot"
     ROT
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ rshift
@@ -1727,30 +1851,28 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "rot"
 @ into the most significant bits vacated by the shift. An ambiguous condition
 @ exists if u is greater than or equal to the number of bits in a cell.
 @ ------------------------------------------------------------------------------
+.if ENABLE_RSHIFT == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "rshift"
     ldmia dsp!, {r0}
     lsrs tos, r0, tos
     bx lr
+.endif
 
-/*
+.if ENABLE_S_Q == 1
 WORD FLAG_SKIP, "s\"", s_q
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_S_TO_D == 1
 WORD FLAG_SKIP, "s>d", s_to_d
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_SIGN == 1
 WORD FLAG_SKIP, "sign"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_SM_DIV_REM == 1
 WORD FLAG_SKIP, "sm/rem", sm_div_rem
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ source
@@ -1758,21 +1880,21 @@ WORD FLAG_SKIP, "sm/rem", sm_div_rem
 @ c-addr is the address of, and u is the number of characters in, the input
 @ buffer.
 @ ------------------------------------------------------------------------------
+.if ENABLE_SOURCE == 1
 WORD FLAG_INTERPRET_COMPILE, "source"
     ldr r0, =src
     ldmia r0, {r1, r2}
     PUSH_REGS top=r2, from=r1           @ ( -- c-addr u )
     bx lr
+.endif
 
-/*
+.if ENABLE_SPACE == 1
 WORD FLAG_SKIP, "space"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_SPACES == 1
 WORD FLAG_SKIP, "spaces"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ state
@@ -1783,19 +1905,23 @@ WORD FLAG_SKIP, "spaces"
 @ words alter the value in state: : (colon), ; (semicolon), abort, quit,
 @ :noname, [ (left-bracket), ] (right-bracket).
 @ ------------------------------------------------------------------------------
+.if ENABLE_STATE == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "state"
     PUSH_TOS
     ldr tos, =status
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ swap
 @ ( x1 x2 -- x2 x1 )
 @ Exchange the top two stack items.
 @ ------------------------------------------------------------------------------
+.if ENABLE_SWAP == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "swap"
     SWAP
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ then
@@ -1807,6 +1933,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "swap"
 @ ( -- )
 @ Continue execution.
 @ ------------------------------------------------------------------------------
+.if ENABLE_THEN == 1
 WORD FLAG_COMPILE_IMMEDIATE, "then"
     push {lr}
 
@@ -1824,22 +1951,22 @@ WORD FLAG_COMPILE_IMMEDIATE, "then"
 
 @ Return
 6:  pop {pc}
+.endif
 
-/*
+.if ENABLE_TYPE == 1
 WORD FLAG_SKIP, "type"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_U_D == 1
 WORD FLAG_SKIP, "u.", u_d
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ u<
 @ ( u1 u2 -- flag )
 @ flag is true if and only if u1 is less than u2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_U_LESS == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u<", u_less
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -1847,16 +1974,15 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u<", u_less
     movlo tos, #-1
     movhs tos, #0
     bx lr
+.endif
 
-/*
+.if ENABLE_UM_TIMES == 1
 WORD FLAG_SKIP, "um*", um_times
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_UM_DIV_MOD == 1
 WORD FLAG_SKIP, "um/mod", um_div_mod
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ unloop
@@ -1866,6 +1992,7 @@ WORD FLAG_SKIP, "um/mod", um_div_mod
 @ is required for each nesting level before the definition may be exited. An
 @ ambiguous condition exists if the loop-control parameters are unavailable.
 @ ------------------------------------------------------------------------------
+.if ENABLE_UNLOOP == 1
 WORD FLAG_COMPILE_IMMEDIATE, "unloop"
     push {lr}
 
@@ -1875,6 +2002,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "unloop"
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ until
@@ -1886,6 +2014,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "unloop"
 @ If all bits of x are zero, continue execution at the location specified by
 @ dest.
 @ ------------------------------------------------------------------------------
+.if ENABLE_UNTIL == 1
 WORD FLAG_COMPILE_IMMEDIATE, "until"
     push {lr}
 
@@ -1907,6 +2036,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "until"
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ variable
@@ -1919,6 +2049,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "until"
 @ ( -- a-addr )
 @ a-addr is the address of the reserved cell.
 @ ------------------------------------------------------------------------------
+.if ENABLE_VARIABLE == 1
 WORD FLAG_INTERPRET_COMPILE, "variable"
     push {lr}
 
@@ -1948,6 +2079,7 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ while
@@ -1961,6 +2093,7 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
 @ If all bits of x are zero, continue execution at the location specified by the
 @ resolution of orig.
 @ ------------------------------------------------------------------------------
+.if ENABLE_WHILE == 1
 WORD FLAG_COMPILE_IMMEDIATE, "while"
     push {lr}
 
@@ -1983,32 +2116,36 @@ WORD FLAG_COMPILE_IMMEDIATE, "while"
 
 @ Return
     pop {pc}
+.endif
 
-/*
+.if ENABLE_WORD == 1
 WORD FLAG_SKIP, "word"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ xor
 @ ( x1 x2 -- x3 )
 @ x3 is the bit-by-bit exclusive-or of x1 with x2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_XOR == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "xor"
     ldmia dsp!, {r0}
     eors tos, r0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ [
 @ ( -- )
 @ Enter interpretation state. [ is an immediate word.
 @ ------------------------------------------------------------------------------
+.if ENABLE_BRACKET_LEFT == 1
 WORD FLAG_COMPILE_IMMEDIATE, "[", bracket_left
     ldr r0, =status
     movs r1, #0
     str r1, [r0]
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ [']
@@ -2022,24 +2159,27 @@ WORD FLAG_COMPILE_IMMEDIATE, "[", bracket_left
 @ the compiled phrase "['] x" is the same value returned by "' x" outside of
 @ compilation state.
 @ ------------------------------------------------------------------------------
+.if ENABLE_BRACKET_TICK == 1
 WORD FLAG_COMPILE_IMMEDIATE, "[']", bracket_tick
     push {lr}
     bl tick                             @ ( -- xt )
     bl literal                          @ ( xt -- )
     pop {pc}
+.endif
 
-/*
+.if ENABLE_BRACKET_CHAR == 1
 WORD FLAG_SKIP, "[char]", bracket_char
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ [
 @ ( -- )
 @ Enter compilation state.
 @ ------------------------------------------------------------------------------
+.if ENABLE_BRACKET_RIGHT == 1
 WORD FLAG_INTERPRET, "]", bracket_right
     ldr r0, =status
     movs r1, #-1
     str r1, [r0]
     bx lr
+.endif

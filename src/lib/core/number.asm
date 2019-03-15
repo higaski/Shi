@@ -27,7 +27,7 @@ number:
     adds r0, tos, r1                    @ Get token-addr + token-u
 
 @ Check if prefix overwrites base ($, # or %)
-.ifdef NUMBER_PREFIX
+.if ENABLE_NUMBER_PREFIX == 1
     ldrb r3, [tos]
     cmp r3, #'#'
     bne 1f

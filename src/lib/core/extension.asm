@@ -6,39 +6,41 @@
 
 .section .text
 
-/*
+.if ENABLE_DOT_COMMENT == 1
 WORD FLAG_SKIP, ".(", dot_comment
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_DOT_R == 1
 WORD FLAG_SKIP, ".r", dot_r
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 0<>
 @ ( x -- flag )
 @ flag is true if and only if x is not equal to zero.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ZERO_NE == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0<>", zero_ne
     cmp tos, #0
     ite ne
     movne tos, #-1
     moveq tos, #0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 0>
 @ ( n -- flag )
 @ flag is true if and only if n is greater than zero.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ZERO_MORE == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0>", zero_more
     cmp tos, #0
     ite gt
     movgt tos, #-1
     movle tos, #0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 2>r
@@ -47,9 +49,11 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0>", zero_more
 @ Transfer cell pair x1 x2 to the return stack. Semantically equivalent to swap
 @ >r >r.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TWO_TO_R == 1
 WORD FLAG_COMPILE & FLAG_INLINE, "2>r", two_to_r
     TWO_TO_R
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 2>r
@@ -58,9 +62,11 @@ WORD FLAG_COMPILE & FLAG_INLINE, "2>r", two_to_r
 @ Transfer cell pair x1 x2 from the return stack. Semantically equivalent to r>
 @ r> swap.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TWO_R_FROM == 1
 WORD FLAG_COMPILE & FLAG_INLINE, "2r>", two_r_from
     TWO_R_FROM
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ 2r@
@@ -69,21 +75,23 @@ WORD FLAG_COMPILE & FLAG_INLINE, "2r>", two_r_from
 @ Copy cell pair x1 x2 from the return stack. Semantically equivalent to r> r>
 @ 2dup >r >r swap.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TWO_R_FETCH == 1
 WORD FLAG_COMPILE & FLAG_INLINE, "2r@", two_r_fetch
     ldmia sp, {r0, r1}
     PUSH_REGS top=r0, from=r1
     bx lr
+.endif
 
-/*
+.if ENABLE_COLON_NONAME == 1
 WORD FLAG_SKIP, ":noname", colon_noname
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ <>
 @ ( x1 x2 -- flag )
 @ flag is true if and only if x1 is not bit-for-bit the same as x2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_NE == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<>", ne
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -91,16 +99,15 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<>", ne
     movne tos, #-1
     moveq tos, #0
     bx lr
+.endif
 
-/*
+.if ENABLE_Q_DO == 1
 WORD FLAG_SKIP, "?do", q_do
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_ACTION_OF == 1
 WORD FLAG_SKIP, "action-of", action_of
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ again
@@ -112,6 +119,7 @@ WORD FLAG_SKIP, "action-of", action_of
 @ Continue execution at the location specified by dest. If no other control flow
 @ words are used, any program code after again will not be executed.
 @ ------------------------------------------------------------------------------
+.if ENABLE_AGAIN == 1
 WORD FLAG_COMPILE_IMMEDIATE, "again"
     push {lr}
 
@@ -122,16 +130,15 @@ WORD FLAG_COMPILE_IMMEDIATE, "again"
 
 @ Return
     pop {pc}
+.endif
 
-/*
+.if ENABLE_BUFFER_COLON == 1
 WORD FLAG_SKIP, "buffer:", buffer_colon
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_C_Q == 1
 WORD FLAG_SKIP, "c\"", c_q
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ case
@@ -142,8 +149,10 @@ WORD FLAG_SKIP, "c\"", c_q
 @ ( -- )
 @ Continue execution.
 @ ------------------------------------------------------------------------------
+.if ENABLE_CASE == 1
 WORD FLAG_COMPILE_IMMEDIATE, "case"
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ compile,
@@ -151,6 +160,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "case"
 @ Append the execution semantics of the definition represented by xt to the
 @ execution semantics of the current definition.
 @ ------------------------------------------------------------------------------
+.if ENABLE_COMPILE_COMMA == 1
 WORD FLAG_COMPILE, "compile,", compile_comma
     push {lr}
 
@@ -293,21 +303,19 @@ WORD FLAG_COMPILE, "compile,", compile_comma
 
 @ Return
 6:  pop {pc}
+.endif
 
-/*
+.if ENABLE_DEFER == 1
 WORD FLAG_SKIP, "defer"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_DEFER_STORE == 1
 WORD FLAG_SKIP, "defer!", defer_store
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_DEFER_FETCH == 1
 WORD FLAG_SKIP, "defer@", defer_fetch
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ endcase
@@ -319,6 +327,7 @@ WORD FLAG_SKIP, "defer@", defer_fetch
 @ ( x -- )
 @ Discard the case selector x and continue execution
 @ ------------------------------------------------------------------------------
+.if ENABLE_ENDCASE == 1
 WORD FLAG_COMPILE_IMMEDIATE, "endcase"
     push {lr}
 
@@ -333,6 +342,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ endof
@@ -345,6 +355,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 @ ( -- )
 @ Continue execution at the location specified by the consumer of case-sys2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ENDOF == 1
 WORD FLAG_COMPILE_IMMEDIATE, "endof"
     push {lr}
 
@@ -368,56 +379,59 @@ WORD FLAG_COMPILE_IMMEDIATE, "endof"
 
 @ Return
     pop {pc}
+.endif
 
-/*
+.if ENABLE_ERASE == 1
 WORD FLAG_SKIP, "erase"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ false
 @ ( -- false )
 @ Return a false flag.
 @ ------------------------------------------------------------------------------
+.if ENABLE_FALSE == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "false"
     PUSH_TOS
     movs tos, #0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ hex
 @ ( -- )
 @ Set contents of radix to sixteen.
 @ ------------------------------------------------------------------------------
+.if ENABLE_HEX == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "hex"
     ldr r0, =radix
     movs r1, #16
     str r1, [r0]
     bx lr
+.endif
 
-/*
+.if ENABLE_HOLDS == 1
 WORD FLAG_SKIP, "holds"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_IS == 1
 WORD FLAG_SKIP, "is"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_MARKER == 1
 WORD FLAG_SKIP, "marker"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ nip
 @ ( x1 x2 -- x2 )
 @ Drop the first item below the top of stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_NIP == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "nip"
     NIP
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ of
@@ -432,6 +446,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "nip"
 @ e.g., following the next endof. Otherwise, discard both values and continue
 @ execution in line.
 @ ------------------------------------------------------------------------------
+.if ENABLE_OF == 1
 WORD FLAG_COMPILE_IMMEDIATE, "of"
     push {lr}
 
@@ -456,11 +471,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "of"
 
 @ Return
     pop {pc}
+.endif
 
-/*
+.if ENABLE_PAD == 1
 WORD FLAG_SKIP, "pad"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ parse
@@ -474,6 +489,7 @@ WORD FLAG_SKIP, "pad"
 @ whole cstring from stack, searches for the next token with respect to >in and
 @ then simply throws the found token, also as cstring, back onto the stack.
 @ ------------------------------------------------------------------------------
+.if ENABLE_PARSE == 1
 WORD FLAG_INTERPRET_COMPILE, "parse"
 @ r0    c-addr + >in advanced   (= current address)
 @ r1    c-addr + u              (= end address)
@@ -523,11 +539,11 @@ WORD FLAG_INTERPRET_COMPILE, "parse"
 
 @ Return
 6:  bx lr
+.endif
 
-/*
+.if ENABLE_PARSE_NAME == 1
 WORD FLAG_SKIP, "parse-name", parse_name
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ pick
@@ -535,19 +551,19 @@ WORD FLAG_SKIP, "parse-name", parse_name
 @ Remove u. Copy the xu to the top of the stack. An ambiguous condition exists
 @ if there are less than u+2 items on the stack before pick is executed.
 @ ------------------------------------------------------------------------------
+.if ENABLE_PICK == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "pick"
     PICK
     bx lr
+.endif
 
-/*
+.if ENABLE_REFILL == 1
 WORD FLAG_SKIP, "refill"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_RESTORE_INPUT == 1
 WORD FLAG_SKIP, "restore-input", restore_input
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ roll
@@ -555,6 +571,7 @@ WORD FLAG_SKIP, "restore-input", restore_input
 @ Remove u. Rotate u+1 items on the top of the stack. An ambiguous condition
 @ exists if there are less than u+2 items on the stack before roll is executed.
 @ ------------------------------------------------------------------------------
+.if ENABLE_ROLL == 1
 WORD FLAG_INTERPRET_COMPILE, "roll"
     lsl r0, tos, #2
     adds r0, dsp, r0
@@ -566,56 +583,57 @@ WORD FLAG_INTERPRET_COMPILE, "roll"
         b 1b
 1:  NIP
     bx lr
+.endif
 
-/*
+.if ENABLE_S_EQ == 1
 WORD FLAG_SKIP, "s\"", s_eq
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_SAVE_INPUT == 1
 WORD FLAG_SKIP, "save-input", save_input
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_SOURCE_ID == 1
 WORD FLAG_SKIP, "source-id", source_id
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_TO == 1
 WORD FLAG_SKIP, "to"
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ true
 @ ( -- true )
 @ Return a true flag, a single-cell value with all bits set.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TRUE == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "true"
     PUSH_TOS
     movs tos, #-1
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ tuck
 @ ( x1 x2 -- x2 x1 x2 )
 @ Copy the first (top) stack item below the second stack item.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TUCK == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "tuck"
     TUCK
     bx lr
+.endif
 
-/*
+.if ENABLE_U_DOT_R == 1
 WORD FLAG_SKIP, "u.r", u_dot_r
-    bx lr
-*/
+.endif
 
 @ ------------------------------------------------------------------------------
 @ u>
 @ ( u1 u2 -- flag )
 @ flag is true if and only if u1 is greater than u2.
 @ ------------------------------------------------------------------------------
+.if ENABLE_U_MORE == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u>", u_more
     ldmia dsp!, {r0}
     cmp r0, tos
@@ -623,6 +641,7 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u>", u_more
     movhi tos, #-1
     movls tos, #0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ unused
@@ -630,6 +649,7 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u>", u_more
 @ u is the amount of space remaining in the region addressed by here, in address
 @ units.
 @ ------------------------------------------------------------------------------
+.if ENABLE_UNUSED == 1
 WORD FLAG_INTERPRET, "unused"
     push {lr}
     bl to_text_q                        @ ( -- true | false )
@@ -640,26 +660,23 @@ WORD FLAG_INTERPRET, "unused"
     ldmia r0, {r0, tos}
     subs tos, r0
     pop {pc}
+.endif
 
-/*
+.if ENABLE_VALUE == 1
 WORD FLAG_SKIP, "value"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_WITHIN == 1
 WORD FLAG_SKIP, "within"
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_BRACKET_COMPILE == 1
 WORD FLAG_SKIP, "[compile]", bracket_compile
-    bx lr
-*/
+.endif
 
-/*
+.if ENABLE_BS == 1
 WORD FLAG_SKIP, "\\", bs
-    bx lr
-*/
+.endif
 
 
 // NON-ANS (AKA MY OWN) EXTENSIONS ->
@@ -669,11 +686,13 @@ WORD FLAG_SKIP, "\\", bs
 @ ( -- )
 @ Set contents of radix to two.
 @ ------------------------------------------------------------------------------
+.if ENABLE_BINARY == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "binary"
     ldr r0, =radix
     movs r1, #2
     str r1, [r0]
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ c-variable
@@ -685,6 +704,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "binary"
 @ ( -- a-addr )
 @ a-addr is the address of the referenced C variable
 @ ------------------------------------------------------------------------------
+.if ENABLE_C_VARIABLE == 1
 WORD FLAG_INTERPRET_COMPILE, "c-variable", c_variable
     push {lr}
 
@@ -700,6 +720,7 @@ WORD FLAG_INTERPRET_COMPILE, "c-variable", c_variable
 
 @ Return
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ >text?
@@ -707,6 +728,7 @@ WORD FLAG_INTERPRET_COMPILE, "c-variable", c_variable
 @ Return true if compiler is currently compiling to text. Return false if
 @ compiler is currently compiling to data.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TO_TEXT_Q == 1
 WORD FLAG_INTERPRET, ">text?", to_text_q
     PUSH_TOS
     ldr r0, =to_text_begin
@@ -716,6 +738,7 @@ WORD FLAG_INTERPRET, ">text?", to_text_q
     movne tos, #-1
     moveq tos, #0
     bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ >data?
@@ -723,17 +746,20 @@ WORD FLAG_INTERPRET, ">text?", to_text_q
 @ Return true if compiler is currently compiling to data. Return false if
 @ compiler is currently compiling to text.
 @ ------------------------------------------------------------------------------
+.if ENABLE_TO_DATA_Q == 1
 WORD FLAG_INTERPRET, ">data?", to_data_q
     push {lr}
     bl to_text_q
     mvn tos, tos
     pop {pc}
+.endif
 
 @ ------------------------------------------------------------------------------
 @ >text
 @ ( -- )
 @
 @ ------------------------------------------------------------------------------
+.if ENABLE_TO_TEXT == 1
 WORD FLAG_INTERPRET, ">text", to_text
     ldr r0, =to_text_begin
     ldr r1, [r0]
@@ -743,12 +769,14 @@ WORD FLAG_INTERPRET, ">text", to_text
     ldr r1, [r1]
     str r1, [r0]
 1:  bx lr
+.endif
 
 @ ------------------------------------------------------------------------------
 @ >data
 @ ( -- )
 @
 @ ------------------------------------------------------------------------------
+.if ENABLE_TO_DATA == 1
 WORD FLAG_INTERPRET, ">data", to_data
     push {lr}
 
@@ -862,3 +890,4 @@ WORD FLAG_INTERPRET, ">data", to_data
     movs r1, #0
     str r1, [r0]
     pop {pc}
+.endif

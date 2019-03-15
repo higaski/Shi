@@ -89,14 +89,14 @@ interpret_compile:
 @ r1    flags
 @ r2    last literal address
 @ r3    #literals
-@ r4    folds bits
+@ r12   folds bits
     subs r2, dsp, #4                    @ Get number of literals on stack
     subs r3, lfp, r2
     lsrs r3, #2
-    mvns r4, r1                         @ Invert flags
-    ands r4, r4, #BIT_FOLDS             @ Extract folds bits from flags
+    mvns r12, r1                        @ Invert flags
+    ands r12, r12, #BIT_FOLDS           @ Extract folds bits from flags
     beq 1f                              @ Goto literal
-        cmp r4, r3                      @ Folds bits - number of literals
+        cmp r12, r3                     @ Folds bits - number of literals
         bls 3f                          @ Goto execute
 
 @ Literal

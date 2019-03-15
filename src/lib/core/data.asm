@@ -5,7 +5,7 @@
 @ \date   02/12/2018
 
 @ C/C++ interface
-.global s_shi_stack, s_shi_context
+.global s_shi_context
 
 .section .data
 
@@ -14,7 +14,7 @@
 @ ------------------------------------------------------------------------------
 .p2align 2                              @ Make sure the stack is 4-byte aligned (ldm and stm operations need 4-byte alignment)
 s_shi_stack:                            @ Data-stack start
-.space DATASTACK_SIZE                   @ Data-stack size in bytes
+.space STACK_SIZE                       @ Data-stack size in bytes
 e_shi_stack:                            @ Data-stack end
 
 .p2align 2
