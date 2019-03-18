@@ -397,10 +397,10 @@ csp_comma:
 
 @ r0    csp address
 @ r1    csp
-@ r2    stack address
+@ r2    shi_stack_begin
     ldr r0, =csp
     ldr r1, [r0]
-    ldr r2, =s_shi_stack
+    ldr r2, =shi_stack_begin
     cmp r1, r2
     beq 6f
 
@@ -422,7 +422,7 @@ csp_comma:
     bl here                             @ ( -- dest )
     bl b_comma
     pop {r0, r1}
-    ldr r2, =s_shi_stack
+    ldr r2, =shi_stack_begin
     cmp r1, r2
     bhi 1b
       str r2, [r0]

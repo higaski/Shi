@@ -4,19 +4,224 @@
 /// \author	Vincent Hamp
 /// \date   27/07/2016
 
+/// \mainpage Shi
+/// Shi is an unusual Forth in a sense that it's not a full-fledged
+/// self-contained system. Neither
+/// [key](http://forth-standard.org/standard/core/KEY)/[emit](http://forth-standard.org/standard/core/EMIT),
+/// which deal with user input, nor any of the string conversion words (e.g.
+/// [#](https://forth-standard.org/standard/core/num), ...) are implemented.
+/// Instead of a
+/// [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop)
+/// Shi is intended to be used as embedded scripting language by featuring an
+/// extensive C/C++ API. The functions shi::evaluate and shi_evaluate can be
+/// used to enter the classic interpretation loop. This reflects what word
+/// [evaluate](https://forth-standard.org/standard/core/EVALUATE) does.
+///
+/// \dot
+/// digraph G {
+///
+///   subgraph cluster_c_cpp {
+///     style="dotted";
+///     labeljust="l";
+///     label = "C/C++";
+///     shi_evaluate;
+///   }
+///
+///   subgraph cluster_forth {
+///     style="dotted";
+///     labeljust="l";
+///     label = "Forth";
+///     word[shape=diamond, label="word?"];
+///     execute_compile[label="execute/compile"];
+///     number[shape=diamond, label="number?"];
+///     push_literal[label="push/literal"];
+///     ambiguous_condition[label="ambiguous condition"];
+///     done[shape=diamond, label="done?"];
+///     word->execute_compile[label="yes"];
+///     word->number[label="no"];
+///     execute_compile->done;
+///     number->push_literal[label="yes"];
+///     number->ambiguous_condition[label="no"];
+///     push_literal->done;
+///     ambiguous_condition->done;
+///     done->word[label="no"];
+///   }
+///
+///   shi_evaluate->word;
+///   done->shi_evaluate[label="yes", constraint=false];
+///
+/// }
+/// \enddot
+///
+///
+/// \page page_implementation Implementation
+/// Although Forth systems are usually rather simple to develop there are still
+/// topics which should be covered in some detail. This applies above all to
+/// things that are not enforced by the standard such as
+/// - The actual quantity and implementation of data-, control- and return-stack
+/// - Dictionary entry layouts and word flags
+/// - Relationship between code- and data space
+/// - Action on an ambiguous condition
+///
+/// and of course to non-standard additions.
+///
+// clang-format off
+/// \page page_implementation Implementation
+/// | Page                      | Content                                      |
+/// | ------------------------- | -------------------------------------------- |
+/// | \subpage page_stacks      | Handling of data-, control-flow- and return-stack |
+/// | \subpage page_variables   | Internally used variables             |
+/// | \subpage page_dictionary  | Structure of core and user dictionary |
+/// | \subpage page_eval        | Evaluate loop in detail |
+/// | \subpage page_todo        | d |
+/// | \subpage page_control_structures | TODO |
+/// | \subpage page_doc_stuff   | TODO |
+/// | \subpage page_lerp        | c |
+// clang-format on
+///
+/// \page page_stacks Stacks
+/// Forth has the notation of three different stacks:
+/// -# Data-stack for passing values
+/// -# Control-flow-stack for storing jump origins and destinations for
+///    conditional branches
+/// -# Return-stack for do...loop constructs and temporary storage
+///
+/// Shi only uses two physical stacks, the data- and the return-stack. This is
+/// possible because all control-flow words (e.g.
+/// [if](https://forth-standard.org/standard/core/IF),
+/// [else](https://forth-standard.org/standard/core/ELSE),
+/// [then](https://forth-standard.org/standard/core/THEN),
+/// [begin](https://forth-standard.org/standard/core/BEGIN),
+/// [until](https://forth-standard.org/standard/core/UNTIL),
+/// [while](https://forth-standard.org/standard/core/WHILE), ...) are so called
+/// "compile only" words which means that they can only be used when creating a
+/// new definition. The way the standard phrases this is that interpretation
+/// semantics for these word are undefined.
+///
+/// So this works
+///
+/// ```
+/// : lunch? if eat then ;
+/// ```
+///
+/// whereas this doesn't.
+///
+/// ```
+/// lunch? if eat then
+/// ```
+///
+/// The principal difference is that during compilation mode inside the
+/// colon-definition the user can't alter the data-stack which makes it
+/// perfectly safe to store branching information on it.
+///
+/// **Data-stack**<br>
+/// The data-stack in Shi is explicit. Two physical registers are reserved for
+/// it. There is *tos* which is short for top-of-stack and *dsp* which is the
+/// data-stack-pointer. Upon pushing to or popping from the stack values are
+/// stored or loaded at the address in *dsp*.
+///
+/// ```
+/// tos .req r6
+/// dsp .req r7
+/// ```
+///
+/// The stack size itself can be adjusted with the macro \ref SHI_STACK_SIZE.
+///
+/// **Control-flow-stack**<br>
+/// Usually control-flow words have a 1:1 relation between the word that creates
+/// a branch and the word that has to resolve it.
+/// [forth-standard.org](https://forth-standard.org/) offers a very nice visual
+/// representation of control-flow words
+/// [here](https://forth-standard.org/standard/rationale). The problem is that
+/// there are two exceptions from this 1:1 relation which are
+/// [endof](https://forth-standard.org/standard/core/ENDOF) and
+/// [leave](https://forth-standard.org/standard/core/LEAVE). Those words can
+/// nest an arbitrary number of times and even mix with other control-flow
+/// words. To avoid any clashes
+/// [endof](https://forth-standard.org/standard/core/ENDOF) and
+/// [leave](https://forth-standard.org/standard/core/LEAVE) push their
+/// control-flow values by using the control-stack-pointer. *csp* touches the
+/// same physical memory as *dsp* but pushes from stack begin towards the end.
+/// Since *csp* is less commonly used it's only stored as variable.
+///
+/// **Return-stack**<br>
+/// The return-stack is implicit and shared with the main application. This
+/// means that the return-stack is basically whatever the stack-pointer of the
+/// ARMv7-M architecture points to. Use of return-stack is generally discouraged
+/// as incautious use can not only crash Shi but the entire system.
+///
+/// \page page_variables Variables
+/// There are a couple of states Shi needs to track internally. When evaluating
+/// the total ram usage these variables have to be taken into consideration and
+/// added to the user-defined stack size. The table below contains them all
+/// including a short description and their size in bytes.
+///
+// clang-format off
+/// \page page_variables Variables
+/// | Symbols         | Responsibility                                                                     | Size [b]     |
+/// | ----------------| ---------------------------------------------------------------------------------- | ------------ |
+/// | shi_stack_begin | Stack begin                                                                        | user-defined |
+/// | shi_stack_end   | Stack end                                                                          |              |
+/// | shi_context     | Context (tos, dsp and lfp)                                                         | 12           |
+/// |                 |                                                                                    |              |
+/// | to_text_begin   | Pointer to current ram begin which is going to end in flash                        | 4            |
+/// | data_begin      | Pointer to ram begin                                                               | 4            |
+/// | data_end        | Pointer to ram end, used for reserving ram for variables                           | 4            |
+/// | text_begin      | Pointer to flash begin                                                             | 4            |
+/// | text_end        | Pointer to flash end                                                               | 4            |
+/// |                 |                                                                                    |              |
+/// | csp             | Inside loop: points to leave addresses from the current loop on the stack <br><!-- |              |
+/// |                 | --> Inside case: points to endof addresses from the current case on the stack      | 4            |
+/// | link            | Contains address of link of the last definition                                    | 4            |
+/// | status          | Current state (state is taken as word) <br><!--                                    |              |
+/// |                 | --> false: interpret, true: compile                                                | 4            |
+/// | src             | Source (address and length)                                                        | 8            |
+/// | in              | Index in terminal input buffer                                                     | 4            |
+/// | radix           | Determine current numerical base (base is taken as word)                           | 4            |
+/// | text_align      | User defined alignment for flash                                                   | 1            |
+// clang-format on
+///
+/// Most variables should be more or less evident but some are most likely not:
+///
+/// \page page_variables Variables
+/// **shi_context**<br>
+/// Shi maps three pointers directly to registers which must be restored and
+/// saved upon entry and exit. Those registers are the top-of-stack, the
+/// data-space-pointer and the literal-folding-pointer. shi_context marks the
+/// storage for these registers.
+///
+/// **data_begin, data_end, text_begin, text_end**<br>
+/// Usually Forth system have a single continuous data-space but Shi supports
+/// compilation to two different data-spaces (data and text aka ram and flash).
+/// The variables data_begin, data_end, text_begin and text_end keep track of
+/// the data-spaces passed in by the user at initialization.
+///
+/// **to_text_begin**<br>
+/// Shi does not write directly to flash but first stores new definitions in ram
+/// before a special word calls an extern function which then takes care of
+/// copying the definitions over. to_text_begin marks the beginning of the
+/// memory which should be written into flash.
+///
+/// **text_align**<br>
+/// Most flash memories have alignment restrictions and can only write to 4-, 8-
+/// or even 16-byte aligned addresses. This alignment requirements are stored in
+/// text_align and can be set by the user at initialization.
+///
 /// \page page_dictionary Dictionary
+/// single entry
 ///
 /// \dot
 /// digraph H {
 ///
 ///   aHtmlTable [
 ///     shape=plaintext
-///     color=blue      // The color of the border of the table
 ///     label=<
 ///
 ///     <table border='1' cellborder='0'>
-///       <tr><td>col 1</td><td>foo</td></tr>
-///       <tr><td>COL 2</td><td>bar</td></tr>
+///       <tr><td>link</td><td>foo</td></tr>
+///       <tr><td>flags</td><td>bar</td></tr>
+///       <tr><td>name</td><td>bar</td></tr>
+///       <tr><td>data/code</td><td>bar</td></tr>
 ///     </table>>
 ///
 ///   ];
@@ -24,13 +229,7 @@
 /// }
 /// \enddot
 ///
-/// \dot
-/// digraph G {
-///
-///   word[shape=record, label="{link|flags|name|code}"];
-///
-/// }
-/// \enddot
+/// Linked list
 ///
 /// \dot
 /// digraph G {
@@ -61,17 +260,6 @@
 /// }
 /// \enddot
 ///
-/// \page page_api API
-///
-/// http://forth-standard.org/
-///
-///
-///
-/// \page page_implementation Implementation
-/// sd
-///
-/// \section section_stack_notation Stack notation
-/// blabla
 ///
 /// \page page_lerp Lerp
 /// blabla
@@ -123,6 +311,8 @@
 #define SHI_ENABLE_PRINT 1
 
 // clang-format off
+// Enable words individually
+// Core words
 #define SHI_ENABLE_STORE           1
 #define SHI_ENABLE_NUM             0
 #define SHI_ENABLE_NUM_END         0
@@ -257,6 +447,7 @@
 #define SHI_ENABLE_BRACKET_CHAR    0
 #define SHI_ENABLE_BRACKET_RIGHT   1
 
+// Extension words
 #define SHI_ENABLE_DOT_COMMENT     0
 #define SHI_ENABLE_DOT_R           0
 #define SHI_ENABLE_ZERO_NE         1
@@ -307,6 +498,7 @@
 #define SHI_ENABLE_BRACKET_COMPILE 0
 #define SHI_ENABLE_BS              0
 
+// Own words
 #define SHI_ENABLE_BINARY          1
 #define SHI_ENABLE_C_VARIABLE      1
 #define SHI_ENABLE_TO_TEXT_Q       1
@@ -327,12 +519,11 @@ extern "C" {
 #  endif
 
 typedef void (*void_fp)();
-
-extern void_fp shi_tick_asm(char const* str, size_t len);
-extern void shi_clear_asm();
-extern void shi_c_variable_asm(char const* name, size_t len);
 extern void shi_evaluate_asm(char const* str, size_t len);
-extern uint32_t s_shi_context;
+extern void shi_clear_asm();
+extern void_fp shi_tick_asm(char const* str, size_t len);
+extern void shi_variable_asm(char const* name, size_t len);
+extern uint32_t shi_context;
 
 #  ifdef __cplusplus
 }
@@ -351,123 +542,31 @@ typedef struct {
 
 void shi_init_asm(shi_init_t*);
 
+/// Initialize
+///
+/// \param  s   Init structure
 inline void shi_init(shi_init_t s) {
   shi_init_asm(&s);
 }
 
 /// Call of word evaluate
 ///
-/// \param  str String address
-///
-/// \dot
-/// digraph G {
-///
-///   ratio=auto; node[fontsize=12]; newrank=true;
-///
-///   # Check cstring lenght in forthEvaluate
-///   check_cstring_length->return[label="no + error"];
-///   check_cstring_length->enter[label="yes"];
-///   check_cstring_length[shape=diamond, label="cstring length > 0"];
-///
-///   # Enter forth
-///   enter[label="restore forth context\npush cstring\ncall evaluate"];
-///   enter->evaluate;
-///   evaluate[label="store source\nset source-id -1\nset >in 0\ncall
-///   interpret"];
-///
-///   # Parse
-///   evaluate->parse;
-///   parse[label="call source\ncall parse"];
-///   parse->check_token;
-///
-///   # Find
-///   check_token[shape=diamond, label="token length > 0"];
-///   check_token->return[label="no + error"];
-///   check_token->find[label="yes"];
-///   find[label="call find"];
-///   find->check_find;
-///   check_find[shape=diamond, label="found token in dictionary"];
-///   check_find->number[label="no"];
-///
-///   # Number
-///   number[label="call number"];
-///   check_find->check_state[label="yes"];
-///   check_state[shape=diamond, label="state == 0"];
-///   number->check_number;
-///   check_number[shape=diamond, label="number found"];
-///   check_number->return[label="no + error"];
-///   check_number->push_number[label="yes"];
-///   push_number[label="push number"];
-///   push_number->check_literal_folding;
-///   check_literal_folding[shape=diamond, label="literal-folding pointer ==
-///   0"]; check_literal_folding->set_literal_folding[label="yes"];
-///   set_literal_folding[label="literal-folding pointer =\nparameter stack
-///   pointer"]; set_literal_folding->check_done;
-///   check_literal_folding->check_done[label="no"];
-///
-///   # Done
-///   check_done[shape=diamond, label=">in < cstring length"];
-///   check_done->return[label="no"];
-///   check_done->parse[label="yes"];
-///
-///   # State
-///   check_state->interpret[label="yes"];
-///   check_state->compile[label="no"];
-///
-///   # Interpret
-///   interpret[shape=diamond, label="word interpretable"];
-///   interpret->return[label="no + error"];
-///   interpret->execute_interpret[label="yes"];
-///   execute_interpret[label="literal-folding pointer = 0\ncall execute"];
-///   execute_interpret->check_done;
-///
-///   # Compile
-///   compile[shape=diamond, label="word compileable"];
-///   compile->return[label="no + error"];
-///   compile->check_lfp[label="yes"];
-///
-///   # Constant-folding pointer
-///   check_lfp[shape=diamond, label="literal-folding pointer == 0"];
-///   check_lfp->check_immediate[label="yes"];
-///   check_lfp->calculate_literals[label="no"];
-///   calculate_literals[label="get number of literals\nand folds bits"];
-///   calculate_literals->check_foldable; check_foldable[shape=diamond,
-///   label="word foldable"]; check_foldable->check_folds[label="yes"];
-///   check_foldable->literal_comma[label="no"];
-///   check_folds[shape=diamond, label="number of literals > folds bits\n(this
-///   means we can safely optimize\nliterals and a following word\nwithout loss
-///   of information)"]; check_folds->execute_compile[label="yes"];
-///   execute_compile[label="call execute"];
-///   execute_compile->check_done;
-///   check_folds->literal_comma[label="no"];
-///   literal_comma[label="call literal_comma"];
-///   literal_comma->check_immediate;
-///
-///   # Immediate
-///   check_immediate[shape=diamond, label="word immediate"];
-///   check_immediate->execute_compile[label="yes"];
-///   check_immediate->check_inline[label="no"];
-///
-///   check_inline[shape=diamond, label="word inlineable"];
-///   check_inline->inline_comma[label="yes"];
-///   check_inline->bl_comma[label="yes"];
-///   inline_comma[label="call inline_comma"];
-///   inline_comma->check_done;
-///   bl_comma[label="call bl_comma"];
-///   bl_comma->check_done;
-/// }
-/// \enddot
+/// \param  str Pointer to the null-terminated byte string
 inline void shi_evaluate(char const* str) {
   shi_evaluate_asm(str, strlen(str));
 }
 
+/// Call of word evaluate
+///
+/// \param  str Pointer to the null-terminated byte string
+/// \param  len Length of the null-terminated string
 inline void shi_evaluate_len(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
-inline void shi_cvariable(char const* str, void* adr) {
+inline void shi_variable(char const* str, void* adr) {
   push(reinterpret_cast<int32_t>(adr));
-  shi_c_variable_asm(str, strlen(name));
+  shi_variable_asm(str, strlen(name));
 }
 
 // C++ only
@@ -506,10 +605,14 @@ struct init_t {
 
 extern "C" void shi_init_asm(init_t&);
 
+/// Initialize
+///
+/// \param  s   Init structure
 inline void init(init_t s) {
   shi_init_asm(s);
 }
 
+/// Clear stack
 inline void clear() {
   shi_clear_asm();
 }
@@ -524,7 +627,7 @@ inline size_t depth() {
                "subs %0, %1, r0 \n"
                "lsrs %0, %0, #2 \n"
                : "=r"(size)
-               : "r"(&s_shi_context)
+               : "r"(&shi_context)
                : "cc", "memory", "r0");
 
   return size;
@@ -539,7 +642,8 @@ inline size_t size() {
 
 /// Add element to the top of the stack
 ///
-/// \param    cell    Value to push
+/// \tparam T   Type of element to push
+/// \param  t   Value to push
 template<typename T>
 inline void push(T&& t) {
   using std::addressof;
@@ -549,7 +653,6 @@ inline void push(T&& t) {
 
   static_assert(sizeof(V) <= SHI_STACK_SIZE * 4);
 
-  // every built-in stuff, pointers and reference_wrappers
   if constexpr (sizeof(V) <= 4 && (is_arithmetic_v<V> || is_pointer_v<V> ||
                                    is_reference_wrapper_v<V>))
     asm volatile("tos .req r0 \n"
@@ -559,9 +662,8 @@ inline void push(T&& t) {
                  "movs tos, %1 \n"
                  "strd tos, dsp, [%0] \n"
                  :
-                 : "r"(&s_shi_context), "r"(t)
+                 : "r"(&shi_context), "r"(t)
                  : "cc", "memory", "r0", "r1");
-  // doubles, int64 and uint64
   else if constexpr (sizeof(V) == 8 && is_arithmetic_v<V>)
     asm volatile("tos .req r0 \n"
                  "dsp .req r1 \n"
@@ -571,13 +673,16 @@ inline void push(T&& t) {
                  "movs tos, r3 \n"
                  "strd tos, dsp, [%0] \n"
                  :
-                 : "r"(&s_shi_context), "r"(addressof(t))
+                 : "r"(&shi_context), "r"(addressof(t))
                  : "cc", "memory", "r0", "r1", "r2", "r3");
-  // everything else
   else
     asm volatile("nop");  // basically memcpy here?
 }
 
+/// Remove element from the top of the stack
+///
+/// \tparam T   Type of element to pop
+/// \return Value
 template<typename T>
 inline remove_cvref_t<T> pop() {
   using std::addressof;
@@ -596,7 +701,7 @@ inline remove_cvref_t<T> pop() {
                  "ldmia dsp!, {tos} \n"
                  "strd tos, dsp, [%1] \n"
                  : "=r"(t)
-                 : "r"(&s_shi_context)
+                 : "r"(&shi_context)
                  : "cc", "memory", "r0", "r1");
   else if constexpr (sizeof(V) == 8 && is_arithmetic_v<V>)
     asm volatile("tos .req r0 \n"
@@ -607,7 +712,7 @@ inline remove_cvref_t<T> pop() {
                  "movs tos, r3 \n"
                  "strd tos, dsp, [%0] \n"
                  :
-                 : "r"(&s_shi_context), "r"(addressof(t))
+                 : "r"(&shi_context), "r"(addressof(t))
                  : "cc", "memory", "r0", "r1", "r2", "r3");
   else
     asm volatile("nop");  // basically memcpy here?
@@ -615,7 +720,7 @@ inline remove_cvref_t<T> pop() {
   return t;
 }
 
-/// Removes first element
+/// Remove element from the top of the stack
 inline void pop() {
   asm volatile("tos .req r0 \n"
                "dsp .req r1 \n"
@@ -623,7 +728,7 @@ inline void pop() {
                "ldmia dsp!, {tos} \n"
                "strd tos, dsp, [%0] \n"
                :
-               : "r"(&s_shi_context)
+               : "r"(&shi_context)
                : "cc", "memory", "r0", "r1");
 }
 
@@ -637,20 +742,23 @@ inline int32_t top(size_t offset = 0) {
                "ldrne r0, [%1, #4] \n"
                "ldrne %0, [r0, r1, lsl #2] \n"
                : "=r"(cell)
-               : "r"(&s_shi_context), "r"(offset)
+               : "r"(&shi_context), "r"(offset)
                : "cc", "memory", "r0", "r1");
 
   return cell;
 }
 
+/// Call of word evaluate
+///
+/// \param  str Pointer to the null-terminated byte string
 inline void evaluate(char const* str) {
   shi_evaluate_asm(str, strlen(str));
 }
 
 /// Call of word evaluate
 ///
-/// \param  str String address
-/// \param  len String length
+/// \param  str Pointer to the null-terminated byte string
+/// \param  len Length of the null-terminated string
 inline void evaluate(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
@@ -660,12 +768,12 @@ inline void operator"" _s(char const* str, size_t len) {
 }
 
 template<typename T>
-void cvariable(char const* str, T adr) {
+void variable(char const* str, T adr) {
   static_assert(std::is_pointer_v<T>);
   static_assert(std::is_integral_v<std::remove_pointer_t<T>>);
 
-  push(reinterpret_cast<int32_t>(adr));
-  shi_c_variable_asm(str, strlen(str));
+  push(adr);
+  shi_variable_asm(str, strlen(str));
 }
 
 }  // namespace shi

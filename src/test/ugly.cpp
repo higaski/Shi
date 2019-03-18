@@ -291,7 +291,7 @@ void shi_test() {
   asm volatile("nop");
   volatile uint32_t stars = 42;
   // equal to push(&stars) and evaluate("c-variable stars");
-  shi::cvariable("stars", &stars);
+  shi::variable("stars", &stars);
   //  shi::stack_print(printf);
   shi::evaluate("stars @");
   //  shi::stack_print(printf);

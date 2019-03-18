@@ -4,8 +4,7 @@
 @ \author Vincent Hamp
 @ \date   02/12/2018
 
-@ C/C++ interface
-.global s_shi_context
+.global shi_context
 
 .section .data
 
@@ -13,12 +12,12 @@
 @ Stack
 @ ------------------------------------------------------------------------------
 .p2align 2                              @ Make sure the stack is 4-byte aligned (ldm and stm operations need 4-byte alignment)
-s_shi_stack:                            @ Data-stack start
+shi_stack_begin:                        @ Data-stack begin
 .space STACK_SIZE                       @ Data-stack size in bytes
-e_shi_stack:                            @ Data-stack end
+shi_stack_end:                          @ Data-stack end
 
 .p2align 2
-s_shi_context:                          @ Used to store the forth context
+shi_context:                            @ Used to store the forth context
 .space 12                               @ Save tos, dsp and lfp
 
 @ ------------------------------------------------------------------------------
@@ -38,7 +37,7 @@ text_end:
 
 @ Control-stack pointer
 csp:                                    @ Inside loop: points to leave addresses from the current loop on the stack
-.word s_shi_stack                       @ Inside case: points to endof addresses from the current case on the stack
+.word shi_stack_begin                   @ Inside case: points to endof addresses from the current case on the stack
 
 @ ------------------------------------------------------------------------------
 @ Contains address of link of the last definition

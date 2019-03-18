@@ -36,7 +36,7 @@ struct word {
                  "pop {%0} \n"
                  "stmia %0, {r6, r7, r8} \n"
                  :
-                 : "r"(&s_shi_context), "r"(fp)
+                 : "r"(&shi_context), "r"(fp)
                  : "cc", "memory", "r6", "r7", "r8", "lr");
 
     return *this;

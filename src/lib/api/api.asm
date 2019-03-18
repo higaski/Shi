@@ -1,6 +1,6 @@
-@ Shi
+@ Api to C/C++
 @
-@ \file   dict.asm
+@ \file   api.asm
 @ \author Vincent Hamp
 @ \date   27/07/2016
 
@@ -8,8 +8,7 @@
 .thumb
 .arch armv7-m
 
-@ C/C++ interface
-.global shi_init_asm, shi_c_variable_asm, shi_evaluate_asm, shi_clear_asm, shi_tick_asm
+.global shi_init_asm, shi_variable_asm, shi_evaluate_asm, shi_clear_asm, shi_tick_asm
 
 .section .text
 
@@ -27,12 +26,15 @@ lfp .req r8                             @ Literal-folding pointer
 @ ------------------------------------------------------------------------------
 #include "shi.hpp"
 
+@ ------------------------------------------------------------------------------
 @ C -> assembler
+@ ------------------------------------------------------------------------------
 .equ STACK_SIZE, SHI_STACK_SIZE * 4
 .equ ERASED_WORD, SHI_ERASED_WORD
 .equ ENABLE_NUMBER_PREFIX, SHI_ENABLE_NUMBER_PREFIX
 .equ ENABLE_PRINT, SHI_ENABLE_PRINT
 
+@ Core words
 .equ ENABLE_STORE, SHI_ENABLE_STORE
 .equ ENABLE_NUM, SHI_ENABLE_NUM
 .equ ENABLE_NUM_END, SHI_ENABLE_NUM_END
@@ -168,6 +170,7 @@ lfp .req r8                             @ Literal-folding pointer
 .equ ENABLE_BRACKET_CHAR, SHI_ENABLE_BRACKET_CHAR
 .equ ENABLE_BRACKET_RIGHT, SHI_ENABLE_BRACKET_RIGHT
 
+@ Extension words
 .equ ENABLE_DOT_COMMENT, SHI_ENABLE_DOT_COMMENT
 .equ ENABLE_DOT_R, SHI_ENABLE_DOT_R
 .equ ENABLE_ZERO_NE, SHI_ENABLE_ZERO_NE
@@ -294,7 +297,7 @@ shi_init_asm:
 @ Set tos dsp and lfp
     movs lfp, #0                        @ Put zero into lfp...
     movs tos, #'*'                      @ Put stars onto tos ;)
-    ldr dsp, =e_shi_stack               @ Reset data-stack pointer
+    ldr dsp, =shi_stack_end             @ Reset data-stack pointer
 
 @ Return
     EXIT                                @ Store context
@@ -350,40 +353,6 @@ sweep_text:
     bx lr
 
 @ ------------------------------------------------------------------------------
-@ Forth C variable
-@ r0    c-addr  (cstring address)
-@ r1    u       (cstring length)
-@ ------------------------------------------------------------------------------
-.thumb_func
-shi_c_variable_asm:
-    push {tos-lfp, lr}
-
-@ Check if string length is reasonable (>0)
-    cmp r1, #0
-    bne 1f                              @ Goto enter forth
-        PRINT "'shi' attempt to evaluate zero-length string >>>shi_c_variable<<<"
-        b 6f                            @ Goto return
-
-@ Enter forth
-1:  ENTRY                               @ Restore context
-
-@ Store source
-    ldr r2, =src
-    stmia r2, {r0, r1}
-
-@ Set >IN 0
-    SET_IN #0                           @ Set >in zero
-
-@ C variable
-    bl c_variable
-
-@ Leave forth
-    EXIT                                @ Store context
-
-@ Return
-6:  pop {tos-lfp, pc}
-
-@ ------------------------------------------------------------------------------
 @ Forth evaluate
 @ r0    c-addr  (cstring address)
 @ r1    u       (cstring length)
@@ -418,12 +387,12 @@ shi_evaluate_asm:
 shi_clear_asm:
     push {tos-lfp, lr}
 
-@ r0    s_shi_stack
+@ r0    shi_stack_begin
 @ tos   0
-@ dsp   e_shi_stack
+@ dsp   shi_stack_end
     movs tos, #0
-    ldr dsp, =e_shi_stack
-    ldr r0, =s_shi_stack
+    ldr dsp, =shi_stack_end
+    ldr r0, =shi_stack_begin
 1:  cmp r0, dsp
     beq 6f                              @ Goto return
         str tos, [r0], #4
@@ -460,3 +429,37 @@ shi_tick_asm:
 
 @ Return
     pop {tos-lfp, pc}
+
+@ ------------------------------------------------------------------------------
+@ Forth C variable
+@ r0    c-addr  (cstring address)
+@ r1    u       (cstring length)
+@ ------------------------------------------------------------------------------
+.thumb_func
+shi_variable_asm:
+    push {tos-lfp, lr}
+
+@ Check if string length is reasonable (>0)
+    cmp r1, #0
+    bne 1f                              @ Goto enter forth
+        PRINT "'shi' attempt to evaluate zero-length string >>>shi_c_variable<<<"
+        b 6f                            @ Goto return
+
+@ Enter forth
+1:  ENTRY                               @ Restore context
+
+@ Store source
+    ldr r2, =src
+    stmia r2, {r0, r1}
+
+@ Set >IN 0
+    SET_IN #0                           @ Set >in zero
+
+@ C variable
+    bl c_variable
+
+@ Leave forth
+    EXIT                                @ Store context
+
+@ Return
+6:  pop {tos-lfp, pc}

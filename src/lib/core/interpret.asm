@@ -65,7 +65,7 @@ interpret_state:
     bne interpret_compile               @ Goto compile
 
 @ Interpret
-interpret_interpret:
+interpret_execute:
     ands tos, #~FLAG_INTERPRET
     beq 1f                              @ Goto execute
         PRINT "'shi' interpreting a compile-only word >>>interpret<<<"

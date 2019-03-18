@@ -34,6 +34,6 @@ def print_for_asm():
         for str in v:
             print('.equ ENABLE_' + str + ', SHI_ENABLE_' + str)    
 
-# Print either c header or assembly list
-#print_for_c()
+# Print c header or assembly list
+print_for_c()
 print_for_asm()

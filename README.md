@@ -1,7 +1,7 @@
 # ![](doc/img/logo.png)
 Shi is a fast and tiny **embeddable** [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) implementation written for the [Thumb-2 ISA](https://infocenter.arm.com/help/topic/com.arm.doc.qrc0001m/QRC0001_UAL.pdf) (ARMv7-M and newer). It currently fits into 8kB of flash and 320B of ram. Some of it's features are
 * Single header interface to C/C++
-* Optional compilation to flash
+* Compilation to flash
 * Inlining
 * Constant folding
 
@@ -23,6 +23,8 @@ For further information or a comprehensive tutorial refer to
 Although extensibility gives Forth a slightly functional touch it's otherwise procedural. There is no type system, no scope, no encapsulation nor any other achievement computer science made over the past four decades. This is why I'm not overly enthusiastic that most implementations out there act as system with a [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop). The standard way of doing so is implementing the words [key](http://forth-standard.org/standard/core/KEY) and [emit](http://forth-standard.org/standard/core/EMIT) to constantly read and write from a serial interface. Two of the best known Forth's for ARM, [CoreForth](https://github.com/ekoeppen/CoreForth) and [Mecrisp-Stellaris](http://mecrisp.sourceforge.net/>Mecrisp-Stellaris), are following this path. Specially the latter is an amazing piece of software and really stands out with tons of features and a relatively big [ecosystem](https://github.com/jeelabs/embello/tree/master/explore/1608-forth).
 
 But so does [MicroPython](http://micropython.org/) and it also comes with a type system, functions, classes, scope, encapsulation, a comprehensive standard library and pretty much everything else you'd expect from a modern language.
+
+// TODO hier mehr text... performance? venn diagram usw.
 
 ## "Reverse Polish" ![](doc/img/polish_flag.png)
 Although Forth is quite a unique language in all of its aspects it is the complementary RPN and stack which really let it shine in very restricted environments. To understand why let's create a real world example by writing a linear interpolation function we'd like to parse and interpret or even compile.

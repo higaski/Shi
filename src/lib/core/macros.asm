@@ -62,7 +62,7 @@
 @ Stacking
 @ ------------------------------------------------------------------------------
 .macro DEPTH
-    ldr r0, =e_shi_stack
+    ldr r0, =shi_stack_end
     subs r0, dsp
     PUSH_TOS
     lsrs tos, r0, #2
@@ -216,13 +216,13 @@
 @ ------------------------------------------------------------------------------
 @ Restore forth context
 .macro ENTRY
-    ldr r12, =s_shi_context
+    ldr r12, =shi_context
     ldmia r12, {tos, dsp, lfp}
 .endm
 
 @ Save forth context
 .macro EXIT
-    ldr r12, =s_shi_context
+    ldr r12, =shi_context
     stmia r12, {tos, dsp, lfp}
 .endm
 
