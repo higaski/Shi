@@ -110,11 +110,8 @@
 
 #pragma once
 
-/// Data-stack size in bytes
-#define SHI_STACK_SIZE 256
-#if SHI_STACK_SIZE % 4
-#  error SHI_STACK_SIZE must be a multiple of 4
-#endif
+/// Data-stack size
+#define SHI_STACK_SIZE 64
 
 /// Most flash types are 0xFF erased
 #define SHI_ERASED_WORD 0xFFFFFFFF
@@ -550,7 +547,7 @@ inline void push(T&& t) {
   using std::is_pointer_v;
   using V = remove_cvref_t<T>;
 
-  static_assert(sizeof(V) <= SHI_STACK_SIZE);
+  static_assert(sizeof(V) <= SHI_STACK_SIZE * 4);
 
   // every built-in stuff, pointers and reference_wrappers
   if constexpr (sizeof(V) <= 4 && (is_arithmetic_v<V> || is_pointer_v<V> ||
@@ -658,7 +655,7 @@ inline void evaluate(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
-inline void operator"" _fs(char const* str, size_t len) {
+inline void operator"" _s(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 

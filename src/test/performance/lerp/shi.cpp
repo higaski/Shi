@@ -4,12 +4,12 @@
 #include "stm32f4xx.h"
 #include "stm32f4xx_hal.h"
 
-using shi::operator""_fs;
+using shi::operator""_s;
 
 extern "C" void test_performance_shi() {
 
   // lerp ( x x1 x2 y1 y2 -- y )
-  ": lerp over - 4 roll 4 pick - * 2swap swap - / + ;"_fs;
+  ": lerp over - 4 roll 4 pick - * 2swap swap - / + ;"_s;
 
   __disable_irq();
   uint32_t it1, it2;
@@ -21,7 +21,7 @@ extern "C" void test_performance_shi() {
   shi::push(10);
   shi::push(5);
   shi::push(50);
-  "lerp"_fs;
+  "lerp"_s;
   int result = shi::top();
   shi::pop();
 

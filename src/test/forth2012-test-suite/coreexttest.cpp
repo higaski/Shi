@@ -1,97 +1,97 @@
 #include "forth2012_test_suite.hpp"
 
-using shi::operator""_fs;
+using shi::operator""_s;
 
 TEST(ne__u_more) {
-  "0 0 <>"_fs;
+  "0 0 <>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "1 1 <>"_fs;
+  "1 1 <>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "-1 -1 <>"_fs;
+  "-1 -1 <>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "1 0 <>"_fs;
+  "1 0 <>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "-1 0 <>"_fs;
+  "-1 0 <>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "0 1 <>"_fs;
+  "0 1 <>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "0 -1 <>"_fs;
+  "0 -1 <>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
 
-  "0 1 u>"_fs;
+  "0 1 u>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "1 2 u>"_fs;
+  "1 2 u>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "0 MID-UINT u>"_fs;
+  "0 MID-UINT u>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "0 MAX-UINT u>"_fs;
+  "0 MAX-UINT u>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "MID-UINT MAX-UINT u>"_fs;
+  "MID-UINT MAX-UINT u>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "0 0 u>"_fs;
+  "0 0 u>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "1 1 u>"_fs;
+  "1 1 u>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "1 0 u>"_fs;
+  "1 0 u>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "2 1 u>"_fs;
+  "2 1 u>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "MID-UINT 0 u>"_fs;
+  "MID-UINT 0 u>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "MAX-UINT 0 u>"_fs;
+  "MAX-UINT 0 u>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "MAX-UINT MID-UINT u>"_fs;
+  "MAX-UINT MID-UINT u>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
 
   shi::clear();
 }
 
 TEST(zero_ne__zero_more) {
-  "0 0<>"_fs;
+  "0 0<>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "1 0<>"_fs;
+  "1 0<>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "2 0<>"_fs;
+  "2 0<>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "-1 0<>"_fs;
+  "-1 0<>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "MAX-UINT 0<>"_fs;
+  "MAX-UINT 0<>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "MIN-INT 0<>"_fs;
+  "MIN-INT 0<>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "MAX-INT 0<>"_fs;
+  "MAX-INT 0<>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
 
-  "0 0>"_fs;
+  "0 0>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "-1 0>"_fs;
+  "-1 0>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "MIN-INT 0>"_fs;
+  "MIN-INT 0>"_s;
   TEST_ASSERT_EQUAL(FALSE, shi::top());
-  "1 0>"_fs;
+  "1 0>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
-  "MAX-INT 0>"_fs;
+  "MAX-INT 0>"_s;
   TEST_ASSERT_EQUAL(TRUE, shi::top());
 
   shi::clear();
 }
 
 TEST(nip__tuck__roll__pick) {
-  "1 2 nip"_fs;
+  "1 2 nip"_s;
   TEST_ASSERT_EQUAL(2, shi::top());
-  "1 2 3 nip"_fs;
+  "1 2 3 nip"_s;
   TEST_ASSERT_EQUAL(3, shi::top());
   TEST_ASSERT_EQUAL(1, shi::top(1));
   TEST_ASSERT_EQUAL(2, shi::top(2));
 
-  "1 2 tuck"_fs;
+  "1 2 tuck"_s;
   TEST_ASSERT_EQUAL(2, shi::top());
   TEST_ASSERT_EQUAL(1, shi::top(1));
   TEST_ASSERT_EQUAL(2, shi::top(2));
   TEST_ASSERT_EQUAL(3, shi::top(3));
   TEST_ASSERT_EQUAL(1, shi::top(4));
   TEST_ASSERT_EQUAL(2, shi::top(5));
-  "1 2 3 tuck"_fs;
+  "1 2 3 tuck"_s;
   TEST_ASSERT_EQUAL(3, shi::top());
   TEST_ASSERT_EQUAL(2, shi::top(1));
   TEST_ASSERT_EQUAL(3, shi::top(2));
@@ -105,26 +105,26 @@ TEST(nip__tuck__roll__pick) {
 
   shi::clear();
 
-  ": RO5 100 200 300 400 500 ;"_fs;
-  "RO5 3 roll"_fs;
+  ": RO5 100 200 300 400 500 ;"_s;
+  "RO5 3 roll"_s;
   TEST_ASSERT_EQUAL(200, shi::top());
   TEST_ASSERT_EQUAL(500, shi::top(1));
   TEST_ASSERT_EQUAL(400, shi::top(2));
   TEST_ASSERT_EQUAL(300, shi::top(3));
   TEST_ASSERT_EQUAL(100, shi::top(4));
-  "RO5 2 roll"_fs;
+  "RO5 2 roll"_s;
   TEST_ASSERT_EQUAL(300, shi::top());
   TEST_ASSERT_EQUAL(500, shi::top(1));
   TEST_ASSERT_EQUAL(400, shi::top(2));
   TEST_ASSERT_EQUAL(200, shi::top(3));
   TEST_ASSERT_EQUAL(100, shi::top(4));
-  "RO5 1 roll"_fs;
+  "RO5 1 roll"_s;
   TEST_ASSERT_EQUAL(400, shi::top());
   TEST_ASSERT_EQUAL(500, shi::top(1));
   TEST_ASSERT_EQUAL(300, shi::top(2));
   TEST_ASSERT_EQUAL(200, shi::top(3));
   TEST_ASSERT_EQUAL(100, shi::top(4));
-  "RO5 0 roll"_fs;
+  "RO5 0 roll"_s;
   TEST_ASSERT_EQUAL(500, shi::top());
   TEST_ASSERT_EQUAL(400, shi::top(1));
   TEST_ASSERT_EQUAL(300, shi::top(2));
@@ -133,21 +133,21 @@ TEST(nip__tuck__roll__pick) {
 
   shi::clear();
 
-  "RO5 2 pick"_fs;
+  "RO5 2 pick"_s;
   TEST_ASSERT_EQUAL(300, shi::top());
   TEST_ASSERT_EQUAL(500, shi::top(1));
   TEST_ASSERT_EQUAL(400, shi::top(2));
   TEST_ASSERT_EQUAL(300, shi::top(3));
   TEST_ASSERT_EQUAL(200, shi::top(4));
   TEST_ASSERT_EQUAL(100, shi::top(5));
-  "RO5 1 pick"_fs;
+  "RO5 1 pick"_s;
   TEST_ASSERT_EQUAL(400, shi::top());
   TEST_ASSERT_EQUAL(500, shi::top(1));
   TEST_ASSERT_EQUAL(400, shi::top(2));
   TEST_ASSERT_EQUAL(300, shi::top(3));
   TEST_ASSERT_EQUAL(200, shi::top(4));
   TEST_ASSERT_EQUAL(100, shi::top(5));
-  "RO5 0 pick"_fs;
+  "RO5 0 pick"_s;
   TEST_ASSERT_EQUAL(500, shi::top());
   TEST_ASSERT_EQUAL(500, shi::top(1));
   TEST_ASSERT_EQUAL(400, shi::top(2));
@@ -173,7 +173,7 @@ TEST(two_to_r__two_r_fetch__two_r_from) {
 }
 
 TEST(hex) {
-  "base @ hex base @ decimal base @ - swap base !"_fs;
+  "base @ hex base @ decimal base @ - swap base !"_s;
   TEST_ASSERT_EQUAL(1, shi::size());
   TEST_ASSERT_EQUAL(6, shi::top());
 
@@ -323,9 +323,9 @@ TEST(unused) {
 }
 
 TEST(again) {
-  ": AG0 701 begin dup 7 mod 0= if exit then 1+ again ;"_fs;
+  ": AG0 701 begin dup 7 mod 0= if exit then 1+ again ;"_s;
   TEST_ASSERT_EQUAL(0, shi::size());
-  "AG0"_fs;
+  "AG0"_s;
   TEST_ASSERT_EQUAL(1, shi::size());
   TEST_ASSERT_EQUAL(707, shi::top());
 
@@ -429,38 +429,38 @@ TEST(value__to) {
 }
 
 TEST(case__of__endof__endcase) {
-  ": CS1 case 1 of 111 endof 2 of 222 endof 3 of 333 endof >r 999 r> endcase ;"_fs;
+  ": CS1 case 1 of 111 endof 2 of 222 endof 3 of 333 endof >r 999 r> endcase ;"_s;
 
-  "1 CS1"_fs;
+  "1 CS1"_s;
   TEST_ASSERT_EQUAL(1, shi::size());
   TEST_ASSERT_EQUAL(111, shi::top());
-  "2 CS1"_fs;
+  "2 CS1"_s;
   TEST_ASSERT_EQUAL(2, shi::size());
   TEST_ASSERT_EQUAL(222, shi::top());
   TEST_ASSERT_EQUAL(111, shi::top(1));
-  "3 CS1"_fs;
+  "3 CS1"_s;
   TEST_ASSERT_EQUAL(3, shi::size());
   TEST_ASSERT_EQUAL(333, shi::top());
   TEST_ASSERT_EQUAL(222, shi::top(1));
   TEST_ASSERT_EQUAL(111, shi::top(2));
-  "4 CS1"_fs;
+  "4 CS1"_s;
   TEST_ASSERT_EQUAL(4, shi::size());
   TEST_ASSERT_EQUAL(999, shi::top());
   TEST_ASSERT_EQUAL(333, shi::top(1));
   TEST_ASSERT_EQUAL(222, shi::top(2));
   TEST_ASSERT_EQUAL(111, shi::top(3));
 
-  ": CS2 >r case -1 of case r@ 1 of 100 endof 2 of 200 endof >r -300 r> endcase endof -2 of case r@ 1 of -99 endof >r -199 r> endcase endof >r 299 r> endcase r> drop ;"_fs;
+  ": CS2 >r case -1 of case r@ 1 of 100 endof 2 of 200 endof >r -300 r> endcase endof -2 of case r@ 1 of -99 endof >r -199 r> endcase endof >r 299 r> endcase r> drop ;"_s;
   TEST_ASSERT_EQUAL(4, shi::size());
 
-  "-1 1 CS2"_fs;
+  "-1 1 CS2"_s;
   TEST_ASSERT_EQUAL(5, shi::size());
   TEST_ASSERT_EQUAL(100, shi::top());
   TEST_ASSERT_EQUAL(999, shi::top(1));
   TEST_ASSERT_EQUAL(333, shi::top(2));
   TEST_ASSERT_EQUAL(222, shi::top(3));
   TEST_ASSERT_EQUAL(111, shi::top(4));
-  "-1 2 CS2"_fs;
+  "-1 2 CS2"_s;
   TEST_ASSERT_EQUAL(6, shi::size());
   TEST_ASSERT_EQUAL(200, shi::top());
   TEST_ASSERT_EQUAL(100, shi::top(1));
@@ -468,7 +468,7 @@ TEST(case__of__endof__endcase) {
   TEST_ASSERT_EQUAL(333, shi::top(3));
   TEST_ASSERT_EQUAL(222, shi::top(4));
   TEST_ASSERT_EQUAL(111, shi::top(5));
-  "-1 3 CS2"_fs;
+  "-1 3 CS2"_s;
   TEST_ASSERT_EQUAL(7, shi::size());
   TEST_ASSERT_EQUAL(-300, shi::top());
   TEST_ASSERT_EQUAL(200, shi::top(1));
@@ -477,7 +477,7 @@ TEST(case__of__endof__endcase) {
   TEST_ASSERT_EQUAL(333, shi::top(4));
   TEST_ASSERT_EQUAL(222, shi::top(5));
   TEST_ASSERT_EQUAL(111, shi::top(6));
-  "-2 1 CS2"_fs;
+  "-2 1 CS2"_s;
   TEST_ASSERT_EQUAL(8, shi::size());
   TEST_ASSERT_EQUAL(-99, shi::top());
   TEST_ASSERT_EQUAL(-300, shi::top(1));
@@ -487,7 +487,7 @@ TEST(case__of__endof__endcase) {
   TEST_ASSERT_EQUAL(333, shi::top(5));
   TEST_ASSERT_EQUAL(222, shi::top(6));
   TEST_ASSERT_EQUAL(111, shi::top(7));
-  "-2 2 CS2"_fs;
+  "-2 2 CS2"_s;
   TEST_ASSERT_EQUAL(9, shi::size());
   TEST_ASSERT_EQUAL(-199, shi::top());
   TEST_ASSERT_EQUAL(-99, shi::top(1));
@@ -498,7 +498,7 @@ TEST(case__of__endof__endcase) {
   TEST_ASSERT_EQUAL(333, shi::top(6));
   TEST_ASSERT_EQUAL(222, shi::top(7));
   TEST_ASSERT_EQUAL(111, shi::top(8));
-  "0 2 CS2"_fs;
+  "0 2 CS2"_s;
   TEST_ASSERT_EQUAL(10, shi::size());
   TEST_ASSERT_EQUAL(299, shi::top());
   TEST_ASSERT_EQUAL(-199, shi::top(1));
@@ -511,27 +511,27 @@ TEST(case__of__endof__endcase) {
   TEST_ASSERT_EQUAL(222, shi::top(8));
   TEST_ASSERT_EQUAL(111, shi::top(9));
 
-  ": CS3 case 1- false of 11 endof 1- false of 22 endof 1- false of 33 endof 44 swap endcase ;"_fs;
+  ": CS3 case 1- false of 11 endof 1- false of 22 endof 1- false of 33 endof 44 swap endcase ;"_s;
 
-  "1 CS3"_fs;
+  "1 CS3"_s;
   TEST_ASSERT_EQUAL(11, shi::top());
-  "2 CS3"_fs;
+  "2 CS3"_s;
   TEST_ASSERT_EQUAL(22, shi::top());
-  "3 CS3"_fs;
+  "3 CS3"_s;
   TEST_ASSERT_EQUAL(33, shi::top());
-  "9 CS3"_fs;
+  "9 CS3"_s;
   TEST_ASSERT_EQUAL(44, shi::top());
 
   shi::clear();
 
-  ": CS4 case endcase ; 1 CS4"_fs;
+  ": CS4 case endcase ; 1 CS4"_s;
   TEST_ASSERT_EQUAL(0, shi::size());
-  ": CS5 case 2 swap endcase ; 1 CS5"_fs;
+  ": CS5 case 2 swap endcase ; 1 CS5"_s;
   TEST_ASSERT_EQUAL(2, shi::top());
   shi::clear();
-  ": CS6 case 1 of endof 2 endcase ; 1 CS6"_fs;
+  ": CS6 case 1 of endof 2 endcase ; 1 CS6"_s;
   TEST_ASSERT_EQUAL(0, shi::size());
-  ": CS7 case 3 of endof 2 endcase ; 1 CS7"_fs;
+  ": CS7 case 3 of endof 2 endcase ; 1 CS7"_s;
   TEST_ASSERT_EQUAL(1, shi::top());
 
   shi::clear();

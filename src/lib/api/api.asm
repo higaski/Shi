@@ -28,7 +28,7 @@ lfp .req r8                             @ Literal-folding pointer
 #include "shi.hpp"
 
 @ C -> assembler
-.equ STACK_SIZE, SHI_STACK_SIZE
+.equ STACK_SIZE, SHI_STACK_SIZE * 4
 .equ ERASED_WORD, SHI_ERASED_WORD
 .equ ENABLE_NUMBER_PREFIX, SHI_ENABLE_NUMBER_PREFIX
 .equ ENABLE_PRINT, SHI_ENABLE_PRINT

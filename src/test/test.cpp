@@ -9,7 +9,7 @@
 #include "main.h"
 #include "shi.hpp"
 
-using shi::operator""_fs;
+using shi::operator""_s;
 
 void semihosting_example();
 
@@ -79,11 +79,11 @@ extern "C" int test() {
 
   using shi::operator""_w;
 
-  "wtf"_fs;
+  "wtf"_s;
   asm volatile("nop");
 
   asm volatile("nop");
-  ": seven 7 ;"_fs;
+  ": seven 7 ;"_s;
   auto seven = shi::word("seven");
   asm volatile("nop");
   printf("%d\n", shi::size());
@@ -134,7 +134,7 @@ extern "C" int test() {
   //
   //  assert(big == big_popped);
 
-  //  ": add1 1+ ;"_fs;
+  //  ": add1 1+ ;"_s;
   //  auto add1 = shi::word("add1");
   //  asm volatile("nop");
   //  int retval = add1(7);
@@ -142,9 +142,9 @@ extern "C" int test() {
   // add1(7);
 
   //  asm volatile("nop");
-  //  ": indexed-array create cells allot does> swap cells + ;"_fs;
+  //  ": indexed-array create cells allot does> swap cells + ;"_s;
   //  asm volatile("nop");
-  //  "20 indexed-array foo"_fs;
+  //  "20 indexed-array foo"_s;
   //  asm volatile("nop");
 
   // test_performance_shi();

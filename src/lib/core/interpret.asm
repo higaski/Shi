@@ -1,3 +1,9 @@
+@ Interpret/compile
+@
+@ \file   core.asm
+@ \author Vincent Hamp
+@ \date   27/07/2016
+
 .section .text
 
 @ ------------------------------------------------------------------------------

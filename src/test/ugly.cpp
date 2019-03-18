@@ -8,51 +8,51 @@
 // definition in it at all?
 
 // Crap inside a >text block is ignored...
-//  ">text"_fs;
+//  ">text"_s;
 //  asm volatile("nop");
-//  "4 allot"_fs;
+//  "4 allot"_s;
 //  asm volatile("nop");
-//  ": definition_not_first 1 ;"_fs;
+//  ": definition_not_first 1 ;"_s;
 //  asm volatile("nop");
-//  ">data"_fs;
+//  ">data"_s;
 //  asm volatile("nop");
 //
 //  // This works, it contains definitions and nothing else
-//  ">text"_fs;
+//  ">text"_s;
 //  asm volatile("nop");
-//  ": first 1 ;"_fs;
+//  ": first 1 ;"_s;
 //  asm volatile("nop");
-//  ": second 2 ;"_fs;
+//  ": second 2 ;"_s;
 //  asm volatile("nop");
-//  ": third 3 ;"_fs;
+//  ": third 3 ;"_s;
 //  asm volatile("nop");
 
-using shi::operator""_fs;
+using shi::operator""_s;
 
 void shi_test();
 void shi_test_compile_to_flash();
 
 TEST(unused0) {
-  ",toram"_fs;
-  "unused"_fs;
+  ",toram"_s;
+  "unused"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
   auto top = shi::top();
   TEST_ASSERT_EQUAL_INT(SHI_RAM_END - SHI_RAM_START, shi::top());
 
-  ",toflash"_fs;
-  "unused"_fs;
+  ",toflash"_s;
+  "unused"_s;
   TEST_ASSERT_EQUAL_INT(2, shi::size());
   top = shi::top();
   TEST_ASSERT_EQUAL_INT(SHI_FLASH_END - SHI_FLASH_START, shi::top());
 
-  ",toram"_fs;
+  ",toram"_s;
 
   shi::clear();
 }
 
 TEST(unused1) {
-  ",toram"_fs;
-  "unused"_fs;
+  ",toram"_s;
+  "unused"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
   TEST_ASSERT_LESS_THAN_INT(SHI_RAM_END - SHI_RAM_START, shi::top());
 
@@ -60,43 +60,43 @@ TEST(unused1) {
 }
 
 TEST(numeric_notation) {
-  "#1289"_fs;
+  "#1289"_s;
   TEST_ASSERT_EQUAL_INT(1289, shi::top());
 
-  "#12346789"_fs;
+  "#12346789"_s;
   TEST_ASSERT_EQUAL_INT(12346789, shi::top());
 
-  "#-1289"_fs;
+  "#-1289"_s;
   TEST_ASSERT_EQUAL_INT(-1289, shi::top());
 
-  "$12EF"_fs;  // Upper case hex only!
+  "$12EF"_s;  // Upper case hex only!
   TEST_ASSERT_EQUAL_INT(0x12eF, shi::top());
 
-  "$-12EF"_fs;
+  "$-12EF"_s;
   TEST_ASSERT_EQUAL_INT(-0x12eF, shi::top());
 
-  "%10010110"_fs;
+  "%10010110"_s;
   TEST_ASSERT_EQUAL_INT(0b10010110, shi::top());
 
-  "%-10010110"_fs;
+  "%-10010110"_s;
   TEST_ASSERT_EQUAL_INT(-0b10010110, shi::top());
 
   shi::clear();
 }
 
 TEST(top) {
-  "13"_fs;
+  "13"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
   TEST_ASSERT_EQUAL_INT(13, shi::top());
 
-  "170"_fs;
+  "170"_s;
   TEST_ASSERT_EQUAL_INT(2, shi::size());
   TEST_ASSERT_EQUAL_INT(170, shi::top());
   TEST_ASSERT_EQUAL_INT(13, shi::top(1));
   TEST_ASSERT_EQUAL_INT(13, shi::top(-1));
   TEST_ASSERT_EQUAL_INT(2, shi::size());
 
-  "38"_fs;
+  "38"_s;
   TEST_ASSERT_EQUAL_INT(3, shi::size());
   TEST_ASSERT_EQUAL_INT(38, shi::top());
   TEST_ASSERT_EQUAL_INT(170, shi::top(1));
@@ -108,28 +108,28 @@ TEST(top) {
 }
 
 TEST(if_else_then) {
-  ": gi2 if 123 else 234 then ;"_fs;
+  ": gi2 if 123 else 234 then ;"_s;
   TEST_ASSERT_EQUAL_INT(0, shi::size());
   //TEST_ASSERT_TRUE(shi::empty());
 
-  "-1 gi2"_fs;
+  "-1 gi2"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
   TEST_ASSERT_EQUAL_INT(123, shi::top());
 
-  "1 gi2"_fs;
+  "1 gi2"_s;
   TEST_ASSERT_EQUAL_INT(2, shi::size());
   TEST_ASSERT_EQUAL_INT(123, shi::top());
   TEST_ASSERT_EQUAL_INT(123, shi::top(-1));
 
-  "0 gi2"_fs;
+  "0 gi2"_s;
   TEST_ASSERT_EQUAL_INT(3, shi::size());
   TEST_ASSERT_EQUAL_INT(234, shi::top());
   TEST_ASSERT_EQUAL_INT(123, shi::top(-1));
   TEST_ASSERT_EQUAL_INT(123, shi::top(-2));
 
-  ": melse if 1 else 2 else 3 else 4 else 5 then ;"_fs;
+  ": melse if 1 else 2 else 3 else 4 else 5 then ;"_s;
 
-  "false melse"_fs;
+  "false melse"_s;
   TEST_ASSERT_EQUAL_INT(5, shi::size());
   TEST_ASSERT_EQUAL_INT(4, shi::top());
   TEST_ASSERT_EQUAL_INT(2, shi::top(-1));
@@ -137,7 +137,7 @@ TEST(if_else_then) {
   TEST_ASSERT_EQUAL_INT(123, shi::top(-3));
   TEST_ASSERT_EQUAL_INT(123, shi::top(-4));
 
-  "true melse"_fs;
+  "true melse"_s;
   TEST_ASSERT_EQUAL_INT(8, shi::size());
   TEST_ASSERT_EQUAL_INT(5, shi::top());
   TEST_ASSERT_EQUAL_INT(3, shi::top(-1));
@@ -152,16 +152,16 @@ TEST(if_else_then) {
 }
 
 TEST(loop) {
-  ": gd1 do i loop ;"_fs;
+  ": gd1 do i loop ;"_s;
   //TEST_ASSERT_TRUE(shi::empty());
 
-  "4 1 gd1"_fs;
+  "4 1 gd1"_s;
   TEST_ASSERT_EQUAL_INT(3, shi::size());
   TEST_ASSERT_EQUAL_INT(3, shi::top());
   TEST_ASSERT_EQUAL_INT(2, shi::top(-1));
   TEST_ASSERT_EQUAL_INT(1, shi::top(-2));
 
-  "2 -1 gd1"_fs;
+  "2 -1 gd1"_s;
   TEST_ASSERT_EQUAL_INT(6, shi::size());
   TEST_ASSERT_EQUAL_INT(1, shi::top(0));
   TEST_ASSERT_EQUAL_INT(0, shi::top(-1));
@@ -174,19 +174,19 @@ TEST(loop) {
 }
 
 TEST(leave) {
-  ": gd5 123 swap 0 do i 4 > if drop 234 leave then loop ;"_fs;
+  ": gd5 123 swap 0 do i 4 > if drop 234 leave then loop ;"_s;
   //TEST_ASSERT_TRUE(shi::empty());
 
-  "1 gd5"_fs;
+  "1 gd5"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
   TEST_ASSERT_EQUAL_INT(123, shi::top());
 
-  "5 gd5"_fs;
+  "5 gd5"_s;
   TEST_ASSERT_EQUAL_INT(2, shi::size());
   TEST_ASSERT_EQUAL_INT(123, shi::top());
   TEST_ASSERT_EQUAL_INT(123, shi::top(-1));
 
-  "6 gd5"_fs;
+  "6 gd5"_s;
   TEST_ASSERT_EQUAL_INT(3, shi::size());
   TEST_ASSERT_EQUAL_INT(234, shi::top());
   TEST_ASSERT_EQUAL_INT(123, shi::top(-1));
@@ -196,13 +196,13 @@ TEST(leave) {
 }
 
 TEST(variable) {
-  "variable v1"_fs;
+  "variable v1"_s;
   //TEST_ASSERT_TRUE(shi::empty());
 
-  "123 v1 !"_fs;
+  "123 v1 !"_s;
   //TEST_ASSERT_TRUE(shi::empty());
 
-  "v1 @"_fs;
+  "v1 @"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
   TEST_ASSERT_EQUAL_INT(123, shi::top());
 
@@ -210,20 +210,20 @@ TEST(variable) {
 }
 
 TEST(constant) {
-  "123 constant x123"_fs;
+  "123 constant x123"_s;
   //TEST_ASSERT_TRUE(shi::empty());
 
-  "x123"_fs;
+  "x123"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
   TEST_ASSERT_EQUAL_INT(123, shi::top());
 
-  ": equ constant ;"_fs;
+  ": equ constant ;"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
 
-  "x123 equ y123"_fs;
+  "x123 equ y123"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
 
-  "y123"_fs;
+  "y123"_s;
   TEST_ASSERT_EQUAL_INT(2, shi::size());
   TEST_ASSERT_EQUAL_INT(123, shi::top());
   TEST_ASSERT_EQUAL_INT(123, shi::top(-1));
