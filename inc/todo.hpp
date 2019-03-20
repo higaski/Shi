@@ -17,90 +17,13 @@
 ///    - interpreting compile-only word
 ///    - compiling interpret-only word
 ///
-/// \page page_doc_stuff Doc stuff
-/// Data-stack -> Selbst gemanaged via tos und dsp, normal im RAM<br>
-/// Return-stack -> ECHTER "C" stack managed via sp... (so DONT FUCK THAT UP)
+/// -# A paar wörter wie abort oder quit können im Fehlerfall den return-stack
+///    löschen. Das klingt prinzipiell nach am coolen feature, würd aber heißn
+///    dass ma in stackpointer bei am context-switch speichern muss.
 ///
-/// Der ganze Scheiss is so kompliziert...
+/// -# Conditional branch funktionen (beq, bne) ließen sich zusammenlegen
 ///
-/// Es gibt im Prinzip 3x Speicherbereiche:
-/// - Core Dictionary im FLASH (abgesehn vom letzten Eintrag)
-/// - User Dictionary im RAM
-/// - User Dictionary im FLASH
-///
-/// Des Core und User Dictionary wird von vorne nach hinten durchsucht. Der
-/// letzte Eintrag im Core Dictionary liegt allerdings im RAM und zeigt nach dem
-/// Initialisieren ins Leere (0xFFFFFFFF). Nur wenn der User einen FLASH Bereich
-/// für die Nutzung übergibt, dann wird der letzte Core Dictionary Eintrag
-/// geupdatet und zeigt an den Anfang des User Dictionary im FLASH.
-///
-/// Des User Dictionary im RAM wird von hinten nach vorne durchsucht. Das heißt
-/// die Reihenfolge is:
-/// - User RAM -> Core FLASH -> User FLASH
-/// Die Suche nach Eintraegen beginnt IMMER mit "link". link wird auch nur
-/// geupdatet wenn ein Eintrag ins RAM gschrieben wird. link is somit quasi
-/// immer des Ende vom Faden wo ma zu Suchen beginnt.
-///
-///
-/// sweep_text<br>
-/// Bei da Init wird die Funktion sweep_text aufgerufen. Die rennt das ganze
-/// Dictionary durch und prüft ob Einträge RAM reservieren müssen wie es zum
-/// Beispiel das Wort "variable" tut. Jener RAM wird hinten vom übergebenen RAM
-/// Bereich genommen! Und nacher wird data_end entsprechend angepasst.
-/// Außerdem setzt des Ding den letzten Pointer am Dict-Ende richtig ;)
-///
-/// csp<br>
-/// csp is im Prinzip ein Stackpointer... Im Gegensatz zum normalen Stackpointer
-/// (dsp) wächst der aber nicht nach unten in den Stack sondern fängt unten an
-/// und wächst nach oben. Von der Richtung her wird "Struktur" Info am Stack
-/// abgelegt, wie mas für "leave" (break aus loop) oder "endof" (break aus
-/// switch-case) braucht. Die stellen dabei die Ausnahme dar, weils von
-/// "leave(s)" und "endof(s)" beliebig viele geben kann. Alle anderen
-/// Kontrollstrukturen laufen übern normalen Stack.
-///
-/// Bezüglich Nummern...<br>
-/// HEX wird AUSSCHLIESSLICH!!!! in Großbuchstaben unterstützt!!!
-///
-/// Fold Flags gibts nur für Words, die pure sind, sprich keine Nebeneffekte
-/// haben. Die Anzahl der Eingangsparameter is fürs Falten wichtig. Sprich 1x
-/// Eingangsparameter -> FOLDS_1, 2x Eingangsparameter -> FOLDS_2 usw.
-///
-/// Es gibt 4x Sprungfunktionen:
-/// - b_comma
-/// - beq_comma
-/// - blt_comma
-/// - bne_comma
-/// Die Sprünge von orig nach dest compilieren. Innerhalb der Funktion wird
-/// manchmal data_begin kurzzeitig überschrieben, damit die anderen Comma
-/// Funktionen den Sprung an die richtige Stelle schreiben.
-///
-/// \page page_control_structures Control structures
-/// Blabla
-///
-/// if...else...then
-///
-/// case...of...endof...endcase
-///
-/// begin...until
-/// begin...while...repeat
-///
-/// do...loop/+loop
-/// do...if...leave then...loop/+loop
-///
-///
-///
-/// if -> ( -- orig1 )
-/// else -> ( orig1 -- orig2 )
-/// then -> ( orig1 | orig2 -- )
-///
-/// begin -> ( -- dest )
-/// until -> ( dest -- )
-///
-/// begin -> ( -- dest )
-/// while -> ( dest -- orig dest )
-/// repeat -> ( orig dest -- )
-///
-/// \page page_eval Evaluate
+/// \page page_interpret Interpret loop
 /// \dot
 /// digraph G {
 ///
@@ -199,3 +122,28 @@
 ///   bl_comma->check_done;
 /// }
 /// \enddot
+
+//*/mod
+/// mod
+// abort
+// fill
+// fm/mod
+// immediate
+// m*
+// move
+// quit
+// s>d
+// sign
+// sm/rem
+// um*
+// um/mod
+//
+//:noname weils wohl auch ohne defer nutzbar is?
+//?do
+// action_of...? wtf macht des
+// buffer: super wichtig!!!
+// erase
+// is ... ?
+// marker (klingt mega hart)
+// value
+// within

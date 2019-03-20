@@ -8,7 +8,7 @@
 .thumb
 .arch armv7-m
 
-.global shi_init_asm, shi_variable_asm, shi_evaluate_asm, shi_clear_asm, shi_tick_asm
+.global shi_init_asm, shi_c_variable_asm, shi_evaluate_asm, shi_clear_asm, shi_tick_asm
 
 .section .text
 
@@ -29,7 +29,7 @@ lfp .req r8                             @ Literal-folding pointer
 @ ------------------------------------------------------------------------------
 @ C -> assembler
 @ ------------------------------------------------------------------------------
-.equ STACK_SIZE, SHI_STACK_SIZE * 4
+.equ STACK_SIZE, SHI_STACK_SIZE
 .equ ERASED_WORD, SHI_ERASED_WORD
 .equ ENABLE_NUMBER_PREFIX, SHI_ENABLE_NUMBER_PREFIX
 .equ ENABLE_PRINT, SHI_ENABLE_PRINT
@@ -220,7 +220,8 @@ lfp .req r8                             @ Literal-folding pointer
 .equ ENABLE_WITHIN, SHI_ENABLE_WITHIN
 .equ ENABLE_BRACKET_COMPILE, SHI_ENABLE_BRACKET_COMPILE
 .equ ENABLE_BS, SHI_ENABLE_BS
-.equ ENABLE_BINARY, SHI_ENABLE_BINARY
+
+@ Shi words
 .equ ENABLE_C_VARIABLE, SHI_ENABLE_C_VARIABLE
 .equ ENABLE_TO_TEXT_Q, SHI_ENABLE_TO_TEXT_Q
 .equ ENABLE_TO_DATA_Q, SHI_ENABLE_TO_DATA_Q
@@ -237,14 +238,14 @@ lfp .req r8                             @ Literal-folding pointer
 @ ------------------------------------------------------------------------------
 @ Dictionary
 @ ------------------------------------------------------------------------------
-s_shi_dict:                             @ Start of dictionaty
+shi_dict_begin:                         @ Start of dictionaty
 
 .include "core.asm"
 .include "extension.asm"
 
 .section .data
 
-e_shi_dict:                             @ End of dictionary
+shi_dict_end:                           @ End of dictionary
 WORD_TAIL FLAG_SKIP
 
 .section .text
@@ -275,7 +276,7 @@ shi_init_asm:
     stmia r3, {r1, r2}
     cmp r1, r2
     itt ne
-    ldrne r3, =e_shi_dict               @ Set last link of core to user dictionary
+    ldrne r3, =shi_dict_end             @ Set last link of core to user dictionary
     strne r1, [r3]
 
 @ Store text alignment
@@ -294,7 +295,7 @@ shi_init_asm:
 @ Fill data
     bl fill_data
 
-@ Set tos dsp and lfp
+@ Set context (tos dsp and lfp)
     movs lfp, #0                        @ Put zero into lfp...
     movs tos, #'*'                      @ Put stars onto tos ;)
     ldr dsp, =shi_stack_end             @ Reset data-stack pointer
@@ -333,7 +334,7 @@ sweep_text:
 @ r2    flags
 @ r3    data_end address
 @ r12   data_end
-    ldr r1, =s_shi_dict
+    ldr r1, =shi_dict_begin
     ldr r3, =data_end
     ldr r12, [r3]
 1:  ldrb r2, [r1, #4]                   @ Flags
@@ -360,12 +361,6 @@ sweep_text:
 .thumb_func
 shi_evaluate_asm:
     push {tos-lfp, lr}
-
-@ Check if string length is reasonable (>0)
-    cmp r1, #0
-    bne 1f                              @ Goto enter forth
-        PRINT "'shi' attempt to evaluate zero-length string >>>shi_evaluate<<<"
-        b 6f                            @ Goto return
 
 @ Enter forth
 1:  ENTRY                               @ Restore context
@@ -436,17 +431,11 @@ shi_tick_asm:
 @ r1    u       (cstring length)
 @ ------------------------------------------------------------------------------
 .thumb_func
-shi_variable_asm:
+shi_c_variable_asm:
     push {tos-lfp, lr}
 
-@ Check if string length is reasonable (>0)
-    cmp r1, #0
-    bne 1f                              @ Goto enter forth
-        PRINT "'shi' attempt to evaluate zero-length string >>>shi_c_variable<<<"
-        b 6f                            @ Goto return
-
 @ Enter forth
-1:  ENTRY                               @ Restore context
+    ENTRY                               @ Restore context
 
 @ Store source
     ldr r2, =src
@@ -462,4 +451,4 @@ shi_variable_asm:
     EXIT                                @ Store context
 
 @ Return
-6:  pop {tos-lfp, pc}
+    pop {tos-lfp, pc}

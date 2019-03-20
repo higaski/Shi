@@ -28,14 +28,14 @@ b_comma:
     cmp r1, #-16777216                  @ pc-relative address - -16777216
     bge 1f
         DROP                            @ ( orig -- )
-        PRINT "'shi' branch offset too far negative >>>b,<<<"
+        PRINT "b, branch offset too far negative"
         b 6f                            @ Goto return
 
 1:  ldr r2, =16777214
     cmp r1, r2                          @ pc-relative address - 16777214
     ble 1f                              @ Goto temporarily set data_begin to orig if necessary
         DROP                            @ ( orig -- )
-        PRINT "'shi' branch offset too far positive >>>b,<<<"
+        PRINT "b, branch offset too far positive"
         b 6f                            @ Goto return
 
 @ Temporarily set data_begin to orig if necessary
@@ -133,14 +133,14 @@ beq_comma:
     cmp r1, #-1048576                   @ pc-relative address - -1048576
     bge 1f
         DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far negative >>>beq,<<<"
+        PRINT "beq, conditional branch offset too far negative"
         b 6f                            @ Goto return
 
 1:  ldr r2, =1048574
     cmp r1, r2                          @ pc-relative address - 1048574
     ble 1f                              @ Goto temporarily set data_begin to orig if necessary
         DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far positive >>>beq,<<<"
+        PRINT "beq, conditional branch offset too far positive"
         b 6f                            @ Goto return
 
 @ Temporarily set data_begin to orig if necessary
@@ -204,98 +204,6 @@ beq_comma:
 6:  pop {pc}
 
 @ ------------------------------------------------------------------------------
-@ blt,
-@ ( orig dest -- )
-@ Compile a conditional less-than jump from orig to dest. For future-proofness
-@ the 32bit encoding t3 is used as instruction.
-@ ------------------------------------------------------------------------------
-.thumb_func
-blt_comma:
-    push {lr}
-
-@ r0    dest
-@ r1    pc-relative address (dest - (orig + 4))
-@ tos   orig
-    POP_REGS r0                         @ ( dest -- )
-    subs r1, r0, tos                    @ dest - orig
-    subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
-
-@ Range check for blt
-@ r1    pc-relative address (dest - (orig + 4))
-    cmp r1, #-1048576                   @ pc-relative address - -1048576
-    bge 1f
-        DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far negative >>>blt,<<<"
-        b 6f                            @ Goto return
-
-1:  ldr r2, =1048574
-    cmp r1, r2                          @ pc-relative address - 1048574
-    ble 1f                              @ Goto temporarily set data_begin to orig if necessary
-        DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far positive >>>blt,<<<"
-        b 6f                            @ Goto return
-
-@ Temporarily set data_begin to orig if necessary
-@ r0    dest
-@ r2    data_begin address
-@ r3    data_begin
-@ tos   orig
-@ r12   flag to indicate whether data_begin is overwritten or not
-1:  movs r12, #0                        @ Reset flag
-    ldr r2, =data_begin
-    ldr r3, [r2]
-    cmp tos, r3
-    bhs 1f
-        movs r12, #1                    @ Set flag
-        str tos, [r2]                   @ Temporarily store orig as data_begin
-        movs tos, r3
-        PUSH_TOS                        @ ( -- data_begin)
-
-@ blt
-@ r1    pc-relative address (dest - (orig + 4))
-@ r2    J2 | J1 | imm11| imm6
-@ tos   opcode
-1:  ldr tos, =0xF2C08000                @ Opcode template
-
-    cmp r1, #0
-    it lt
-    orrlt tos, #0x4000000               @ Set sign
-
-    ands r2, r1, #0x80000               @ J2
-    it ne
-    orrne tos, #0x800
-
-    ands r2, r1, #0x40000               @ J1
-    it ne
-    orrne tos, #0x2000
-
-    lsrs r1, #1
-    movw r2, #0x7FF                     @ Mask for imm11
-    ands r2, r1                         @ imm11
-    orrs tos, r2                        @ Or imm11 into template
-
-    lsrs r1, #11
-    ands r2, r1, #0x3F                  @ Mask for imm6
-    orrs tos, tos, r2, lsl #16          @ Or imm6 into template
-
-@ Write opcode, do not reset data_begin
-@ r12   flag to indicate whether data_begin is overwritten or not
-    cmp r12, #0
-    bne 1f
-        bl rev_comma                    @ Write opcode
-        b 6f
-
-@ Write opcode and reset data_begin
-@ r0    data_begin address
-1:  bl rev_comma                        @ Write opcode
-    ldr r0, =data_begin
-    str tos, [r0]
-    DROP                                @ ( data_begin -- )
-
-@ Return
-6:  pop {pc}
-
-@ ------------------------------------------------------------------------------
 @ bne,
 @ ( orig dest -- )
 @ Compile a conditional not-equal jump from orig to dest. For future-proofness
@@ -317,14 +225,14 @@ bne_comma:
     cmp r1, #-1048576                   @ pc-relative address - -1048576
     bge 1f
         DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far negative >>>bne,<<<"
+        PRINT "bne, conditional branch offset too far negative"
         b 6f                            @ Goto return
 
 1:  ldr r2, =1048574
     cmp r1, r2                          @ pc-relative address - 1048574
     ble 1f                              @ Goto temporarily set data_begin to orig if necessary
         DROP                            @ ( orig -- )
-        PRINT "'shi' conditional branch offset too far positive >>>bne,<<<"
+        PRINT "bne, conditional branch offset too far positive"
         b 6f                            @ Goto return
 
 @ Temporarily set data_begin to orig if necessary
@@ -408,7 +316,7 @@ csp_comma:
 @ r1    csp
     cmp r1, dsp
     blo 1f
-        PRINT "'shi' stack overflow >>>csp,<<<"
+        PRINT "csp, stack overflow"
         b 6f
 
 @ r0    csp address
@@ -511,11 +419,11 @@ word_comma:
 
 @ Parse
     bl source                           @ ( -- c-addr u )
-    bl parse                            @ ( -- token-addr token-u )
+    bl parse_name                       @ ( -- token-addr token-u )
     cmp tos, #0                         @ token-u - 0
     bne 1f                              @ Goto find
         TWO_DROP                        @ ( token-addr false -- )
-        PRINT "'shi' attempt to use zero-length string as a name >>>create<<<"
+        PRINT "word_comma zero-length string as a name"
         b 6f                            @ Goto return
 
 @ Find
@@ -526,7 +434,7 @@ word_comma:
     beq 1f                              @ Goto create
         TWO_DROP                        @ ( xt flags -- )
         TWO_DROP                        @ ( token-addr token-u -- )
-        PRINT "'shi' redefined word >>>create<<<"
+        PRINT "word_comma redefined word"
         // TODO What should we do in case a word gets redefined?
         // Maybe src should be dropped, so that when we leave create we also
         // leave evaluate?

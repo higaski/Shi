@@ -8,29 +8,31 @@
 /// Shi is an unusual Forth in a sense that it's not a full-fledged
 /// self-contained system. Neither
 /// [key](http://forth-standard.org/standard/core/KEY)/[emit](http://forth-standard.org/standard/core/EMIT),
-/// which deal with user input, nor any of the string conversion words (e.g.
-/// [#](https://forth-standard.org/standard/core/num), ...) are implemented.
-/// Instead of a
+/// which deal with user input, nor any other input or string conversion words
+/// (e.g.
+/// [#](https://forth-standard.org/standard/core/num),
+/// [accept](https://forth-standard.org/standard/core/ACCEPT), ...) are
+/// implemented. Instead of a
 /// [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop)
 /// Shi is intended to be used as embedded scripting language by featuring an
 /// extensive C/C++ API. The functions shi::evaluate and shi_evaluate can be
-/// used to enter the classic interpretation loop. This reflects what word
-/// [evaluate](https://forth-standard.org/standard/core/EVALUATE) does.
+/// used to enter the classic interpretation loop. This reflects what the word
+/// [evaluate](https://forth-standard.org/standard/core/EVALUATE) normally does.
 ///
 /// \dot
 /// digraph G {
 ///
 ///   subgraph cluster_c_cpp {
-///     style="dotted";
-///     labeljust="l";
 ///     label = "C/C++";
+///     labeljust="l";
+///     style="dotted";
 ///     shi_evaluate;
 ///   }
 ///
 ///   subgraph cluster_forth {
-///     style="dotted";
-///     labeljust="l";
 ///     label = "Forth";
+///     labeljust="l";
+///     style="dotted";
 ///     word[shape=diamond, label="word?"];
 ///     execute_compile[label="execute/compile"];
 ///     number[shape=diamond, label="number?"];
@@ -63,21 +65,25 @@
 /// - Relationship between code- and data space
 /// - Action on an ambiguous condition
 ///
-/// and of course to non-standard additions.
+/// and of course to non-standard additions such as
+/// - Compilation to flash by offering two different data-spaces (data/text aka
+///   ram/flash)
+/// - Optimizations such as inlining and constant folding
 ///
 // clang-format off
 /// \page page_implementation Implementation
-/// | Page                      | Content                                      |
-/// | ------------------------- | -------------------------------------------- |
+/// | Page                      | Content                                           |
+/// | ------------------------- | ------------------------------------------------- |
 /// | \subpage page_stacks      | Handling of data-, control-flow- and return-stack |
-/// | \subpage page_variables   | Internally used variables             |
-/// | \subpage page_dictionary  | Structure of core and user dictionary |
-/// | \subpage page_eval        | Evaluate loop in detail |
-/// | \subpage page_todo        | d |
-/// | \subpage page_control_structures | TODO |
-/// | \subpage page_doc_stuff   | TODO |
-/// | \subpage page_lerp        | c |
+/// | \subpage page_variables   | Internally used variables                         |
+/// | \subpage page_dictionary  | Layout of words, core- and user dictionary        |
+/// | \subpage page_init        | Initialization                                    |
+/// | \subpage page_interpret   | Interpretation loop in detail                     |
+/// | \subpage page_wordlist    | Wordlist                                          |
+/// | \subpage page_todo        | d                                                 |
+/// | \subpage page_lerp        | c                                                 |
 // clang-format on
+///
 ///
 /// \page page_stacks Stacks
 /// Forth has the notation of three different stacks:
@@ -100,13 +106,13 @@
 ///
 /// So this works
 ///
-/// ```
+/// ```asm
 /// : lunch? if eat then ;
 /// ```
 ///
 /// whereas this doesn't.
 ///
-/// ```
+/// ```asm
 /// lunch? if eat then
 /// ```
 ///
@@ -120,9 +126,9 @@
 /// data-stack-pointer. Upon pushing to or popping from the stack values are
 /// stored or loaded at the address in *dsp*.
 ///
-/// ```
-/// tos .req r6
-/// dsp .req r7
+/// ```asm
+/// tos .req r6                             @ Top of stack
+/// dsp .req r7                             @ Data-stack pointer
 /// ```
 ///
 /// The stack size itself can be adjusted with the macro \ref SHI_STACK_SIZE.
@@ -150,6 +156,7 @@
 /// ARMv7-M architecture points to. Use of return-stack is generally discouraged
 /// as incautious use can not only crash Shi but the entire system.
 ///
+///
 /// \page page_variables Variables
 /// There are a couple of states Shi needs to track internally. When evaluating
 /// the total ram usage these variables have to be taken into consideration and
@@ -158,7 +165,7 @@
 ///
 // clang-format off
 /// \page page_variables Variables
-/// | Symbols         | Responsibility                                                                     | Size [b]     |
+/// | Symbol          | Description                                                                        | Size [b]     |
 /// | ----------------| ---------------------------------------------------------------------------------- | ------------ |
 /// | shi_stack_begin | Stack begin                                                                        | user-defined |
 /// | shi_stack_end   | Stack end                                                                          |              |
@@ -172,7 +179,7 @@
 /// |                 |                                                                                    |              |
 /// | csp             | Inside loop: points to leave addresses from the current loop on the stack <br><!-- |              |
 /// |                 | --> Inside case: points to endof addresses from the current case on the stack      | 4            |
-/// | link            | Contains address of link of the last definition                                    | 4            |
+/// | link            | Contains address of link of the last definition in ram                             | 4            |
 /// | status          | Current state (state is taken as word) <br><!--                                    |              |
 /// |                 | --> false: interpret, true: compile                                                | 4            |
 /// | src             | Source (address and length)                                                        | 8            |
@@ -194,7 +201,8 @@
 /// Usually Forth system have a single continuous data-space but Shi supports
 /// compilation to two different data-spaces (data and text aka ram and flash).
 /// The variables data_begin, data_end, text_begin and text_end keep track of
-/// the data-spaces passed in by the user at initialization.
+/// the addresses of the data-spaces passed in by the user at initialization.
+/// Writing to data or text advances those data-space pointers.
 ///
 /// **to_text_begin**<br>
 /// Shi does not write directly to flash but first stores new definitions in ram
@@ -204,61 +212,498 @@
 ///
 /// **text_align**<br>
 /// Most flash memories have alignment restrictions and can only write to 4-, 8-
-/// or even 16-byte aligned addresses. This alignment requirements are stored in
-/// text_align and can be set by the user at initialization.
+/// or even 16-byte aligned addresses. This alignment requirements are stored as
+/// power of 2 in text_align and can be set by the user at initialization.
 ///
 /// \page page_dictionary Dictionary
-/// single entry
+/// All definitions in Forth must share a certain header which contains
+/// - a link to the previous or next definition
+/// - some flags which tell the interpreter how to treat the word and
+/// - a name for actual look-up
 ///
-/// \dot
-/// digraph H {
+// clang-format off
+/// \page page_dictionary Dictionary
+/// | Field      | Description                                      | Size [b]                |
+/// | -----------| ------------------------------------------------ | ----------------------- |
+/// | Link       | Link to previous or next definition              | 4                       |
+/// | Flags      | Properties of word (e.g. immediate, inline, ...) | 1                       |
+/// | Name       | Counted string                                   | 1 length + length chars |
+/// | Code/data  | Code or data                                     | user-defined            |
+// clang-format on
+/// \page page_dictionary Dictionary
 ///
-///   aHtmlTable [
-///     shape=plaintext
-///     label=<
+/// Shi is what's called a direct threaded Forth which means that the execution
+/// token of a word equals it's very first assembly instruction. Since the
+/// ARMv7-M architecture has certain alignment restrictions and can only execute
+/// code from 2-byte aligned addresses there might be a padding byte right after
+/// the definitions name.
 ///
-///     <table border='1' cellborder='0'>
-///       <tr><td>link</td><td>foo</td></tr>
-///       <tr><td>flags</td><td>bar</td></tr>
-///       <tr><td>name</td><td>bar</td></tr>
-///       <tr><td>data/code</td><td>bar</td></tr>
-///     </table>>
+/// **Dictionary types**<br>
+/// Although in practice there is just a single type of dictionary entry it's
+/// useful to differ between the data-space a definition resides in and whether
+/// it's part of the core dictionary or not. Using this properties we can divide
+/// Shi's dictionary into:
+/// -# Core dictionary - part of Shi itself
+/// -# User dictionary in data - extended through the user and compiled into
+///    data
+/// -# User dictionary in text - extended through the user and compiled into
+///    text
 ///
-///   ];
+/// **Creating the core dictionary**<br>
+/// The core dictionary is created by some macro magic heavily inspired by
+/// [Mecrisp-Stellaris](http://mecrisp.sourceforge.net/>Mecrisp-Stellaris). The
+/// macro *WORD* can be used to automatically create a linked list of assembler
+/// functions including flags and a counted string name. The macro parameter
+/// *label* is optional and only necessary if the name of the word contains
+/// special characters which are not allowed as assembly labels, otherwise
+/// *name* is also used as label. Since *WORD* uses the numeric labels 7, 8 and
+/// 9 the actual definition may only use 1-6 for its own branches.
 ///
-/// }
-/// \enddot
+// clang-format off
+/// \page page_dictionary Dictionary
+/// ```asm
+/// .macro WORD flags, name, label
+///     .p2align 1                          @ Align before link
+/// link\@\():                              @ Label the link
+/// 9:  .word 9f                            @ Link (4 byte)
+///     .byte \flags                        @ Flags (1 byte)
+///     .byte 8f - 7f                       @ Length (1 byte)
+/// 7:  .ascii "\name"                      @ Name (cstring)
+/// 8:  .p2align 1                          @ Align before code
+/// .thumb_func
+/// .ifnb \label                            @ Label for code (use name if label wasn't defined)
+/// \label\():
+/// .else
+/// \name\():
+/// .endif
+/// .endm
+/// ```
+// clang-format on
+/// \page page_dictionary Dictionary
 ///
-/// Linked list
+/// Here is an example of the definition of
+/// [+](https://forth-standard.org/standard/core/Plus) created with *WORD*.
+///
+/// ```asm
+/// WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "+", plus
+///     ldmia dsp!, {r0}
+///     adds tos, r0
+///     bx lr
+/// ```
+///
+/// **Flags**<br>
+/// The standard differs between three different properties a word can have. It
+/// might have interpretation semantics, compilation semantics and it might be
+/// immediate. In theory any combination of those three can occur although some
+/// like interpretation semantics and immediate might not make much sense. Shi
+/// comes with additional flags for its optimizations and feature to compile to
+/// flash. Specially the latter is tricky since
+/// [variable](https://forth-standard.org/standard/core/VARIABLE)s compiled to
+/// it still need to have a cell of ram memory somewhere. For that reason the
+/// definition gets marked with the *RESERVE_x* flag which lets Shi reserve
+/// memory cells at the end of data-space at initialization.
+///
+// clang-format off
+/// \page page_dictionary Dictionary
+/// | Flag           | Description                                                      | Value       |
+/// | ---------------| ---------------------------------------------------------------- | ----------- |
+/// | FLAG_SKIP      | Definition ignored                                               | 0b1111'1111 |
+/// | FLAG_INTERPRET | Definition has interpretation semantics                          | 0b0111'1111 |
+/// | FLAG_COMPILE   | Definition has compilation semantics                             | 0b1011'1111 |
+/// | FLAG_IMMEDIATE | Definition is immediate (and executes during compilation)        | 0b1101'1111 |
+/// | FLAG_INLINE    | Definition is short enough to get inlined instead of called      | 0b1110'1111 |
+/// | RESERVE_x      | Definition needs to reserve cells of data-space                  | 0b1111'xx11 |
+/// | FOLDS_x        | Definition allows constant folding (e.g. 3 4 + is replaced by 7) | 0b1111'11xx |
+// clang-format on
+/// \page page_dictionary Dictionary
+///
+/// **Search order**<br>
+/// As mentioned at page \ref page_variables the link to the latest definition
+/// in ram is always stored. In case there is no definition in ram yet it still
+/// has its initial value which is the start of the core dictionary. Anyhow link
+/// provides the start of a singly linked list which iterates through the
+/// dictionary in the following order:
+/// -# User dictionary in data
+/// -# Core dictionary in text
+/// -# User dictionary in text
+///
+/// In case the user hasn't extended the dictionary so far it looks like this:
 ///
 /// \dot
 /// digraph G {
 ///
+///   newrank=true;
 ///   rankdir=LR;
 ///
-///	  subgraph cluster_data {
-///     label = "data";
-///	    node[style=filled];
-///     d0[shape=box];
-///     d1[style=invis];
-///     d2[shape=box];
-///     d0->d1->d2[style=invis];
+///   subgraph cluster_data {
+///     label="data";
+///     labeljust="l";
+///     style=dotted;
+///
+///     subgraph cluster_data_core {
+///       label="core";
+///       labeljust="l";
+///       style=solid;
+///       color="#FBB4AE";
+///       d0[style=invis];
+///       d1[style=invis];
+///       d2[style=invis];
+///       d3[style=invis];
+///       d4[style=filled, label=""];
+///     }
 ///   }
 ///
-///	  subgraph cluster_text {
-///     label = "text";
-///	    node[style=filled];
-///     t0[style=invis];
-///     t1[shape=box];
-///     t2[style=invis];
-///     t0->t1->t2[style=invis];
+///   subgraph cluster_text {
+///     label="text";
+///     labeljust="l";
+///     style=dotted;
+///
+///     subgraph cluster_text_core {
+///       label="core";
+///       labeljust="l";
+///       style=solid;
+///       color="#FBB4AE";
+///       t0[label="!"];
+///       t1[label="'"];
+///       t2[shape=plaintext, label="..."];
+///       t3[label="u>"];
+///       t4[style=invis];
+///     }
 ///   }
 ///
-///   d0->t1->d2;
+///   link->t0->t1->t2->t3->d4;
 ///
-///   link->d0;
+///   {rank=same d0 t0}
+///   {rank=same d1 t1}
+///   {rank=same d2 t2}
+///   {rank=same d3 t3}
+///   {rank=same d4 t4}
 /// }
 /// \enddot
+///
+/// The light gray entry is special because it's the very last entry of the core
+/// dictionary. It is also the only definition of the core which resides in data
+/// and not in text. This is a necessity to allow the very last link of the core
+/// dictionary to point to the first entry of the user dictionary in text
+/// without recompiling Shi. The address of the user dictionary is simply not
+/// known until runtime when it's passed as parameter to the initialization
+/// function.
+///
+/// Once the user starts adding definitions in both data-spaces the dictionary
+/// might change it's appearance to something like this:
+///
+/// \dot
+/// digraph G {
+///
+///   newrank=true;
+///   rankdir=LR;
+///
+///   subgraph cluster_data {
+///     label="data";
+///     labeljust="l";
+///     style=dotted;
+///
+///     subgraph cluster_data_core {
+///       label="core";
+///       labeljust="l";
+///       style=solid;
+///       color="#FBB4AE";
+///       d4[style=invis];
+///       d5[style=invis];
+///       d6[style=invis];
+///       d7[style=filled, label=""];
+///       d8[style=invis];
+///       d9[style=invis];
+///     }
+///
+///     subgraph cluster_data_user {
+///       label="user";
+///       labeljust="l";
+///       style=solid;
+///       color="#B3CDE3"
+///       d0[label=""];
+///       d1[label=""];
+///       d2[label=""];
+///       d3[style=invis];
+///     }
+///   }
+///
+///   subgraph cluster_text {
+///     label="text";
+///     labeljust="l";
+///     style=dotted;
+///
+///     subgraph cluster_text_core {
+///       label="core";
+///       labeljust="l";
+///       style=solid;
+///       color="#FBB4AE";
+///       t0[style=invis];
+///       t1[style=invis];
+///       t2[style=invis];
+///       t3[label="!"];
+///       t4[label="'"];
+///       t5[shape=plaintext, label="..."];
+///       t6[label="u>"];
+///       t7[style=invis];
+///     }
+///
+///     subgraph cluster_text_user {
+///       label="user";
+///       labeljust="l";
+///       style=solid;
+///       color="#B3CDE3"
+///       t8[label=""];
+///       t9[label=""];
+///     }
+///   }
+///
+///   link->d0->d1->d2->t3->t4->t5->t6->d7->t8->t9;
+///
+///   {rank=same d0 t0}
+///   {rank=same d1 t1}
+///   {rank=same d2 t2}
+///   {rank=same d3 t3}
+///   {rank=same d4 t4}
+///   {rank=same d5 t5}
+///   {rank=same d6 t6}
+///   {rank=same d7 t7}
+///   {rank=same d8 t8}
+///   {rank=same d9 t9}
+/// }
+/// \enddot
+///
+/// \page page_init Initialization
+/// To initialize Shi the functions shi::init or shi_init can be used. Both
+/// functions take a struct which contains the begin and end addresses of the
+/// data-spaces as well as the necessary text alignment for compilation to
+/// flash. Passing addresses and alignment for text is completely optional and
+/// can simply be set to 0 if not needed.
+///
+/// Besides applying the passed addresses there are three things happening
+/// during initialization.
+///
+/// **1.Sweep text**<br>
+/// The whole dictionary is searched for definitions which need to reserve ram.
+/// The necessary amount of ram memory is taken from the end of data-space.
+/// Afterwards the last found link is saved as beginning of the text data-space.
+/// At this point the last link might either be the last core dictionary entry
+/// or the last user dictionary entry depending on whether the user has already
+/// extended the dictionary or not.
+///
+/// **2.Fill data**<br>
+/// Shi does not rely on whether the data-space passed in is set
+/// zero-initialized or not. In any case it gets overwritten by the value
+/// defined by \ref SHI_ERASED_WORD. By default that's 0xFFFFFFFF which mimics
+/// what most cleared flash devices are.
+///
+/// **3.Set context**<br>
+/// Initializing the Shi context which means initializing the following
+/// registers
+///
+/// ```asm
+/// tos .req r6                             @ Top of stack
+/// dsp .req r7                             @ Data-stack pointer
+/// lfp .req r8                             @ Literal-folding pointer
+/// ```
+///
+/// *tos* gets initialized with '*', *dsp* with the stack end and *lfp* with 0.
+///
+// clang-format off
+/// \page page_wordlist Wordlist
+/// | Core word set | Description |
+/// | ------------- | ------------- |
+/// | [!](https://forth-standard.org/standard/core/Store)                     | unimplemented |
+/// | [#](https://forth-standard.org/standard/core/num)                       | unimplemented |
+/// | [#&gt;](https://forth-standard.org/standard/core/num-end)               | unimplemented |
+/// | [#s](https://forth-standard.org/standard/core/numS)                     | unimplemented |
+/// | ['](https://forth-standard.org/standard/core/Tick)                      | unimplemented |
+/// | [(](https://forth-standard.org/standard/core/p)                         | unimplemented |
+/// | [*](https://forth-standard.org/standard/core/Times)                     | unimplemented |
+/// | [*&frasl;](https://forth-standard.org/standard/core/TimesDiv)           | unimplemented |
+/// | [*&frasl;mod](https://forth-standard.org/standard/core/TimesDivMOD)     | unimplemented |
+/// | [+](https://forth-standard.org/standard/core/Plus)                      | unimplemented |
+/// | [+!](https://forth-standard.org/standard/core/PlusStore)                | unimplemented |
+/// | [+loop](https://forth-standard.org/standard/core/PlusLOOP)              | unimplemented |
+/// | [,](https://forth-standard.org/standard/core/Comma)                     | unimplemented |
+/// | [-](https://forth-standard.org/standard/core/Minus)                     | unimplemented |
+/// | [.](https://forth-standard.org/standard/core/d)                         | unimplemented |
+/// | [.&quot;](https://forth-standard.org/standard/core/Dotq)                | unimplemented |
+/// | [&frasl;](https://forth-standard.org/standard/core/Div)                 | unimplemented |
+/// | [&frasl;mod](https://forth-standard.org/standard/core/DivMOD)           | unimplemented |
+/// | [0&lt;](https://forth-standard.org/standard/core/Zeroless)              | unimplemented |
+/// | [0=](https://forth-standard.org/standard/core/ZeroEqual)                | unimplemented |
+/// | [1+](https://forth-standard.org/standard/core/OnePlus)                  | unimplemented |
+/// | [1-](https://forth-standard.org/standard/core/OneMinus)                 | unimplemented |
+/// | [2!](https://forth-standard.org/standard/core/TwoStore)                 | unimplemented |
+/// | [2*](https://forth-standard.org/standard/core/TwoTimes)                 | unimplemented |
+/// | [2&frasl;](https://forth-standard.org/standard/core/TwoDiv)             | unimplemented |
+/// | [2@@](https://forth-standard.org/standard/core/TwoFetch)                | unimplemented |
+/// | [2drop](https://forth-standard.org/standard/core/TwoDROP)               | unimplemented |
+/// | [2dup](https://forth-standard.org/standard/core/TwoDUP)                 | unimplemented |
+/// | [2over](https://forth-standard.org/standard/core/TwoOVER)               | unimplemented |
+/// | [2swap](https://forth-standard.org/standard/core/TwoSWAP)               | unimplemented |
+/// | [:](https://forth-standard.org/standard/core/Colon)                     | unimplemented |
+/// | [;](https://forth-standard.org/standard/core/Semi)                      | unimplemented |
+/// | [&lt;](https://forth-standard.org/standard/core/less)                   | unimplemented |
+/// | [&lt;#](https://forth-standard.org/standard/core/num-start)             | unimplemented |
+/// | [=](https://forth-standard.org/standard/core/Equal)                     | unimplemented |
+/// | [&gt;](https://forth-standard.org/standard/core/more)                   | unimplemented |
+/// | [&gt;body](https://forth-standard.org/standard/core/toBODY)             | unimplemented |
+/// | [&gt;in](https://forth-standard.org/standard/core/toIN)                 | unimplemented |
+/// | [&gt;number](https://forth-standard.org/standard/core/toNUMBER)         | unimplemented |
+/// | [&gt;r](https://forth-standard.org/standard/core/toR)                   | unimplemented |
+/// | [?dup](https://forth-standard.org/standard/core/qDUP)                   | unimplemented |
+/// | [@@](https://forth-standard.org/standard/core/Fetch)                    | unimplemented |
+/// | [abort](https://forth-standard.org/standard/core/ABORT)                 | would require tracking of return-stack |
+/// | [abort&quot;](https://forth-standard.org/standard/core/ABORTq)          | unimplemented |
+/// | [abs](https://forth-standard.org/standard/core/ABS)                     | unimplemented |
+/// | [accept](https://forth-standard.org/standard/core/ACCEPT)               | unimplemented |
+/// | [align](https://forth-standard.org/standard/core/ALIGN)                 | unimplemented |
+/// | [aligned](https://forth-standard.org/standard/core/ALIGNED)             | unimplemented |
+/// | [allot](https://forth-standard.org/standard/core/ALLOT)                 | unimplemented |
+/// | [and](https://forth-standard.org/standard/core/AND)                     | unimplemented |
+/// | [base](https://forth-standard.org/standard/core/BASE)                   | unimplemented |
+/// | [begin](https://forth-standard.org/standard/core/BEGIN)                 | unimplemented |
+/// | [bl](https://forth-standard.org/standard/core/BL)                       | unimplemented |
+/// | [c!](https://forth-standard.org/standard/core/CStore)                   | unimplemented |
+/// | [c,](https://forth-standard.org/standard/core/CComma)                   | unimplemented |
+/// | [c@@](https://forth-standard.org/standard/core/CFetch)                  | unimplemented |
+/// | [cell+](https://forth-standard.org/standard/core/CELLPlus)              | unimplemented |
+/// | [cells](https://forth-standard.org/standard/core/CELLS)                 | unimplemented |
+/// | [char](https://forth-standard.org/standard/core/CHAR)                   | unimplemented |
+/// | [char+](https://forth-standard.org/standard/core/CHARPlus)              | unimplemented |
+/// | [chars](https://forth-standard.org/standard/core/CHARS)                 | unimplemented |
+/// | [constant](https://forth-standard.org/standard/core/CONSTANT)           | unimplemented |
+/// | [count](https://forth-standard.org/standard/core/COUNT)                 | unimplemented |
+/// | [cr](https://forth-standard.org/standard/core/CR)                       | unimplemented |
+/// | [create](https://forth-standard.org/standard/core/CREATE)               | unimplemented |
+/// | [decimal](https://forth-standard.org/standard/core/DECIMAL)             | unimplemented |
+/// | [depth](https://forth-standard.org/standard/core/DEPTH)                 | unimplemented |
+/// | [do](https://forth-standard.org/standard/core/DO)                       | unimplemented |
+/// | [does&gt;](https://forth-standard.org/standard/core/DOES)               | unimplemented |
+/// | [drop](https://forth-standard.org/standard/core/DROP)                   | unimplemented |
+/// | [dup](https://forth-standard.org/standard/core/DUP)                     | unimplemented |
+/// | [else](https://forth-standard.org/standard/core/ELSE)                   | unimplemented |
+/// | [emit](https://forth-standard.org/standard/core/EMIT)                   | unimplemented |
+/// | [environment?](https://forth-standard.org/standard/core/ENVIRONMENTq)   | unimplemented |
+/// | [evaluate](https://forth-standard.org/standard/core/EVALUATE)           | unimplemented |
+/// | [execute](https://forth-standard.org/standard/core/EXECUTE)             | unimplemented |
+/// | [exit](https://forth-standard.org/standard/core/EXIT)                   | unimplemented |
+/// | [fill](https://forth-standard.org/standard/core/FILL)                   | unimplemented |
+/// | [find](https://forth-standard.org/standard/core/FIND)                   | not ANS (returns xt flags instead of xt 1 or xt -1) |
+/// | [fm&frasl;mod](https://forth-standard.org/standard/core/FMDivMOD)       | unimplemented |
+/// | [here](https://forth-standard.org/standard/core/HERE)                   | unimplemented |
+/// | [hold](https://forth-standard.org/standard/core/HOLD)                   | unimplemented |
+/// | [i](https://forth-standard.org/standard/core/I)                         | unimplemented |
+/// | [if](https://forth-standard.org/standard/core/IF)                       | unimplemented |
+/// | [immediate](https://forth-standard.org/standard/core/IMMEDIATE)         | unimplemented |
+/// | [invert](https://forth-standard.org/standard/core/INVERT)               | unimplemented |
+/// | [j](https://forth-standard.org/standard/core/J)                         | unimplemented |
+/// | [key](https://forth-standard.org/standard/core/KEY)                     | unimplemented |
+/// | [leave](https://forth-standard.org/standard/core/LEAVE)                 | unimplemented |
+/// | [literal](https://forth-standard.org/standard/core/LITERAL)             | unimplemented |
+/// | [loop](https://forth-standard.org/standard/core/LOOP)                   | unimplemented |
+/// | [lshift](https://forth-standard.org/standard/core/LSHIFT)               | unimplemented |
+/// | [m*](https://forth-standard.org/standard/core/MTimes)                   | unimplemented |
+/// | [max](https://forth-standard.org/standard/core/MAX)                     | unimplemented |
+/// | [min](https://forth-standard.org/standard/core/MIN)                     | unimplemented |
+/// | [mod](https://forth-standard.org/standard/core/MOD)                     | unimplemented |
+/// | [move](https://forth-standard.org/standard/core/MOVE)                   | unimplemented |
+/// | [negate](https://forth-standard.org/standard/core/NEGATE)               | unimplemented |
+/// | [or](https://forth-standard.org/standard/core/OR)                       | unimplemented |
+/// | [over](https://forth-standard.org/standard/core/OVER)                   | unimplemented |
+/// | [postpone](https://forth-standard.org/standard/core/POSTPONE)           | unimplemented |
+/// | [quit](https://forth-standard.org/standard/core/QUIT)                   | would require tracking of return-stack |
+/// | [r&gt;](https://forth-standard.org/standard/core/Rfrom)                 | unimplemented |
+/// | [r@@](https://forth-standard.org/standard/core/RFetch)                  | unimplemented |
+/// | [recurse](https://forth-standard.org/standard/core/RECURSE)             | unimplemented |
+/// | [repeat](https://forth-standard.org/standard/core/REPEAT)               | unimplemented |
+/// | [rot](https://forth-standard.org/standard/core/ROT)                     | unimplemented |
+/// | [rshift](https://forth-standard.org/standard/core/RSHIFT)               | unimplemented |
+/// | [s&quot;](https://forth-standard.org/standard/core/Sq)                  | unimplemented |
+/// | [s&gt;d](https://forth-standard.org/standard/core/StoD)                 | unimplemented |
+/// | [sign](https://forth-standard.org/standard/core/SIGN)                   | unimplemented |
+/// | [sm&frasl;rem](https://forth-standard.org/standard/core/SMDivREM)       | unimplemented |
+/// | [source](https://forth-standard.org/standard/core/SOURCE)               | unimplemented |
+/// | [space](https://forth-standard.org/standard/core/SPACE)                 | unimplemented |
+/// | [spaces](https://forth-standard.org/standard/core/SPACES)               | unimplemented |
+/// | [state](https://forth-standard.org/standard/core/STATE)                 | unimplemented |
+/// | [swap](https://forth-standard.org/standard/core/SWAP)                   | unimplemented |
+/// | [then](https://forth-standard.org/standard/core/THEN)                   | unimplemented |
+/// | [type](https://forth-standard.org/standard/core/TYPE)                   | unimplemented |
+/// | [u.](https://forth-standard.org/standard/core/Ud)                       | unimplemented |
+/// | [u&lt;](https://forth-standard.org/standard/core/Uless)                 | unimplemented |
+/// | [um*](https://forth-standard.org/standard/core/UMTimes)                 | unimplemented |
+/// | [um&frasl;mod](https://forth-standard.org/standard/core/UMDivMOD)       | unimplemented |
+/// | [unloop](https://forth-standard.org/standard/core/UNLOOP)               | unimplemented |
+/// | [until](https://forth-standard.org/standard/core/UNTIL)                 | unimplemented |
+/// | [variable](https://forth-standard.org/standard/core/VARIABLE)           | unimplemented |
+/// | [while](https://forth-standard.org/standard/core/WHILE)                 | unimplemented |
+/// | [word](https://forth-standard.org/standard/core/WORD)                   | obsolete |
+/// | [xor](https://forth-standard.org/standard/core/XOR)                     | unimplemented |
+/// | [\[](https://forth-standard.org/standard/core/Bracket)                  | unimplemented |
+/// | [\['\]](https://forth-standard.org/standard/core/BracketTick)           | unimplemented |
+/// | [\[char\]](https://forth-standard.org/standard/core/BracketCHAR)        | unimplemented |
+/// | [\]](https://forth-standard.org/standard/core/right-bracket)            | unimplemented |
+/// | [.(](https://forth-standard.org/standard/core/Dotp)                     | unimplemented |
+/// | [.r](https://forth-standard.org/standard/core/DotR)                     | unimplemented |
+/// | [0&lt;&gt;](https://forth-standard.org/standard/core/Zerone)            | unimplemented |
+/// | [0&gt;](https://forth-standard.org/standard/core/Zeromore)              | unimplemented |
+/// | [2&gt;r](https://forth-standard.org/standard/core/TwotoR)               | unimplemented |
+/// | [2r&gt;](https://forth-standard.org/standard/core/TwoRfrom)             | unimplemented |
+/// | [2r@@](https://forth-standard.org/standard/core/TwoRFetch)              | unimplemented |
+/// | [:noname](https://forth-standard.org/standard/core/ColonNONAME)         | unimplemented |
+/// | [&lt;&gt;](https://forth-standard.org/standard/core/ne)                 | unimplemented |
+/// | [?do](https://forth-standard.org/standard/core/qDO)                     | unimplemented |
+/// | [action-of](https://forth-standard.org/standard/core/ACTION-OF)         | unimplemented |
+/// | [again](https://forth-standard.org/standard/core/AGAIN)                 | unimplemented |
+/// | [buffer:](https://forth-standard.org/standard/core/BUFFERColon)         | unimplemented |
+/// | [c&quot;](https://forth-standard.org/standard/core/Cq)                  | unimplemented |
+/// | [case](https://forth-standard.org/standard/core/CASE)                   | unimplemented |
+/// | [compile,](https://forth-standard.org/standard/core/COMPILEComma)       | unimplemented |
+/// | [defer](https://forth-standard.org/standard/core/DEFER)                 | unimplemented |
+/// | [defer!](https://forth-standard.org/standard/core/DEFERStore)           | unimplemented |
+/// | [defer@@](https://forth-standard.org/standard/core/DEFERFetch)          | unimplemented |
+/// | [endcase](https://forth-standard.org/standard/core/ENDCASE)             | unimplemented |
+/// | [endof](https://forth-standard.org/standard/core/ENDOF)                 | unimplemented |
+/// | [erase](https://forth-standard.org/standard/core/ERASE)                 | unimplemented |
+/// | [false](https://forth-standard.org/standard/core/FALSE)                 | unimplemented |
+/// | [hex](https://forth-standard.org/standard/core/HEX)                     | unimplemented |
+/// | [holds](https://forth-standard.org/standard/core/HOLDS)                 | unimplemented |
+/// | [is](https://forth-standard.org/standard/core/IS)                       | unimplemented |
+/// | [marker](https://forth-standard.org/standard/core/MARKER)               | unimplemented |
+/// | [nip](https://forth-standard.org/standard/core/NIP)                     | unimplemented |
+/// | [of](https://forth-standard.org/standard/core/OF)                       | unimplemented |
+/// | [pad](https://forth-standard.org/standard/core/PAD)                     | unimplemented |
+/// | [parse](https://forth-standard.org/standard/core/PARSE)                 | obsolete |
+/// | [parse-name](https://forth-standard.org/standard/core/PARSE-NAME)       | unimplemented |
+/// | [pick](https://forth-standard.org/standard/core/PICK)                   | unimplemented |
+/// | [refill](https://forth-standard.org/standard/core/REFILL)               | unimplemented |
+/// | [restore-input](https://forth-standard.org/standard/core/RESTORE-INPUT) | unimplemented |
+/// | [roll](https://forth-standard.org/standard/core/ROLL)                   | unimplemented |
+/// | [s\&quot;](https://forth-standard.org/standard/core/Seq)                | unimplemented |
+/// | [save-input](https://forth-standard.org/standard/core/SAVE-INPUT)       | unimplemented |
+/// | [source-id](https://forth-standard.org/standard/core/SOURCE-ID)         | unimplemented |
+/// | [to](https://forth-standard.org/standard/core/TO)                       | unimplemented |
+/// | [true](https://forth-standard.org/standard/core/TRUE)                   | unimplemented |
+/// | [tuck](https://forth-standard.org/standard/core/TUCK)                   | unimplemented |
+/// | [u.r](https://forth-standard.org/standard/core/UDotR)                   | unimplemented |
+/// | [u&gt;](https://forth-standard.org/standard/core/Umore)                 | unimplemented |
+/// | [unused](https://forth-standard.org/standard/core/UNUSED)               | unimplemented |
+/// | [value](https://forth-standard.org/standard/core/VALUE)                 | unimplemented |
+/// | [within](https://forth-standard.org/standard/core/WITHIN)               | unimplemented |
+/// | [\[compile\]](https://forth-standard.org/standard/core/BracketCOMPILE)  | obsolete |
+/// | <a href="https://forth-standard.org/standard/core/bs"> \ </a>           | unimplemented |
+///
+/// | Shi word set | unimplemented |
+/// | ------------ | ------------- |
+/// | c-variable   | unimplemented |
+/// | >text?       | unimplemented |
+/// | >data?       | unimplemented |
+/// | >text        | unimplemented |
+/// | >data        | unimplemented |
+// clang-format on
 ///
 ///
 /// \page page_lerp Lerp
@@ -298,8 +743,12 @@
 
 #pragma once
 
+// clang-format off
 /// Data-stack size
-#define SHI_STACK_SIZE 64
+#define SHI_STACK_SIZE 256
+#if SHI_STACK_SIZE % 4
+#  error SHI_STACK_SIZE must be a multiple of 4
+#endif
 
 /// Most flash types are 0xFF erased
 #define SHI_ERASED_WORD 0xFFFFFFFF
@@ -310,13 +759,30 @@
 /// If defined, printing messages is enabled and used for errors
 #define SHI_ENABLE_PRINT 1
 
-// clang-format off
+///
+#define SHI_ENABLE_ZERO_LENGTH_STRING_ERROR     1
+
+///
+#define SHI_ENABLE_STACKOVERFLOW_ERROR          1
+
+///
+#define SHI_ENABLE_UNDEFINED_WORD_ERROR         1
+
+///
+#define SHI_ENABLE_REDEFINED_WORD_ERROR         1
+
+///
+#define SHI_ENABLE_INTERPRET_COMPILE_ONLY_ERROR 1
+
+///
+#define SHI_ENABLE_COMPILE_INTERPRET_ONLY_ERROR 1
+
+///
+#define SHI_ENABLE_BRANCH_OFFSET_ERROR          1
+
 // Enable words individually
 // Core words
 #define SHI_ENABLE_STORE           1
-#define SHI_ENABLE_NUM             0
-#define SHI_ENABLE_NUM_END         0
-#define SHI_ENABLE_NUM_S           0
 #define SHI_ENABLE_TICK            1
 #define SHI_ENABLE_P               0
 #define SHI_ENABLE_TIMES           1
@@ -498,8 +964,7 @@
 #define SHI_ENABLE_BRACKET_COMPILE 0
 #define SHI_ENABLE_BS              0
 
-// Own words
-#define SHI_ENABLE_BINARY          1
+// Shi words
 #define SHI_ENABLE_C_VARIABLE      1
 #define SHI_ENABLE_TO_TEXT_Q       1
 #define SHI_ENABLE_TO_DATA_Q       1
@@ -522,7 +987,7 @@ typedef void (*void_fp)();
 extern void shi_evaluate_asm(char const* str, size_t len);
 extern void shi_clear_asm();
 extern void_fp shi_tick_asm(char const* str, size_t len);
-extern void shi_variable_asm(char const* name, size_t len);
+extern void shi_c_variable_asm(char const* name, size_t len);
 extern uint32_t shi_context;
 
 #  ifdef __cplusplus
@@ -564,9 +1029,9 @@ inline void shi_evaluate_len(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
-inline void shi_variable(char const* str, void* adr) {
+inline void shi_c_variable(char const* str, void* adr) {
   push(reinterpret_cast<int32_t>(adr));
-  shi_variable_asm(str, strlen(name));
+  shi_c_variable_asm(str, strlen(name));
 }
 
 // C++ only
@@ -768,12 +1233,12 @@ inline void operator"" _s(char const* str, size_t len) {
 }
 
 template<typename T>
-void variable(char const* str, T adr) {
+void c_variable(char const* str, T adr) {
   static_assert(std::is_pointer_v<T>);
   static_assert(std::is_integral_v<std::remove_pointer_t<T>>);
 
   push(adr);
-  shi_variable_asm(str, strlen(str));
+  shi_c_variable_asm(str, strlen(str));
 }
 
 }  // namespace shi

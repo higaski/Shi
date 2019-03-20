@@ -324,9 +324,9 @@ link\@\():
 
 @ Reserve ram
 .equ BIT_RESERVE_RAM, 0b00001100
-.equ RESERVE_1CELL, ~1 << 2
-.equ RESERVE_2CELL, ~2 << 2
-.equ RESERVE_3CELL, ~3 << 2
+.equ RESERVE_1, ~1 << 2
+.equ RESERVE_2, ~2 << 2
+.equ RESERVE_3, ~3 << 2
 
 @ ------------------------------------------------------------------------------
 @ Print messages

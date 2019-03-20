@@ -19,18 +19,6 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "!", store
     bx lr
 .endif
 
-.if ENABLE_NUM == 1
-WORD FLAG_SKIP, "#", num
-.endif
-
-.if ENABLE_NUM_END == 1
-WORD FLAG_SKIP, "#>", num_end
-.endif
-
-.if ENABLE_NUM_S == 1
-WORD FLAG_SKIP, "#s", num_s
-.endif
-
 @ ------------------------------------------------------------------------------
 @ '
 @ ( source: "<spaces>name" --    )
@@ -45,11 +33,11 @@ WORD FLAG_INTERPRET, "'", tick
 
 @ Parse
     bl source                           @ ( -- c-addr u )
-    bl parse                            @ ( -- token-addr token-u )
+    bl parse_name                       @ ( -- token-addr token-u )
     cmp tos, #0                         @ token-u - 0
     bne 1f                              @ Goto find
         TWO_DROP                        @ ( token-addr false -- )
-        PRINT "'shi' attempt to use zero-length string as a name >>>'<<<"
+        PRINT "' zero-length string as a name"
         b 6f                            @ Goto return
 
 @ Find
@@ -57,7 +45,7 @@ WORD FLAG_INTERPRET, "'", tick
     cmp tos, #0                         @ flags - 0
     bne 1f                              @ Goto xt
         TWO_DROP                        @ ( token-addr 0 -- )
-        PRINT "'shi' undefined word >>>'<<<"
+        PRINT "' undefined word"
         b 6f                            @ Goto return
 
 @ xt
@@ -65,10 +53,6 @@ WORD FLAG_INTERPRET, "'", tick
 
 @ Return
 6:  pop {pc}
-.endif
-
-.if ENABLE_P == 1
-WORD FLAG_SKIP, "(", p
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -257,14 +241,6 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "-", minus
     ldmia dsp!, {r0}
     subs tos, r0, tos
     bx lr
-.endif
-
-.if ENABLE_D == 1
-WORD FLAG_SKIP, ".", d
-.endif
-
-.if ENABLE_DOT_Q == 1
-WORD FLAG_SKIP, ".\"", dot_q
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -523,10 +499,6 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<", less
     bx lr
 .endif
 
-.if ENABLE_NUM_START == 1
-WORD FLAG_SKIP, "<#", num_start
-.endif
-
 @ ------------------------------------------------------------------------------
 @ =
 @ ( x1 x2 -- flag )
@@ -582,10 +554,6 @@ WORD FLAG_INTERPRET_COMPILE, ">in", to_in
     bx lr
 .endif
 
-.if ENABLE_TO_NUMBER == 1
-WORD FLAG_SKIP, ">number", to_number
-.endif
-
 @ ------------------------------------------------------------------------------
 @ >r
 @ (    x --   )
@@ -639,10 +607,6 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "abs"
     adds tos, r0
     eors tos, r0
     bx lr
-.endif
-
-.if ENABLE_ACCEPT == 1
-WORD FLAG_SKIP, "accept"
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -738,10 +702,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "begin"
     pop {pc}
 .endif
 
-.if ENABLE_BL == 1
-WORD FLAG_SKIP, "bl"
-.endif
-
 @ ------------------------------------------------------------------------------
 @ c!
 @ ( char c-addr -- )
@@ -809,10 +769,6 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "cells", cells
     bx lr
 .endif
 
-.if ENABLE_CHAR == 1
-WORD FLAG_SKIP, "char"
-.endif
-
 @ ------------------------------------------------------------------------------
 @ char+
 @ ( c-addr1 -- c-addr2 )
@@ -861,14 +817,6 @@ WORD FLAG_INTERPRET_COMPILE, "constant"
 
 @ Return
     pop {pc}
-.endif
-
-.if ENABLE_COUNT == 1
-WORD FLAG_SKIP, "count"
-.endif
-
-.if ENABLE_CR == 1
-WORD FLAG_SKIP, "cr"
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1078,14 +1026,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "else"
     pop {pc}
 .endif
 
-.if ENABLE_EMIT == 1
-WORD FLAG_SKIP, "emit"
-.endif
-
-.if ENABLE_ENVIRONMENT_Q == 1
-WORD FLAG_SKIP, "environment?", environment_q
-.endif
-
 @ ------------------------------------------------------------------------------
 @ evaluate
 @ ( i*x c-addr u -- j*x )
@@ -1235,10 +1175,6 @@ WORD FLAG_INTERPRET_COMPILE, "here"
     bx lr
 .endif
 
-.if ENABLE_HOLD == 1
-WORD FLAG_SKIP, "hold"
-.endif
-
 @ ------------------------------------------------------------------------------
 @ i
 @ (             -- n        )
@@ -1339,10 +1275,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "j"
 
 @ Return
     pop {pc}
-.endif
-
-.if ENABLE_KEY == 1
-WORD FLAG_SKIP, "key"
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1858,10 +1790,6 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "rshift"
     bx lr
 .endif
 
-.if ENABLE_S_Q == 1
-WORD FLAG_SKIP, "s\"", s_q
-.endif
-
 .if ENABLE_S_TO_D == 1
 WORD FLAG_SKIP, "s>d", s_to_d
 .endif
@@ -1886,14 +1814,6 @@ WORD FLAG_INTERPRET_COMPILE, "source"
     ldmia r0, {r1, r2}
     PUSH_REGS top=r2, from=r1           @ ( -- c-addr u )
     bx lr
-.endif
-
-.if ENABLE_SPACE == 1
-WORD FLAG_SKIP, "space"
-.endif
-
-.if ENABLE_SPACES == 1
-WORD FLAG_SKIP, "spaces"
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1951,14 +1871,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "then"
 
 @ Return
 6:  pop {pc}
-.endif
-
-.if ENABLE_TYPE == 1
-WORD FLAG_SKIP, "type"
-.endif
-
-.if ENABLE_U_D == 1
-WORD FLAG_SKIP, "u.", u_d
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -2074,7 +1986,7 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
 @ r1    flags
     ldr r0, =link
     ldr r0, [r0]
-    movs r1, #FLAG_INTERPRET_COMPILE & RESERVE_1CELL
+    movs r1, #FLAG_INTERPRET_COMPILE & RESERVE_1
     strb r1, [r0, #4]
 
 @ Return
@@ -2116,10 +2028,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "while"
 
 @ Return
     pop {pc}
-.endif
-
-.if ENABLE_WORD == 1
-WORD FLAG_SKIP, "word"
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -2167,10 +2075,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "[']", bracket_tick
     pop {pc}
 .endif
 
-.if ENABLE_BRACKET_CHAR == 1
-WORD FLAG_SKIP, "[char]", bracket_char
-.endif
-
 @ ------------------------------------------------------------------------------
 @ [
 @ ( -- )
@@ -2183,3 +2087,617 @@ WORD FLAG_INTERPRET, "]", bracket_right
     str r1, [r0]
     bx lr
 .endif
+
+@ ------------------------------------------------------------------------------
+@ 0<>
+@ ( x -- flag )
+@ flag is true if and only if x is not equal to zero.
+@ ------------------------------------------------------------------------------
+.if ENABLE_ZERO_NE == 1
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0<>", zero_ne
+    cmp tos, #0
+    ite ne
+    movne tos, #-1
+    moveq tos, #0
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ 0>
+@ ( n -- flag )
+@ flag is true if and only if n is greater than zero.
+@ ------------------------------------------------------------------------------
+.if ENABLE_ZERO_MORE == 1
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0>", zero_more
+    cmp tos, #0
+    ite gt
+    movgt tos, #-1
+    movle tos, #0
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ 2>r
+@ (    x1 x2 --       )
+@ ( R:       -- x1 x2 )
+@ Transfer cell pair x1 x2 to the return stack. Semantically equivalent to swap
+@ >r >r.
+@ ------------------------------------------------------------------------------
+.if ENABLE_TWO_TO_R == 1
+WORD FLAG_COMPILE & FLAG_INLINE, "2>r", two_to_r
+    TWO_TO_R
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ 2>r
+@ (         -- x1 x2 )
+@ (R: x1 x2 --       )
+@ Transfer cell pair x1 x2 from the return stack. Semantically equivalent to r>
+@ r> swap.
+@ ------------------------------------------------------------------------------
+.if ENABLE_TWO_R_FROM == 1
+WORD FLAG_COMPILE & FLAG_INLINE, "2r>", two_r_from
+    TWO_R_FROM
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ 2r@
+@ (          -- x1 x2 )
+@ ( R: x1 x2 -- x1 x2 )
+@ Copy cell pair x1 x2 from the return stack. Semantically equivalent to r> r>
+@ 2dup >r >r swap.
+@ ------------------------------------------------------------------------------
+.if ENABLE_TWO_R_FETCH == 1
+WORD FLAG_COMPILE & FLAG_INLINE, "2r@", two_r_fetch
+    ldmia sp, {r0, r1}
+    PUSH_REGS top=r0, from=r1
+    bx lr
+.endif
+
+.if ENABLE_COLON_NONAME == 1
+WORD FLAG_SKIP, ":noname", colon_noname
+.endif
+
+@ ------------------------------------------------------------------------------
+@ <>
+@ ( x1 x2 -- flag )
+@ flag is true if and only if x1 is not bit-for-bit the same as x2.
+@ ------------------------------------------------------------------------------
+.if ENABLE_NE == 1
+WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<>", ne
+    ldmia dsp!, {r0}
+    cmp r0, tos
+    ite ne
+    movne tos, #-1
+    moveq tos, #0
+    bx lr
+.endif
+
+.if ENABLE_Q_DO == 1
+WORD FLAG_SKIP, "?do", q_do
+.endif
+
+.if ENABLE_ACTION_OF == 1
+WORD FLAG_SKIP, "action-of", action_of
+.endif
+
+@ ------------------------------------------------------------------------------
+@ again
+@ ( dest -- )
+@ Append the run-time semantics given below to the current definition, resolving
+@ the backward reference dest.
+@
+@ ( -- )
+@ Continue execution at the location specified by dest. If no other control flow
+@ words are used, any program code after again will not be executed.
+@ ------------------------------------------------------------------------------
+.if ENABLE_AGAIN == 1
+WORD FLAG_COMPILE_IMMEDIATE, "again"
+    push {lr}
+
+@ Resolve branch to begin
+    bl here                             @ ( -- orig )
+    SWAP
+    bl b_comma
+
+@ Return
+    pop {pc}
+.endif
+
+.if ENABLE_BUFFER_COLON == 1
+WORD FLAG_SKIP, "buffer:", buffer_colon
+.endif
+
+@ ------------------------------------------------------------------------------
+@ case
+@ ( -- case-sys  \ technically there ain't nothing to "mark" )
+@ Mark the start of the case...of...endof...endcase structure. Append the
+@ run-time semantics given below to the current definition.
+@
+@ ( -- )
+@ Continue execution.
+@ ------------------------------------------------------------------------------
+.if ENABLE_CASE == 1
+WORD FLAG_COMPILE_IMMEDIATE, "case"
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ compile,
+@ ( xt -- )
+@ Append the execution semantics of the definition represented by xt to the
+@ execution semantics of the current definition.
+@ ------------------------------------------------------------------------------
+.if ENABLE_COMPILE_COMMA == 1
+WORD FLAG_COMPILE, "compile,", compile_comma
+    push {lr}
+
+@ Data or text
+    bl to_text_q                        @ ( -- true | false )
+    cmp tos, #0
+    beq 1f                              @ Goto compile, data
+        b 2f                            @ Goto compile, text
+
+@ compile, data
+@ r0    pc-relative address
+@ r2    xt
+@ tos   data_begin
+1:  DROP                                @ ( false -- )
+    bl here                             @ ( -- data_begin )
+    SWAP                                @ ( xt data_begin -- data_begin xt )
+    POP_REGS r2                         @ ( xt -- )
+    subs r0, r2, tos                    @ xt - data_begin
+    subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
+    b 1f                                @ Goto range check for bl
+
+@ compile, text
+@ r0    pc-relative address
+@ r2    xt
+@ tos   xt
+2:  DROP                                @ ( true -- )
+    ldr r0, =to_text_begin
+    ldmia r0, {r1, r2}
+    subs r2, r1                         @ Length of current >text block
+    ldr r0, =text_begin
+    ldr r0, [r0]
+    adds r0, r2                         @ Address current definition would have in text so far
+    subs r0, tos, r0                    @ pc-relative address
+    subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
+    movs r2, tos                        @ Keep xt in r2 for later use
+
+@ Range check for bl
+@ r0    pc-relative address
+1:  cmp r0, #-16777216                  @ pc-relative address - -16777216
+    blt 3f                              @ Goto movw movt blx
+
+    ldr r1, =16777214
+    cmp r0, r1                          @ pc-relative address - 16777214
+    bgt 3f                              @ Goto movw movt blx
+
+@ bl
+@ r0    pc-relative address (xt - (data-space pointer + 4))
+@ r1    J1 | J2 | imm11 | imm10
+@ tos   opcode
+    ldr tos, =0xF000D000                @ Opcode template
+
+    cmp r0, #0                          @ pc-relative address - 0
+    blt 1f                              @ Goto signed
+
+@ Unsigned
+    ands r1, r0, #0x800000              @ J1 = !I1
+    it eq
+    orreq tos, #0x2000
+
+    ands r1, r0, #0x400000              @ J2 = !I2
+    it eq
+    orreq tos, #0x800
+    b 2f
+
+@ Signed
+1:  ands r1, r0, #0x800000              @ J1 = I1
+    it ne
+    orrne tos, #0x2000
+
+    ands r1, r0, #0x400000              @ J2 = I2
+    it ne
+    orrne tos, #0x800
+
+    orr tos, #0x4000000                 @ Set sign
+
+2:  lsrs r0, #1
+    movw r1, #0x7FF                     @ Mask for imm11
+    ands r1, r0                         @ imm11
+    orrs tos, r1                        @ Or imm11 into template
+
+    lsrs r0, #11
+    movw r1, #0x3FF                     @ Mask for imm10
+    ands r1, r0                         @ imm10
+    orrs tos, tos, r1, lsl #16          @ Or imm10 into template
+
+    bl rev_comma                        @ Write opcode
+        b 6f                            @ Goto return
+
+@ movw movt blx
+@ bl coudln't cover our range, do movw movt blx
+@ r0    bottom | top
+@ r1    intermediate
+@ r2    xt + 1
+@ tos   opcode
+3:  adds r2, #1                         @ Make xt odd (thumb)
+
+@ movw
+    ldr tos, =0xF2400000                @ Opcode template
+
+    uxth r0, r2, ror #0                 @ bottom
+    ands r1, r0, #0xFF                  @ imm8
+    orrs tos, r1
+
+    ands r1, r0, #0x700                 @ imm3
+    orrs tos, tos, r1, lsl #4
+
+    ands r1, r0, #0x800                 @ i
+    orrs tos, tos, r1, lsl #15
+
+    ands r1, r0, #0xF000                @ imm4
+    orrs tos, tos, r1, lsl #4
+
+    push {r2}                           @ Save xt
+    bl rev_comma                        @ Write opcode
+    pop {r2}
+
+@ movt
+    PUSH_TOS
+
+    ldr tos, =0xF2C00000                @ Opcode template
+
+    lsrs r0, r2, #16                    @ top
+    ands r1, r0, #0xFF                  @ imm8
+    orrs tos, r1
+
+    ands r1, r0, #0x700                 @ imm3
+    orrs tos, tos, r1, lsl #4
+
+    ands r1, r0, #0x800                 @ i
+    orrs tos, tos, r1, lsl #15
+
+    ands r1, r0, #0xF000                @ imm4
+    orrs tos, tos, r1, lsl #4
+
+    bl rev_comma                        @ Write opcode
+
+@ blx r0
+    PUSH_INT16 #0x4780                  @ ( -- opcode )
+    bl h_comma                          @ Write opcode
+
+@ Return
+6:  pop {pc}
+.endif
+
+.if ENABLE_DEFER == 1
+WORD FLAG_SKIP, "defer"
+.endif
+
+.if ENABLE_DEFER_STORE == 1
+WORD FLAG_SKIP, "defer!", defer_store
+.endif
+
+.if ENABLE_DEFER_FETCH == 1
+WORD FLAG_SKIP, "defer@", defer_fetch
+.endif
+
+@ ------------------------------------------------------------------------------
+@ endcase
+@ ( case-sys -- )
+@ Mark the end of the case...of...endof...endcase structure. Use case-sys to
+@ resolve the entire structure. Append the run-time semantics given below to the
+@ current definition.
+@
+@ ( x -- )
+@ Discard the case selector x and continue execution
+@ ------------------------------------------------------------------------------
+.if ENABLE_ENDCASE == 1
+WORD FLAG_COMPILE_IMMEDIATE, "endcase"
+    push {lr}
+
+@ If the case selector never matched, discard it now before we resolve the
+@ branch(es) from endof(s)
+@ ldmia dsp!, {tos}
+    PUSH_INT16 #0xCF40
+    bl h_comma
+
+@ Take care of endof(s)
+    bl csp_comma
+
+@ Return
+    pop {pc}
+.endif
+
+@ ------------------------------------------------------------------------------
+@ endof
+@ ( C: case-sys1 of-sys -- case-sys2 )
+@ Mark the end of the of...endof part of the case structure. The next location
+@ for a transfer of control resolves the reference given by of-sys. Append the
+@ run-time semantics given below to the current definition. Replace case-sys1
+@ with case-sys2 on the control-flow stack, to be resolved by endcase.
+@
+@ ( -- )
+@ Continue execution at the location specified by the consumer of case-sys2.
+@ ------------------------------------------------------------------------------
+.if ENABLE_ENDOF == 1
+WORD FLAG_COMPILE_IMMEDIATE, "endof"
+    push {lr}
+
+@ Reverse push case-sys2 onto the stack
+@ r0    csp address
+@ r1    csp
+    bl here
+    ldr r0, =csp
+    ldr r1, [r0]
+    stmia r1!, {tos}
+    str r1, [r0]
+    DROP
+
+@ Reserve space for orig
+    PUSH_INT8 #4
+    bl allot
+
+@ Resolve of-sys
+    bl here
+    bl bne_comma
+
+@ Return
+    pop {pc}
+.endif
+
+.if ENABLE_ERASE == 1
+WORD FLAG_SKIP, "erase"
+.endif
+
+@ ------------------------------------------------------------------------------
+@ false
+@ ( -- false )
+@ Return a false flag.
+@ ------------------------------------------------------------------------------
+.if ENABLE_FALSE == 1
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "false"
+    PUSH_TOS
+    movs tos, #0
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ hex
+@ ( -- )
+@ Set contents of radix to sixteen.
+@ ------------------------------------------------------------------------------
+.if ENABLE_HEX == 1
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "hex"
+    ldr r0, =radix
+    movs r1, #16
+    str r1, [r0]
+    bx lr
+.endif
+
+.if ENABLE_IS == 1
+WORD FLAG_SKIP, "is"
+.endif
+
+.if ENABLE_MARKER == 1
+WORD FLAG_SKIP, "marker"
+.endif
+
+@ ------------------------------------------------------------------------------
+@ nip
+@ ( x1 x2 -- x2 )
+@ Drop the first item below the top of stack.
+@ ------------------------------------------------------------------------------
+.if ENABLE_NIP == 1
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "nip"
+    NIP
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ of
+@ ( -- of-sys )
+@ Put of-sys onto the stack. Append the run-time semantics given below to the
+@ current definition. The semantics are incomplete until resolved by a consumer
+@ of of-sys such as endof.
+@
+@ ( x1 x2 -- | x1 )
+@ If the two values on the stack are not equal, discard the top value and
+@ continue execution at the location specified by the consumer of of-sys,
+@ e.g., following the next endof. Otherwise, discard both values and continue
+@ execution in line.
+@ ------------------------------------------------------------------------------
+.if ENABLE_OF == 1
+WORD FLAG_COMPILE_IMMEDIATE, "of"
+    push {lr}
+
+@ movs r0, tos
+@ ldmia dsp!, {tos}
+    ldr r0, =0xCF400030
+    PUSH_REGS r0
+    bl comma
+
+@ cmp r0, tos
+    PUSH_INT16 #0x42B0
+    bl h_comma
+
+@ of-sys
+    bl here
+    PUSH_INT8 #4
+    bl allot
+
+@ ldmia dsp!, {tos}
+    PUSH_INT16 #0xCF40
+    bl h_comma
+
+@ Return
+    pop {pc}
+.endif
+
+.if ENABLE_PAD == 1
+WORD FLAG_SKIP, "pad"
+.endif
+
+@ ------------------------------------------------------------------------------
+@ parse-name
+@ ( "<spaces>name<space>" -- c-addr u )
+@ Skip leading space delimiters. Parse name delimited by a space.
+@
+@ c-addr is the address of the selected string within the input buffer and u is
+@ its length in characters. If the parse area is empty or contains only white
+@ space, the resulting string has length zero.
+@ ------------------------------------------------------------------------------
+.if ENABLE_PARSE == 1
+WORD FLAG_INTERPRET_COMPILE, "parse-name", parse_name
+@ r0    c-addr + >in advanced   (= current address)
+@ r1    c-addr + u              (= end address)
+@ r2    >in
+@ r3    character
+@ tos   c-addr + >in            (= start address)
+    ldr r2, =in                         @ >in
+    ldr r2, [r2]
+    POP_REGS r1                         @ ( u -- )
+
+    adds r1, tos, r1                    @ c-addr + u
+    adds tos, tos, r2                   @ c-addr + >in
+    movs r0, tos                        @ Keep start address
+
+@ Skip leading spaces
+1:  cmp r1, r0                          @ (c-addr + u) - (c-addr + >in)
+    bls 3f                              @ Goto out of characters
+        ldrb r3, [r0], #1               @ Get character and increment c-addr + >in
+        cmp r3, #' '                    @ character - ' '
+        bne 2f
+            adds tos, #1                @ Increment start address to make up for leading spaces
+            adds r2, #1                 @ Also increment >in to make up for leading spaces
+            b 1b                        @ Goto skip leading spaces
+
+@ Compare against space delimiter
+2:  cmp r1, r0                          @ (c-addr + u) - (c-addr + >in)
+    bls 3f                              @ Goto out of characters
+        ldrb r3, [r0], #1               @ Get character and increment c-addr + >in
+        cmp r3, #' '                    @ character - ' '
+        bne 2b                          @ Goto compare against space delimiter
+
+@ Space delimiter found
+    subs r0, tos                        @ Length of found token + space
+    adds r2, r0                         @ Add found token to >in
+    ldr r1, =in                         @ Advance >in and store it
+    str r2, [r1]
+    subs r0, #1                         @ Subtract space (which isn't part of the token)
+    PUSH_REGS r0                        @ ( -- u )
+    b 6f                                @ Goto return
+
+@ Out of characters (equals \r or \n)
+3:  subs r0, tos                        @ Length of found token
+    adds r2, r0                         @ Add found token to >in
+    ldr r1, =in                         @ Advance >in and store it
+    str r2, [r1]
+    PUSH_REGS r0
+
+@ Return
+6:  bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ pick
+@ ( xu...x1 x0 u -- xu...x1 x0 xu )
+@ Remove u. Copy the xu to the top of the stack. An ambiguous condition exists
+@ if there are less than u+2 items on the stack before pick is executed.
+@ ------------------------------------------------------------------------------
+.if ENABLE_PICK == 1
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "pick"
+    PICK
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ roll
+@ ( xu xu-1 ... x0 u -- xu-1 ... x0 xu )
+@ Remove u. Rotate u+1 items on the top of the stack. An ambiguous condition
+@ exists if there are less than u+2 items on the stack before roll is executed.
+@ ------------------------------------------------------------------------------
+.if ENABLE_ROLL == 1
+WORD FLAG_INTERPRET_COMPILE, "roll"
+    lsl r0, tos, #2
+    adds r0, dsp, r0
+    ldr tos, [r0], #-4
+1:  cmp r0, dsp
+    blo 1f
+        ldr r1, [r0], #-4
+        str r1, [r0, #8]
+        b 1b
+1:  NIP
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ true
+@ ( -- true )
+@ Return a true flag, a single-cell value with all bits set.
+@ ------------------------------------------------------------------------------
+.if ENABLE_TRUE == 1
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "true"
+    PUSH_TOS
+    movs tos, #-1
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ tuck
+@ ( x1 x2 -- x2 x1 x2 )
+@ Copy the first (top) stack item below the second stack item.
+@ ------------------------------------------------------------------------------
+.if ENABLE_TUCK == 1
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "tuck"
+    TUCK
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ u>
+@ ( u1 u2 -- flag )
+@ flag is true if and only if u1 is greater than u2.
+@ ------------------------------------------------------------------------------
+.if ENABLE_U_MORE == 1
+WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u>", u_more
+    ldmia dsp!, {r0}
+    cmp r0, tos
+    ite hi
+    movhi tos, #-1
+    movls tos, #0
+    bx lr
+.endif
+
+@ ------------------------------------------------------------------------------
+@ unused
+@ ( -- u )
+@ u is the amount of space remaining in the region addressed by here, in address
+@ units.
+@ ------------------------------------------------------------------------------
+.if ENABLE_UNUSED == 1
+WORD FLAG_INTERPRET, "unused"
+    push {lr}
+    bl to_text_q                        @ ( -- true | false )
+    cmp tos, #0
+    ite eq
+    ldreq r0, =data_begin
+    ldrne r0, =text_begin
+    ldmia r0, {r0, tos}
+    subs tos, r0
+    pop {pc}
+.endif
+
+.if ENABLE_VALUE == 1
+WORD FLAG_SKIP, "value"
+.endif
+
+.if ENABLE_WITHIN == 1
+WORD FLAG_SKIP, "within"
+.endif
+

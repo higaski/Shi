@@ -45,7 +45,7 @@ csp:                                    @ Inside loop: points to leave addresses
 @ first definition that gets created in data has an actual link back to text.
 @ ------------------------------------------------------------------------------
 link:                                   @ Last link
-.word s_shi_dict
+.word shi_dict_begin
 
 @ ------------------------------------------------------------------------------
 @ Core variables

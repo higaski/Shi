@@ -79,6 +79,10 @@ extern "C" int test() {
 
   using shi::operator""_w;
 
+  asm volatile("nop");
+  ""_s;
+  asm volatile("nop");
+
   "wtf"_s;
   asm volatile("nop");
 

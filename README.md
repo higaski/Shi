@@ -2,8 +2,7 @@
 Shi is a fast and tiny **embeddable** [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) implementation written for the [Thumb-2 ISA](https://infocenter.arm.com/help/topic/com.arm.doc.qrc0001m/QRC0001_UAL.pdf) (ARMv7-M and newer). It currently fits into 8kB of flash and 320B of ram. Some of it's features are
 * Single header interface to C/C++
 * Compilation to flash
-* Inlining
-* Constant folding
+* Optimizations such as inlining and constant folding
 
 # Quick'n'dirty
 ```c++

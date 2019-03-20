@@ -19,11 +19,11 @@ interpret:
 @ Parse
 interpret_parse:
     bl source                           @ ( -- c-addr u )
-    bl parse                            @ Parse string
+    bl parse_name                       @ Parse string
     cmp tos, #0                         @ token-u - 0
     bne interpret_find                  @ Goto find
         TWO_DROP                        @ ( token-addr 0 -- )
-        PRINT "'shi' attempt to parse zero-length string >>>interpret<<<"
+        PRINT "interpret zero-length string"
         b interpret_return              @ Goto return
 
 @ Find
@@ -42,7 +42,7 @@ interpret_number:
     POP_REGS r0                         @ ( flag -- )
     cmp r0, #0                          @ flag - 0
     bne interpret_set_lfp               @ Goto set literal-folding pointer
-    PRINT "'shi' undefined word >>>interpret<<<"
+    PRINT "interpret undefined word"
         b interpret_return              @ Goto return
 
 @ Set literal-folding pointer
@@ -68,7 +68,7 @@ interpret_state:
 interpret_execute:
     ands tos, #~FLAG_INTERPRET
     beq 1f                              @ Goto execute
-        PRINT "'shi' interpreting a compile-only word >>>interpret<<<"
+        PRINT "interpreting compile-only word"
         b interpret_return              @ Goto return
 
 @ Execute
@@ -81,7 +81,7 @@ interpret_execute:
 interpret_compile:
     ands r0, tos, #~FLAG_COMPILE
     beq 1f                              @ Goto continue
-        PRINT "'shi' compiling an interpret-only word >>>interpret<<<"
+        PRINT "compiling interpret-only word"
         b interpret_return              @ Goto return
 
 @ Continue
