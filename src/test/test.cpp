@@ -13,9 +13,7 @@ using shi::operator""_s;
 
 void semihosting_example();
 
-extern "C" void test_performance_shi();
-extern "C" void test_performance_lua();
-extern "C" void test_performance_micropython();
+extern "C" void performance_mp_lerp();
 
 void stack_dump() {
   printf("stack dump:\n");
@@ -29,7 +27,7 @@ extern "C" int test() {
              .text_begin = SHI_FLASH_START,
              .text_end = SHI_FLASH_END});
 
-  using shi::operator""_w;
+  auto retval{forth2012_test_suite()};
 
   //  shi::push(1);
   //  shi::push(2);
@@ -79,11 +77,11 @@ extern "C" int test() {
 
   // test_performance_shi();
   // test_performance_lua();
-  // test_performance_micropython();
+  performance_mp_lerp();
 
   // semihosting_example();
 
   shi::clear();
 
-  return forth2012_test_suite();
+  return retval;
 }

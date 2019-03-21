@@ -69,7 +69,7 @@ typedef long mp_off_t;
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
-extern const struct _mp_obj_module_t mp_module_IC;
+extern const struct _mp_obj_module_t mp_module_lerp;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_IC), (mp_obj_t)&mp_module_IC }
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lerp_module), (mp_obj_t)&mp_module_lerp }

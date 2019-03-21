@@ -6,6 +6,7 @@
  * ned nutzen...
  *
  * Primzahlen zählen bis XY
+ * https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
  *
  */
 void performance_test() {}
