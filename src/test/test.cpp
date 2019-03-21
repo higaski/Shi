@@ -17,54 +17,6 @@ extern "C" void test_performance_shi();
 extern "C" void test_performance_lua();
 extern "C" void test_performance_micropython();
 
-namespace shi {
-
-struct word {
-  constexpr word() = default;
-  word(char const* str) : fp{shi_tick_asm(str, strlen(str))} {}
-  word(char const* str, size_t len) : fp{shi_tick_asm(str, len)} {}
-
-  template<typename... Ts>
-  word& operator()(Ts&&... ts) {
-    using std::forward;
-
-    (push(forward<Ts>(ts)), ...);
-
-    asm volatile("ldmia %0, {r6, r7, r8} \n"
-                 "push {%0} \n"
-                 "blx %1 \n"
-                 "pop {%0} \n"
-                 "stmia %0, {r6, r7, r8} \n"
-                 :
-                 : "r"(&shi_context), "r"(fp)
-                 : "cc", "memory", "r6", "r7", "r8", "lr");
-
-    return *this;
-  }
-
-  template<typename T>
-  operator T() {
-    return pop<T>();
-  }
-
-  template<typename... Ts>
-  operator std::tuple<Ts...>() {
-    return std::tuple<Ts...>{(pop<Ts>(), ...)};
-  }
-
-private:
-  void_fp fp{nullptr};
-};
-
-template<typename T, T... Cs>
-word operator""_w() {
-  static constexpr char c[]{Cs...};
-  static auto literal_word{word(c, sizeof...(Cs))};
-  return literal_word;
-}
-
-}  // namespace shi
-
 void stack_dump() {
   printf("stack dump:\n");
   for (auto i{0u}; i < shi::size(); ++i)
@@ -78,32 +30,6 @@ extern "C" int test() {
              .text_end = SHI_FLASH_END});
 
   using shi::operator""_w;
-
-  asm volatile("nop");
-  ""_s;
-  asm volatile("nop");
-
-  "wtf"_s;
-  asm volatile("nop");
-
-  asm volatile("nop");
-  ": seven 7 ;"_s;
-  auto seven = shi::word("seven");
-  asm volatile("nop");
-  printf("%d\n", shi::size());
-  asm volatile("nop");
-  seven();
-  asm volatile("nop");
-  printf("%d\n", shi::size());
-  asm volatile("nop");
-  printf("%d\n", shi::top());
-
-  asm volatile("nop");
-  "seven"_w();
-  asm volatile("nop");
-  printf("%d\n", shi::size());
-  asm volatile("nop");
-  printf("%d\n", shi::top());
 
   //  shi::push(1);
   //  shi::push(2);

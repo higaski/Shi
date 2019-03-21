@@ -76,11 +76,11 @@ WORD FLAG_INTERPRET, ">text", to_text
     ldr r0, =to_text_begin
     ldr r1, [r0]
     cmp r1, #0
-    bne 1f
-    ldr r1, =data_begin
-    ldr r1, [r1]
-    str r1, [r0]
-1:  bx lr
+    ittt ne
+    ldrne r1, =data_begin
+    ldrne r1, [r1]
+    strne r1, [r0]
+    bx lr
 .endif
 
 @ ------------------------------------------------------------------------------

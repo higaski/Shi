@@ -21,7 +21,7 @@ TEST(colon__semicolon__constant__variable__create__does__to_body);
 TEST(source__to_in__word);
 TEST(num_start__num__num_s__hold__sign__base__to_number__hex__decimal);
 
-//
+// Core extension
 TEST(ne__u_more);
 TEST(zero_ne__zero_more);
 TEST(nip__tuck__roll__pick);
@@ -37,9 +37,13 @@ TEST(value__to);
 TEST(case__of__endof__endcase);
 
 //
-TEST(own_loop);
-TEST(own_case);
-TEST(own_while);
+TEST(corner_cases_loop);
+TEST(corner_cases_case);
+TEST(corner_cases_while);
+
+// C/C++ api
+TEST(c_api);
+TEST(cpp_api_word);
 
 int forth2012_test_suite() {
   UNITY_BEGIN();
@@ -79,9 +83,12 @@ int forth2012_test_suite() {
   RUN_TEST(value__to);
   RUN_TEST(case__of__endof__endcase);
 
-  RUN_TEST(own_loop);
-  RUN_TEST(own_case);
-  RUN_TEST(own_while);
+  RUN_TEST(corner_cases_loop);
+  RUN_TEST(corner_cases_case);
+  RUN_TEST(corner_cases_while);
+
+  RUN_TEST(c_api);
+  RUN_TEST(cpp_api_word);
 
   return UNITY_END();
 }

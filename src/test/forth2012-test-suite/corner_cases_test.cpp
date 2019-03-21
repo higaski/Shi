@@ -2,7 +2,7 @@
 
 using shi::operator""_s;
 
-TEST(own_loop) {
+TEST(corner_cases_loop) {
   ": GD7 do i 2 = if 2 leave then i -2 = if -2 leave then loop ;"_s;
   TEST_ASSERT_EQUAL(0, shi::size());
   "4 1 GD7"_s;
@@ -16,7 +16,7 @@ TEST(own_loop) {
   shi::clear();
 }
 
-TEST(own_case) {
+TEST(corner_cases_case) {
   ": CS8 do i case 1 of 111 endof 2 of 222 endof 3 of 333 endof endcase loop ;"_s;
   "4 1 CS8"_s;
   TEST_ASSERT_EQUAL(3, shi::size());
@@ -58,7 +58,7 @@ TEST(own_case) {
   shi::clear();
 }
 
-TEST(own_while) {
+TEST(corner_cases_while) {
   ": GI7 10 begin 1- dup while 1- dup while 1- dup 0= until then then ;"_s;
   TEST_ASSERT_EQUAL(0, shi::size());
   "1 GI7"_s;

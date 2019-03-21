@@ -1030,8 +1030,8 @@ inline void shi_evaluate_len(char const* str, size_t len) {
 }
 
 inline void shi_c_variable(char const* str, void* adr) {
-  push(reinterpret_cast<int32_t>(adr));
-  shi_c_variable_asm(str, strlen(name));
+  push((int32_t)(adr));
+  shi_c_variable_asm(str, strlen(str));
 }
 
 // C++ only
@@ -1228,17 +1228,63 @@ inline void evaluate(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
+template<typename T>
+void c_variable(char const* str, T adr) {
+  using std::is_pointer_v;
+
+  static_assert(sizeof(T) <= 4 &&
+                (is_pointer_v<T> || is_reference_wrapper_v<T>));
+
+  push(adr);
+  shi_c_variable_asm(str, strlen(str));
+}
+
+struct word {
+  constexpr word() = default;
+  word(char const* str) : fp{shi_tick_asm(str, strlen(str))} {}
+  word(char const* str, size_t len) : fp{shi_tick_asm(str, len)} {}
+
+  template<typename... Ts>
+  word& operator()(Ts&&... ts) {
+    using std::forward;
+
+    (push(forward<Ts>(ts)), ...);
+
+    asm volatile("ldmia %0, {r6, r7, r8} \n"
+                 "push {%0} \n"
+                 "blx %1 \n"
+                 "pop {%0} \n"
+                 "stmia %0, {r6, r7, r8} \n"
+                 :
+                 : "r"(&shi_context), "r"(fp)
+                 : "cc", "memory", "r6", "r7", "r8", "lr");
+
+    return *this;
+  }
+
+  template<typename T>
+  operator T() {
+    return pop<T>();
+  }
+
+  template<typename... Ts>
+  operator std::tuple<Ts...>() {
+    return std::tuple<Ts...>{(pop<Ts>(), ...)};
+  }
+
+private:
+  void_fp fp{nullptr};
+};
+
 inline void operator"" _s(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
-template<typename T>
-void c_variable(char const* str, T adr) {
-  static_assert(std::is_pointer_v<T>);
-  static_assert(std::is_integral_v<std::remove_pointer_t<T>>);
-
-  push(adr);
-  shi_c_variable_asm(str, strlen(str));
+template<typename T, T... Cs>
+word operator""_w() {
+  static constexpr char c[]{Cs...};
+  static auto literal_word{word(c, sizeof...(Cs))};
+  return literal_word;
 }
 
 }  // namespace shi
