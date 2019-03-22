@@ -14,19 +14,33 @@ for i in range(n):
     y[i] = y1[i] + ((y2[i] - y1[i]) * (x[i] - x1[i])) / (x2[i] - x1[i])
      
 
-f = open('rand.txt', 'w+')
+f = open('lerp_data.txt', 'w+')
 
-def write_np_array(name, np_array):
-    f.write('int32_t const ' + name + '[] = {')
+f.write('typedef struct {\n'
+        '  int32_t x[' + str(n) + '];\n'
+        '  int32_t x1[' + str(n) + '];\n'
+        '  int32_t x2[' + str(n) + '];\n'
+        '  int32_t y1[' + str(n) + '];\n'
+        '  int32_t y2[' + str(n) + '];\n'
+        '  int32_t y[' + str(n) + '];\n'
+        '} lerp_data_t;\n\n')
+
+f.write('const lerp_data_t lerp_data = {')
+
+
+def write_np_array(np_array):
+    f.write('{')
     for i in range(n - 1):
         f.write(str(np_array[i]) + ', ')
-    f.write(str(np_array[n-1]) + '};\n\n')
+    f.write(str(np_array[n-1]) + '},\n')
     
-write_np_array('x', x)
-write_np_array('x1', x1)
-write_np_array('x2', x2)
-write_np_array('y1', y1)
-write_np_array('y2', y2)
-write_np_array('y', y)
+write_np_array(x)
+write_np_array(x1)    
+write_np_array(x2)    
+write_np_array(y1)    
+write_np_array(y2)
+write_np_array(y)
+        
+f.write('};')        
     
 f.close()

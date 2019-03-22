@@ -5,15 +5,15 @@
 #include <functional>
 #include <tuple>
 #include <type_traits>
+#include "bench.h"
 #include "forth2012_test_suite.hpp"
 #include "main.h"
 #include "shi.hpp"
 
 using shi::operator""_s;
+using shi::operator""_w;
 
 void semihosting_example();
-
-extern "C" void performance_mp_lerp();
 
 void stack_dump() {
   printf("stack dump:\n");
@@ -26,6 +26,44 @@ extern "C" int test() {
              .data_end = SHI_RAM_END,
              .text_begin = SHI_FLASH_START,
              .text_end = SHI_FLASH_END});
+
+  // die variante geht nicht???
+  ": acker "
+  "over 0= if nip 1+ exit then "
+  "swap 1- swap "
+  "dup 0= if 1+ recurse exit then "
+  "1- over 1+ swap recurse recurse ;"_s;
+
+  asm volatile("nop");
+  "3 4"_s;
+  asm volatile("nop");
+  "acker"_s;
+
+  asm volatile("nop");
+  stack_dump();
+
+  // die aber scho? hä?
+  ": ackermann "
+  "over "
+  "0 over = if drop nip 1+     else "
+  "1 over = if drop nip 2 +    else "
+  "2 over = if drop nip 2* 3 + else "
+  "3 over = if drop swap 5 + swap lshift 3 - else "
+  "  drop swap 1- swap dup "
+  "  if "
+  "    1- over 1+ swap recurse recurse exit "
+  "  else "
+  "    1+ recurse exit "
+  "  then "
+  "then then then then "
+  ";"_s;
+
+  asm volatile("nop");
+  "3 4"_s;
+  asm volatile("nop");
+  "ackermann"_s;
+
+  stack_dump();
 
   //  shi::push(1);
   //  shi::push(2);
@@ -73,13 +111,10 @@ extern "C" int test() {
   //  "20 indexed-array foo"_s;
   //  asm volatile("nop");
 
-  // test_performance_shi();
-  // test_performance_lua();
-  // performance_mp_lerp();
+  bench();
 
   // semihosting_example();
 
-  // shi::clear();
-
-  return forth2012_test_suite();
+  // return forth2012_test_suite();
+  return 0;
 }
