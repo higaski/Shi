@@ -23,7 +23,6 @@
 ///
 /// -# Conditional branch funktionen (beq, bne) ließen sich zusammenlegen
 ///
-/// -# Dokumentieren dass else bei orig des unterste bit setzt...
 ///
 /// \page page_interpret Interpret loop
 /// \dot

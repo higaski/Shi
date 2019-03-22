@@ -72,16 +72,17 @@
 ///
 // clang-format off
 /// \page page_implementation Implementation
-/// | Page                      | Content                                           |
-/// | ------------------------- | ------------------------------------------------- |
-/// | \subpage page_stacks      | Handling of data-, control-flow- and return-stack |
-/// | \subpage page_variables   | Internally used variables                         |
-/// | \subpage page_dictionary  | Layout of words, core- and user dictionary        |
-/// | \subpage page_init        | Initialization                                    |
-/// | \subpage page_interpret   | Interpretation loop in detail                     |
-/// | \subpage page_wordlist    | Wordlist                                          |
-/// | \subpage page_todo        | d                                                 |
-/// | \subpage page_lerp        | c                                                 |
+/// | Page                             | Content                                           |
+/// | -------------------------------- | ------------------------------------------------- |
+/// | \subpage page_stacks             | Handling of data-, control-flow- and return-stack |
+/// | \subpage page_variables          | Internally used variables                         |
+/// | \subpage page_dictionary         | Layout of words, core- and user dictionary        |
+/// | \subpage page_init               | Initialization                                    |
+/// | \subpage page_control_structures | Control structures                                |
+/// | \subpage page_interpret          | Interpretation loop in detail                     |
+/// | \subpage page_wordlist           | Wordlist                                          |
+/// | \subpage page_todo               | d                                                 |
+/// | \subpage page_lerp               | c                                                 |
 // clang-format on
 ///
 ///
@@ -508,6 +509,46 @@
 /// ```
 ///
 /// *tos* gets initialized with '*', *dsp* with the stack end and *lfp* with 0.
+///
+///
+/// \page page_control_structures Control structures
+/// Blabla
+///
+/// if...else...then
+///
+/// case...of...endof...endcase
+///
+/// begin...until
+/// begin...while...repeat
+///
+/// do...loop/+loop
+/// do...if...leave then...loop/+loop
+///
+/// if -> ( -- orig1 )
+/// else -> ( orig1 -- orig2 )
+/// then -> ( orig1 | orig2 -- )
+///
+/// begin -> ( -- dest )
+/// until -> ( dest -- )
+///
+/// begin -> ( -- dest )
+/// while -> ( dest -- orig dest )
+/// repeat -> ( orig dest -- )
+///
+/// Dokumentieren dass else bei orig des unterste bit setzt...
+///
+/// beq_comma wird 4x genutzt
+/// else
+/// repeat
+/// then
+/// until
+///
+/// bne_comma wird 3x genutzt
+/// endof
+/// loop
+/// +loop
+///
+///
 ///
 // clang-format off
 /// \page page_wordlist Wordlist

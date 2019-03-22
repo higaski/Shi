@@ -18,7 +18,7 @@ extern "C" void performance_mp_lerp();
 void stack_dump() {
   printf("stack dump:\n");
   for (auto i{0u}; i < shi::size(); ++i)
-    printf("%d. on stack: %X\n", i, shi::top(i));
+    printf("%d. on stack: %d\n", i, shi::top(i));
 }
 
 extern "C" int test() {
@@ -27,7 +27,12 @@ extern "C" int test() {
              .text_begin = SHI_FLASH_START,
              .text_end = SHI_FLASH_END});
 
-  auto retval{forth2012_test_suite()};
+  ": GI2 if 123 else 234 then ;"_s;
+  "0 GI2"_s;  // 234
+  stack_dump();
+
+  "1 GI2"_s;  // 123
+  stack_dump();
 
   //  shi::push(1);
   //  shi::push(2);
@@ -77,11 +82,12 @@ extern "C" int test() {
 
   // test_performance_shi();
   // test_performance_lua();
-  performance_mp_lerp();
+  // performance_mp_lerp();
 
   // semihosting_example();
 
-  shi::clear();
+  // shi::clear();
 
-  return retval;
+  //  return forth2012_test_suite();
+  return 0;
 }

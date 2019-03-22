@@ -1020,7 +1020,12 @@ WORD FLAG_COMPILE_IMMEDIATE, "else"
 @ Resolve orig1
     SWAP                                @ ( orig1 orig2 -- orig2 orig1 )
     bl here
-    bl beq_comma
+    @bl beq_comma
+
+    @ push opcode ... TODO doc here
+    ldr r0, =0xF0008000
+    PUSH_REGS r0
+    bl bc_comma
 
 @ Return
     pop {pc}

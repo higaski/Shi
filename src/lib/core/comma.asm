@@ -23,7 +23,7 @@ b_comma:
     subs r1, r0, tos                    @ dest - orig
     subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
 
-@ Range check for b
+@ Range check
 @ r1    pc-relative address (dest - (orig + 4))
     cmp r1, #-16777216                  @ pc-relative address - -16777216
     bge 1f
@@ -54,7 +54,6 @@ b_comma:
         movs tos, r3
         PUSH_TOS                        @ ( -- data_begin )
 
-@ b
 @ r1    pc-relative address (dest - (orig + 4))
 @ r2    J1 | J2 | imm11 | imm10
 @ tos   opcode
@@ -107,6 +106,92 @@ b_comma:
     ldr r0, =data_begin
     str tos, [r0]
     DROP                                @ ( data_begin -- )
+
+@ Return
+6:  pop {pc}
+
+@ ------------------------------------------------------------------------------
+@ bc,
+@ ( orig dest opcode -- )
+@ Compile a conditional equal jump from orig to dest. For future-proofness the
+@ 32bit encoding t3 is used as instruction.
+@ ------------------------------------------------------------------------------
+.thumb_func
+bc_comma:
+    push {lr}
+
+@ r0    dest
+@ r1    orig
+    ldmia dsp!, {r0, r1}                @ ( orig dest opcode -- opcode )
+    subs r0, r1                         @ dest - orig
+    subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
+
+@ Range check
+@ r0    pc-relative address (dest - (orig + 4))
+    cmp r0, #-1048576                   @ pc-relative address - -1048576
+    bge 1f
+        DROP                            @ ( opcode -- )
+        PRINT "bc, conditional branch offset too far negative"
+        b 6f                            @ Goto return
+
+1:  ldr r2, =1048574
+    cmp r0, r2                          @ pc-relative address - 1048574
+    ble 1f                              @ Goto temporarily set data_begin to orig if necessary
+        DROP                            @ ( opcode -- )
+        PRINT "bc, conditional branch offset too far positive"
+        b 6f                            @ Goto return
+
+@ Temporarily set data_begin to orig if necessary
+@ r1    orig
+@ r2    data_begin address
+@ r3    data_begin
+@ r12   flag to indicate whether data_begin is overwritten or not
+1:  movs r12, #0                        @ Reset flag
+    ldr r2, =data_begin
+    ldr r3, [r2]
+    cmp r1, r3
+    bhs 1f
+        movs r12, #1                    @ Set flag
+        str r1, [r2]                    @ Temporarily store orig as data_begin
+        push {r3}                       @ ( R: -- data_begin )
+
+@ r0    pc-relative address (dest - (orig + 4))
+@ r2    J2 | J1 | imm11| imm6
+@ tos   opcode
+1:  cmp r0, #0
+    it lt
+    orrlt tos, #0x4000000               @ Set sign
+
+    ands r2, r0, #0x80000               @ J2
+    it ne
+    orrne tos, #0x800
+
+    ands r2, r0, #0x40000               @ J1
+    it ne
+    orrne tos, #0x2000
+
+    lsrs r0, #1
+    movw r2, #0x7FF                     @ Mask for imm11
+    ands r2, r0                         @ imm11
+    orrs tos, r2                        @ Or imm11 into template
+
+    lsrs r0, #11
+    ands r2, r0, #0x3F                  @ Mask for imm6
+    orrs tos, tos, r2, lsl #16          @ Or imm6 into template
+
+@ Write opcode, do not reset data_begin
+@ r12   flag to indicate whether data_begin is overwritten or not
+    cmp r12, #0
+    bne 1f
+        bl rev_comma                    @ Write opcode
+        b 6f
+
+@ Write opcode and reset data_begin
+@ r0    data_begin address
+1:  bl rev_comma                        @ Write opcode
+    ldr r0, =data_begin
+    pop {r3}                            @ ( R: data_begin -- )
+    str r3, [r0]
 
 @ Return
 6:  pop {pc}
