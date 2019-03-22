@@ -76,10 +76,10 @@ number:
 @ Result
     cmp r4, #0                          @ flag - 0
     bne 1f
-        movs tos, #0                    @ Ascii character was not in range, return false
+        movs tos, #0                    @ ( -- false )
         b 6f                            @ Goto return
 1:  mul tos, r1, r12                    @ Multiply result with sign to tos
-    PUSH_REGS #-1                       @ return ( -- n true )
+    PUSH_REGS #-1                       @ ( -- n true )
 
 @ Return
 6:  pop {r4, pc}

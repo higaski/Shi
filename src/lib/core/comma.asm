@@ -97,12 +97,12 @@ b_comma:
 @ r12   flag to indicate whether data_begin is overwritten or not
     cmp r12, #0
     bne 1f
-        bl rev_comma                    @ Write opcode
+        bl rev_comma                    @ ( opcode -- )
         b 6f
 
 @ Write opcode and reset data_begin
 @ r0    data_begin address
-1:  bl rev_comma                        @ Write opcode
+1:  bl rev_comma                        @ ( opcode -- )
     ldr r0, =data_begin
     str tos, [r0]
     DROP                                @ ( data_begin -- )
@@ -183,199 +183,15 @@ bc_comma:
 @ r12   flag to indicate whether data_begin is overwritten or not
     cmp r12, #0
     bne 1f
-        bl rev_comma                    @ Write opcode
+        bl rev_comma                    @ ( opcode -- )
         b 6f
 
 @ Write opcode and reset data_begin
 @ r0    data_begin address
-1:  bl rev_comma                        @ Write opcode
+1:  bl rev_comma                        @ ( opcode -- )
     ldr r0, =data_begin
     pop {r3}                            @ ( R: data_begin -- )
     str r3, [r0]
-
-@ Return
-6:  pop {pc}
-
-@ ------------------------------------------------------------------------------
-@ beq,
-@ ( orig dest -- )
-@ Compile a conditional equal jump from orig to dest. For future-proofness the
-@ 32bit encoding t3 is used as instruction.
-@ ------------------------------------------------------------------------------
-.thumb_func
-beq_comma:
-    push {lr}
-
-@ r0    dest
-@ r1    pc-relative address (dest - (orig + 4))
-@ tos   orig
-    POP_REGS r0                         @ ( dest -- )
-    subs r1, r0, tos                    @ dest - orig
-    subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
-
-@ Range check for beq
-@ r1    pc-relative address (dest - (orig + 4))
-    cmp r1, #-1048576                   @ pc-relative address - -1048576
-    bge 1f
-        DROP                            @ ( orig -- )
-        PRINT "beq, conditional branch offset too far negative"
-        b 6f                            @ Goto return
-
-1:  ldr r2, =1048574
-    cmp r1, r2                          @ pc-relative address - 1048574
-    ble 1f                              @ Goto temporarily set data_begin to orig if necessary
-        DROP                            @ ( orig -- )
-        PRINT "beq, conditional branch offset too far positive"
-        b 6f                            @ Goto return
-
-@ Temporarily set data_begin to orig if necessary
-@ r0    dest
-@ r2    data_begin address
-@ r3    data_begin
-@ tos   orig
-@ r12   flag to indicate whether data_begin is overwritten or not
-1:  movs r12, #0                        @ Reset flag
-    ldr r2, =data_begin
-    ldr r3, [r2]
-    cmp tos, r3
-    bhs 1f
-        movs r12, #1                    @ Set flag
-        str tos, [r2]                   @ Temporarily store orig as data_begin
-        movs tos, r3
-        PUSH_TOS                        @ ( -- data_begin)
-
-@ beq
-@ r1    pc-relative address (dest - (orig + 4))
-@ r2    J2 | J1 | imm11| imm6
-@ tos   opcode
-1:  ldr tos, =0xF0008000                @ Opcode template
-
-    cmp r1, #0
-    it lt
-    orrlt tos, #0x4000000               @ Set sign
-
-    ands r2, r1, #0x80000               @ J2
-    it ne
-    orrne tos, #0x800
-
-    ands r2, r1, #0x40000               @ J1
-    it ne
-    orrne tos, #0x2000
-
-    lsrs r1, #1
-    movw r2, #0x7FF                     @ Mask for imm11
-    ands r2, r1                         @ imm11
-    orrs tos, r2                        @ Or imm11 into template
-
-    lsrs r1, #11
-    ands r2, r1, #0x3F                  @ Mask for imm6
-    orrs tos, tos, r2, lsl #16          @ Or imm6 into template
-
-@ Write opcode, do not reset data_begin
-@ r12   flag to indicate whether data_begin is overwritten or not
-    cmp r12, #0
-    bne 1f
-        bl rev_comma                    @ Write opcode
-        b 6f
-
-@ Write opcode and reset data_begin
-@ r0    data_begin address
-1:  bl rev_comma                        @ Write opcode
-    ldr r0, =data_begin
-    str tos, [r0]
-    DROP                                @ ( data_begin -- )
-
-@ Return
-6:  pop {pc}
-
-@ ------------------------------------------------------------------------------
-@ bne,
-@ ( orig dest -- )
-@ Compile a conditional not-equal jump from orig to dest. For future-proofness
-@ the 32bit encoding t3 is used as instruction.
-@ ------------------------------------------------------------------------------
-.thumb_func
-bne_comma:
-    push {lr}
-
-@ r0    dest
-@ r1    pc-relative address (dest - (orig + 4))
-@ tos   orig
-    POP_REGS r0                         @ ( dest -- )
-    subs r1, r0, tos                    @ dest - orig
-    subs r1, #4                         @ pc is 4 bytes ahead in thumb/thumb2!
-
-@ Range check for bne
-@ r1    pc-relative address (dest - (orig + 4))
-    cmp r1, #-1048576                   @ pc-relative address - -1048576
-    bge 1f
-        DROP                            @ ( orig -- )
-        PRINT "bne, conditional branch offset too far negative"
-        b 6f                            @ Goto return
-
-1:  ldr r2, =1048574
-    cmp r1, r2                          @ pc-relative address - 1048574
-    ble 1f                              @ Goto temporarily set data_begin to orig if necessary
-        DROP                            @ ( orig -- )
-        PRINT "bne, conditional branch offset too far positive"
-        b 6f                            @ Goto return
-
-@ Temporarily set data_begin to orig if necessary
-@ r0    dest
-@ r2    data_begin address
-@ r3    data_begin
-@ tos   orig
-@ r12   flag to indicate whether data_begin is overwritten or not
-1:  movs r12, #0                        @ Reset flag
-    ldr r2, =data_begin
-    ldr r3, [r2]
-    cmp tos, r3
-    bhs 1f
-        movs r12, #1                    @ Set flag
-        str tos, [r2]                   @ Temporarily store orig as data_begin
-        movs tos, r3
-        PUSH_TOS                        @ ( -- data_begin)
-
-@ bne
-@ r1    pc-relative address (dest - (orig + 4))
-@ r2    J2 | J1 | imm11| imm6
-@ tos   opcode
-1:  ldr tos, =0xF0408000                @ Opcode template
-
-    cmp r1, #0
-    it lt
-    orrlt tos, #0x4000000               @ Set sign
-
-    ands r2, r1, #0x80000               @ J2
-    it ne
-    orrne tos, #0x800
-
-    ands r2, r1, #0x40000               @ J1
-    it ne
-    orrne tos, #0x2000
-
-    lsrs r1, #1
-    movw r2, #0x7FF                     @ Mask for imm11
-    ands r2, r1                         @ imm11
-    orrs tos, r2                        @ Or imm11 into template
-
-    lsrs r1, #11
-    ands r2, r1, #0x3F                  @ Mask for imm6
-    orrs tos, tos, r2, lsl #16          @ Or imm6 into template
-
-@ Write opcode, do not reset data_begin
-@ r12   flag to indicate whether data_begin is overwritten or not
-    cmp r12, #0
-    bne 1f
-        bl rev_comma                    @ Write opcode
-        b 6f
-
-@ Write opcode and reset data_begin
-@ r0    data_begin address
-1:  bl rev_comma                        @ Write opcode
-    ldr r0, =data_begin
-    str tos, [r0]
-    DROP                                @ ( data_begin -- )
 
 @ Return
 6:  pop {pc}
@@ -411,10 +227,10 @@ csp_comma:
     PUSH_REGS r2                        @ ( -- orig )
     movs r2, #0
     str r2, [r1, #-4]!
-    push {r0, r1}
+    push {r0, r1}                       @ ( R: -- csp-addr csp )
     bl here                             @ ( -- dest )
     bl b_comma
-    pop {r0, r1}
+    pop {r0, r1}                        @ ( R: csp-addr csp -- )
     ldr r2, =shi_stack_begin
     cmp r1, r2
     bhi 1b
@@ -451,7 +267,7 @@ inline_comma:
 
 @ Copy opcodes from xt
 @ r0    xt
-@ r1    opcode bx lr
+@ r1    opcode
 @ r2    hword
     POP_REGS r0
     movw r1, #0x4770
@@ -461,9 +277,9 @@ inline_comma:
         cmp r2, #0xBD00                 @ or pop {pc}
         beq 6f
             PUSH_REGS r2
-            push {r0, r1}
+            push {r0, r1}               @ ( R: -- xt opcode )
             bl h_comma
-            pop {r0, r1}
+            pop {r0, r1}                @ ( R: xt opcode -- )
             b 1b
 
 @ Return
@@ -504,7 +320,7 @@ word_comma:
 
 @ Parse
     bl source                           @ ( -- c-addr u )
-    bl parse_name                       @ ( -- token-addr token-u )
+    bl parse_name                       @ ( c-addr u -- token-addr token-u )
     cmp tos, #0                         @ token-u - 0
     bne 1f                              @ Goto find
         TWO_DROP                        @ ( token-addr false -- )

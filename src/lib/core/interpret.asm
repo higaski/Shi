@@ -19,10 +19,10 @@ interpret:
 @ Parse
 interpret_parse:
     bl source                           @ ( -- c-addr u )
-    bl parse_name                       @ Parse string
+    bl parse_name                       @ ( c-addr u -- token-addr token-u )
     cmp tos, #0                         @ token-u - 0
     bne interpret_find                  @ Goto find
-        TWO_DROP                        @ ( token-addr 0 -- )
+        TWO_DROP                        @ ( token-addr false -- )
         PRINT "interpret zero-length string"
         b interpret_return              @ Goto return
 
@@ -30,16 +30,16 @@ interpret_parse:
 interpret_find:
     SWAP                                @ ( token-addr token-u -- token-u token-addr )
     OVER                                @ ( token-u token-addr -- token-u token-addr token-u )
-    bl find                             @ Find token
+    bl find                             @ ( token-u token-addr token-u -- token-u token-addr false | token-u xt flags )
     cmp tos, #0                         @ flags - 0
     bne interpret_state                 @ Goto state check
 
 @ Number
 interpret_number:
-    DROP                                @ ( false -- )
+    DROP                                @ ( token-u token-addr false -- token-u token-addr )
     SWAP                                @ ( token-u token-addr -- token-addr token-u )
-    bl number                           @ ( -- n true | false ) try numbers if we didn't find anything
-    POP_REGS r0                         @ ( flag -- )
+    bl number                           @ ( token-addr token-u -- n true | false )
+    POP_REGS r0                         @ ( n true | false -- n | )
     cmp r0, #0                          @ flag - 0
     bne interpret_set_lfp               @ Goto set literal-folding pointer
     PRINT "interpret undefined word"

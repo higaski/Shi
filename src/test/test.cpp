@@ -27,13 +27,6 @@ extern "C" int test() {
              .text_begin = SHI_FLASH_START,
              .text_end = SHI_FLASH_END});
 
-  ": GI2 if 123 else 234 then ;"_s;
-  "0 GI2"_s;  // 234
-  stack_dump();
-
-  "1 GI2"_s;  // 123
-  stack_dump();
-
   //  shi::push(1);
   //  shi::push(2);
   //  shi::push(3);
@@ -88,6 +81,5 @@ extern "C" int test() {
 
   // shi::clear();
 
-  //  return forth2012_test_suite();
-  return 0;
+  return forth2012_test_suite();
 }

@@ -13,7 +13,7 @@
 @ ------------------------------------------------------------------------------
 .if ENABLE_STORE == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "!", store
-    ldmia dsp!, {r0, r1}
+    ldmia dsp!, {r0, r1}                @ ( x a-addr -- )
     str r0, [tos]
     movs tos, r1
     bx lr
@@ -33,23 +33,23 @@ WORD FLAG_INTERPRET, "'", tick
 
 @ Parse
     bl source                           @ ( -- c-addr u )
-    bl parse_name                       @ ( -- token-addr token-u )
+    bl parse_name                       @ ( c-addr u -- token-addr token-u )
     cmp tos, #0                         @ token-u - 0
     bne 1f                              @ Goto find
-        TWO_DROP                        @ ( token-addr false -- )
+        TWO_DROP                        @ ( token-addr token-u -- )
         PRINT "' zero-length string as a name"
         b 6f                            @ Goto return
 
 @ Find
-1:  bl find                             @ ( -- token-addr 0 | xt flags )
+1:  bl find                             @ ( token-addr token-u -- token-addr false | xt flags )
     cmp tos, #0                         @ flags - 0
     bne 1f                              @ Goto xt
-        TWO_DROP                        @ ( token-addr 0 -- )
+        TWO_DROP                        @ ( token-addr false -- )
         PRINT "' undefined word"
         b 6f                            @ Goto return
 
 @ xt
-1:  DROP                                @ ( flags -- )
+1:  DROP                                @ ( xt flags -- xt )
 
 @ Return
 6:  pop {pc}
@@ -62,8 +62,8 @@ WORD FLAG_INTERPRET, "'", tick
 @ ------------------------------------------------------------------------------
 .if ENABLE_TIMES == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "*", times
-    ldmia dsp!, {r0}
-    muls tos, r0
+    ldmia dsp!, {r0}                    @ ( n1 n2 -- n2 )
+    muls tos, r0                        @ ( n2 -- n3 )
     bx lr
 .endif
 
@@ -84,7 +84,7 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "*/", times_div
 @ r2    n3
 @ r3    bottom
 @ r12   top
-    POP_REGS top=r2, to="r0-r1"
+    POP_REGS top=r2, to="r0-r1"         @ ( n1 n2 n3 -- )
     PUSH_TOS
     smull r3, r12, r0, r1;
     cmp r12, #0
@@ -109,8 +109,8 @@ WORD FLAG_SKIP, "*/mod", times_div_mod
 @ ------------------------------------------------------------------------------
 .if ENABLE_PLUS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "+", plus
-    ldmia dsp!, {r0}
-    adds tos, r0
+    ldmia dsp!, {r0}                    @ ( n1 n2 -- n2 )
+    adds tos, r0                        @ ( n2 -- n3 )
     bx lr
 .endif
 
@@ -121,7 +121,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "+", plus
 @ ------------------------------------------------------------------------------
 .if ENABLE_PLUS_STORE == 1
 WORD FLAG_INTERPRET_COMPILE, "+!", plus_store
-    ldmia dsp!, {r0, r1}
+    ldmia dsp!, {r0, r1}                @ ( n a-addr -- )
     ldr r2, [tos]
     adds r0, r2
     str r0, [tos]
@@ -131,10 +131,10 @@ WORD FLAG_INTERPRET_COMPILE, "+!", plus_store
 
 @ ------------------------------------------------------------------------------
 @ +loop
-@ ( do-sys -- )
+@ ( dest -- )
 @ Append the run-time semantics given below to the current definition. Resolve
 @ the destination of all unresolved occurrences of leave between the location
-@ given by do-sys and the next location for a transfer of control, to execute
+@ given by dest and the next location for a transfer of control, to execute
 @ the words following +loop.
 @
 @ (            n --             )
@@ -153,60 +153,62 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
 @ subs r2, r1, r0
     ldr r0, =0x1A0ABC03
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ adds r0, r0, tos
 @ ldmia dsp!, {tos}
     ldr r0, =0xCF401980
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ subs r3, r1, r0
 @ cmp r2, #0
     ldr r0, =0x2A001A0B
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ ite le
 @ movle r2, #0
     ldr r0, =0x2200BFD4
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ movgt r2, #1
 @ cmp r3, #0
     ldr r0, =0x2B002201
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ ite gt
 @ movgt r3, r2
     ldr r0, =0x4613BFCC
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ eorle r3, r2, #1
     ldr r0, =0x0301F082
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ cmp r3, #0
 @ it ne
     ldr r0, =0xBF182B00
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ pushne {r0, r1}
     PUSH_INT16 #0xB403                  @ ( -- opcode )
-    bl h_comma                          @ Write opcode
+    bl h_comma                          @ ( opcode -- )
 
-@ Resolve do-sys
-    bl here
-    SWAP
-    bl bne_comma
+@ Resolve dest
+    bl here                             @ ( dest -- dest orig )
+    SWAP                                @ ( dest orig -- orig dest )
+    ldr r0, =0xF0408000                 @ bne
+    PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
+    bl bc_comma                         @ ( orig dest opcode -- )
 
 @ Take care of leave(s)
-    bl csp_comma
+    bl csp_comma                        @ ( C: loop-sys -- )
 
 @ Return
     pop {pc}
@@ -238,8 +240,8 @@ WORD FLAG_INTERPRET_COMPILE, ",", comma
 @ ------------------------------------------------------------------------------
 .if ENABLE_MINUS == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "-", minus
-    ldmia dsp!, {r0}
-    subs tos, r0, tos
+    ldmia dsp!, {r0}                    @ ( n1 n2 -- n2 )
+    subs tos, r0, tos                   @ ( n2 -- n3 )
     bx lr
 .endif
 
@@ -250,8 +252,8 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "-", minus
 @ ------------------------------------------------------------------------------
 .if ENABLE_DIV == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "/", div
-    ldmia dsp!, {r0}
-    sdiv tos, r0, tos
+    ldmia dsp!, {r0}                    @ ( n1 n2 -- n2 )
+    sdiv tos, r0, tos                   @ ( n2 -- n3 )
     bx lr
 .endif
 
@@ -268,8 +270,8 @@ WORD FLAG_SKIP, "/mod", div_mod
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0<", zero_less
     cmp tos, #0
     ite lt
-    movlt tos, #-1
-    movge tos, #0
+    movlt tos, #-1                      @ ( n -- flag )
+    movge tos, #0                       @ ( n -- flag )
     bx lr
 .endif
 
@@ -282,8 +284,8 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0<", zero_less
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0=", zero_equal
     cmp tos, #0
     ite eq
-    moveq tos, #-1
-    movne tos, #0
+    moveq tos, #-1                      @ ( n -- flag )
+    movne tos, #0                       @ ( n -- flag )
     bx lr
 .endif
 
@@ -317,10 +319,10 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "1-", one_minus
 @ ------------------------------------------------------------------------------
 .if ENABLE_TWO_STORE == 1
 WORD FLAG_INTERPRET_COMPILE, "2!", two_store
-    ldmia dsp!, {r0, r1}
+    ldmia dsp!, {r0, r1}                @ ( x1 x2 a-addr -- a-addr )
     str r0, [tos]
     str r1, [tos, #4]
-    DROP
+    DROP                                @ ( a-addr -- )
     bx lr
 .endif
 
@@ -424,10 +426,10 @@ WORD FLAG_INTERPRET_COMPILE, "2swap", two_swap
 WORD FLAG_INTERPRET_COMPILE, ":", colon
     push {lr}
 
-// TODO check stack balance? (maybe even return stack?)
+@ TODO check stack balance? (maybe even return stack?)
 
 @ Create word
-    bl word_comma
+    bl word_comma                       @ ( -- )
 
 @ Change flags set by create and make current definition unfindable
 @ r0    link
@@ -439,10 +441,10 @@ WORD FLAG_INTERPRET_COMPILE, ":", colon
 
 @ push {lr}
     PUSH_INT16 #0xB500                  @ ( -- opcode )
-    bl h_comma                          @ Write opcode
+    bl h_comma                          @ ( opcode -- )
 
 @ Enter compilation state
-    bl bracket_right
+    bl bracket_right                    @ ( -- )
 
 @ Return
     pop {pc}
@@ -467,7 +469,7 @@ WORD FLAG_COMPILE_IMMEDIATE, ";", semi
 // TODO check stack balance? (maybe even return stack?)
 
 @ Write return
-    bl exit
+    bl exit                             @ ( -- )
 
 @ Change flags set by : and make definition findable
 @ r0    link
@@ -478,7 +480,7 @@ WORD FLAG_COMPILE_IMMEDIATE, ";", semi
     strb r1, [r0, #4]
 
 @ Enter interpretation state
-    bl bracket_left
+    bl bracket_left                     @ ( -- )
 
 @ Return
     pop {pc}
@@ -491,11 +493,11 @@ WORD FLAG_COMPILE_IMMEDIATE, ";", semi
 @ ------------------------------------------------------------------------------
 .if ENABLE_LESS == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<", less
-    ldmia dsp!, {r0}
+    ldmia dsp!, {r0}                    @ ( n1 n2 -- n2 )
     cmp r0, tos
     ite lt
-    movlt tos, #-1
-    movge tos, #0
+    movlt tos, #-1                      @ ( n2 -- flag )
+    movge tos, #0                       @ ( n2 -- flag )
     bx lr
 .endif
 
@@ -506,11 +508,11 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<", less
 @ ------------------------------------------------------------------------------
 .if ENABLE_EQUAL == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "=", equal
-    ldmia dsp!, {r0}
+    ldmia dsp!, {r0}                    @ ( x1 x2 -- x2 )
     cmp r0, tos
     ite eq
-    moveq tos, #-1
-    movne tos, #0
+    moveq tos, #-1                      @ ( x2 -- flag )
+    movne tos, #0                       @ ( x2 -- flag )
     bx lr
 .endif
 
@@ -521,11 +523,11 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "=", equal
 @ ------------------------------------------------------------------------------
 .if ENABLE_MORE == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, ">", more
-    ldmia dsp!, {r0}
+    ldmia dsp!, {r0}                    @ ( n1 n2 -- n2 )
     cmp r0, tos
     ite gt
-    movgt tos, #-1
-    movle tos, #0
+    movgt tos, #-1                      @ ( n2 -- flag )
+    movle tos, #0                       @ ( n2 -- flag )
     bx lr
 .endif
 
@@ -537,7 +539,7 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, ">", more
 .if ENABLE_TO_BODY == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_1, ">body", to_body
     adds tos, #12                       @ align(xt + 12, 4)
-    P2ALIGN2 align=tos, scratch=r12
+    P2ALIGN2 align=tos, scratch=r12     @ ( xt -- a-addr )
     bx lr
 .endif
 
@@ -664,8 +666,8 @@ WORD FLAG_INTERPRET_COMPILE, "allot"
 @ ------------------------------------------------------------------------------
 .if ENABLE_AND == 1
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "and"
-    ldmia dsp!, {r0}
-    ands tos, r0
+    ldmia dsp!, {r0}                    @ ( x1 x2 -- x2 )
+    ands tos, r0                        @ ( x2 -- x3 )
     bx lr
 .endif
 
@@ -696,7 +698,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "begin"
     push {lr}
 
 @ dest
-    bl here
+    bl here                             @ ( -- dest )
 
 @ Return
     pop {pc}
@@ -710,9 +712,9 @@ WORD FLAG_COMPILE_IMMEDIATE, "begin"
 @ ------------------------------------------------------------------------------
 .if ENABLE_C_STORE == 1
 WORD FLAG_INTERPRET_COMPILE, "c!", c_store
-    ldrb r0, [dsp], #4
+    ldrb r0, [dsp], #4                  @ ( char c-addr -- c-addr )
     strb r0, [tos]
-    DROP
+    DROP                                @ ( c-addr -- )
     bx lr
 .endif
 
@@ -806,14 +808,14 @@ WORD FLAG_INTERPRET_COMPILE, "constant"
     push {lr}
 
 @ Create word
-    bl word_comma
+    bl word_comma                       @ ( -- )
 
 @ Write literal
-    bl literal
+    bl literal                          @ ( x -- )
 
 @ bx lr
-    PUSH_INT16 #0x4770
-    bl h_comma
+    PUSH_INT16 #0x4770                  @ ( -- opcode )
+    bl h_comma                          @ ( opcode -- )
 
 @ Return
     pop {pc}
@@ -837,12 +839,12 @@ WORD FLAG_INTERPRET_COMPILE, "create"
     push {lr}
 
 @ Create word
-    bl word_comma
+    bl word_comma                       @ ( -- )
 
 @ str tos, [dsp, #-4]!
     PUSH_TOS
     ldr tos, =0x6D04F847                @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ Additions to pc can only be 4 byte aligned, add nop if necessary
 @ nop
@@ -850,16 +852,16 @@ WORD FLAG_INTERPRET_COMPILE, "create"
     ands tos, #3
     beq 1f
         PUSH_INT16 #0xBF00              @ ( -- opcode )
-        bl h_comma                      @ Write opcode
+        bl h_comma                      @ ( opcode -- )
 
 @ add tos, pc, #4
 1:  PUSH_TOS
     ldr tos, =0x0604F20F                @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ bx lr
     PUSH_INT16 #0x4770                  @ ( -- opcode )
-    bl h_comma                          @ Write opcode
+    bl h_comma                          @ ( opcode -- )
 
 @ Allot enough space to allow does> changing bx lr to b
     PUSH_INT8 #2
@@ -897,10 +899,10 @@ WORD FLAG_INTERPRET_COMPILE, "depth"
 
 @ ------------------------------------------------------------------------------
 @ do
-@ ( -- do-sys )
-@ Place do-sys onto the stack. Append the run-time semantics given below to the
+@ ( -- dest )
+@ Place dest onto the stack. Append the run-time semantics given below to the
 @ current definition. The semantics are incomplete until resolved by a consumer
-@ of do-sys such as loop.
+@ of dest such as loop.
 @
 @ (    n1 n2 --          )
 @ ( R:       -- loop-sys )
@@ -918,14 +920,14 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 @ ldmia dsp!, {r1, tos}
     ldr r0, =0xCF420030
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ push {r0, r1}
     PUSH_INT16 #0xB403                  @ ( -- opcode )
-    bl h_comma                          @ Write opcode
+    bl h_comma                          @ ( opcode -- )
 
-@ Do-sys
-    bl here
+@ Dest
+    bl here                             @ ( -- dest )
 
 @ Return
     pop {pc}                          
@@ -960,9 +962,9 @@ WORD FLAG_COMPILE, "does>", does
 @ Replace bx lr of create with branch to code after does>
 @ r0    bx lr address
 @ lr    does> link address
-    PUSH_REGS r0
-    PUSH_REGS lr
-    bl b_comma
+    PUSH_REGS r0                        @ ( -- orig )
+    PUSH_REGS lr                        @ ( -- orig dest )
+    bl b_comma                          @ ( orig dest -- )
 
 @ Return
     pop {pc}
@@ -1010,7 +1012,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "else"
 @ This is tricky as then needs to compile different branches depending on if its
 @ resolving orig1 or orig2. We use the LSB of orig2 to signal that we want then
 @ to compile an unconditional instead of a conditional branch.
-    bl here
+    bl here                             @ ( orig1 -- orig1 orig2 )
     orrs tos, #1
 
 @ Reserve space for orig2
@@ -1019,13 +1021,10 @@ WORD FLAG_COMPILE_IMMEDIATE, "else"
 
 @ Resolve orig1
     SWAP                                @ ( orig1 orig2 -- orig2 orig1 )
-    bl here
-    @bl beq_comma
-
-    @ push opcode ... TODO doc here
-    ldr r0, =0xF0008000
-    PUSH_REGS r0
-    bl bc_comma
+    bl here                             @ ( orig2 orig1 -- orig2 orig1 dest )
+    ldr r0, =0xF0008000                 @ beq
+    PUSH_REGS r0                        @ ( orig2 orig1 dest -- orig2 orig1 dest opcode )
+    bl bc_comma                         @ ( orig2 orig1 dest opcode -- orig2 )
 
 @ Return
     pop {pc}
@@ -1091,7 +1090,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "exit"
 
 @ pop {pc}
     PUSH_INT16 #0xBD00                  @ ( -- opcode )
-    bl h_comma                          @ Write opcode
+    bl h_comma                          @ ( opcode -- )
 
 @ Return
     pop {pc}
@@ -1193,12 +1192,12 @@ WORD FLAG_COMPILE_IMMEDIATE, "i"
 
 @ str tos, [dsp, #-4]!
     ldr r0, =0x6D04F847
-    PUSH_REGS r0
-    bl comma
+    PUSH_REGS r0                        @ ( -- opcode )
+    bl comma                            @ ( opcode -- )
 
 @ ldr tos, [sp]
-    PUSH_INT16 #0x9E00
-    bl h_comma
+    PUSH_INT16 #0x9E00                  @ ( -- opcode )
+    bl h_comma                          @ ( opcode -- )
 
 @ Return
     pop {pc}
@@ -1207,10 +1206,10 @@ WORD FLAG_COMPILE_IMMEDIATE, "i"
 @ ------------------------------------------------------------------------------
 @ if
 @ ( -- orig1 )
-@ Put the location of a new unresolved forward reference orig and it's function
+@ Put the location of a new unresolved forward reference orig1 and it's function
 @ pointer onto the stack. Append the run-time semantics given below to the
-@ current definition. The semantics are incomplete until orig is resolved, e.g.,
-@ by then or else.
+@ current definition. The semantics are incomplete until orig1 is resolved,
+@ e.g., by then or else.
 @
 @ ( x -- )
 @ If all bits of x are zero, continue execution at the location specified by the
@@ -1225,14 +1224,14 @@ WORD FLAG_COMPILE_IMMEDIATE, "if"
 @ ldmia dsp!, {tos}
     ldr r0, =0xCF400030
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ cmp r0, #0
     PUSH_INT16 #0x2800                  @ ( -- opcode )
-    bl h_comma                          @ Write opcode
+    bl h_comma                          @ ( opcode -- )
 
 @ orig1
-    bl here
+    bl here                             @ ( -- orig1 )
 
 @ Reserve space for orig1
     PUSH_INT8 #4
@@ -1271,12 +1270,12 @@ WORD FLAG_COMPILE_IMMEDIATE, "j"
 
 @ str tos, [dsp, #-4]!
     ldr r0, =0x6D04F847
-    PUSH_REGS r0
-    bl comma
+    PUSH_REGS r0                        @ ( -- opcode )
+    bl comma                            @ ( opcode -- )
 
 @ ldr tos, [sp, #8]
-    PUSH_INT16 #0x9E02
-    bl h_comma
+    PUSH_INT16 #0x9E02                  @ ( -- opcode )
+    bl h_comma                          @ ( opcode -- )
 
 @ Return
     pop {pc}
@@ -1335,14 +1334,14 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
 
     PUSH_TOS
     ldr tos, =0x6D04F847                @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ movs (t1)
 @ tos   x
     cmp tos, #0xFF
     bhi 1f                              @ Goto movs (t2)
         orrs tos, #0x2600               @ Opcode template (can be ored directly into tos)
-        bl h_comma                      @ Write opcode
+        bl h_comma                      @ ( opcode -- )
             b 6f                        @ Goto return
 
 @ movs (t2)
@@ -1361,7 +1360,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
 
         ldr tos, =0xF05F1600            @ Opcode template
         orrs tos, r0                    @ Or imm8 into template
-        bl rev_comma                    @ Write opcode
+        bl rev_comma                    @ ( opcode -- )
             b 6f                        @ Goto return
 
 @ Pattern 0xXY00XY00
@@ -1379,7 +1378,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
 
         ldr tos, =0xF05F2600            @ Opcode template
         orrs tos, tos, r0, lsr #8       @ Or imm8 into template
-        bl rev_comma                    @ Write opcode
+        bl rev_comma                    @ ( opcode -- )
             b 6f                        @ Goto return
 
 @ Pattern 0xXYXYXYXY
@@ -1395,7 +1394,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
 
         ldr tos, =0xF05F3600            @ Opcode template
         orrs tos, tos, r0, lsr #24      @ Or imm8 into template
-        bl rev_comma                    @ Write opcode
+        bl rev_comma                    @ ( opcode -- )
             b 6f                        @ Goto return
 
 @ Pattern
@@ -1464,7 +1463,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
             it ne
             orrne tos, #0x4000000
 
-            bl rev_comma                @ Write opcode
+            bl rev_comma                @ ( opcode -- )
 
             b 6f                        @ Goto return
 
@@ -1494,7 +1493,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
     orrs tos, tos, r1, lsl #4
 
     push {r2}                           @ Save xt
-    bl rev_comma                        @ Write opcode
+    bl rev_comma                        @ ( opcode -- )
     pop {r2}
 
 @ movt
@@ -1515,7 +1514,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
     ands r1, r0, #0xF000                @ imm4
     orrs tos, tos, r1, lsl #4
 
-    bl rev_comma                        @ Write opcode
+    bl rev_comma                        @ ( opcode -- )
 
 @ Return
 6:  pop {pc}
@@ -1524,10 +1523,10 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
 
 @ ------------------------------------------------------------------------------
 @ loop
-@ ( do-sys -- )
+@ ( dest -- )
 @ Append the run-time semantics given below to the current definition. Resolve
 @ the destination of all unresolved occurrences of leave between the location
-@ given by do-sys and the next location for a transfer of control, to execute
+@ given by dest and the next location for a transfer of control, to execute
 @ the words following the loop.
 @
 @ (              --             )
@@ -1545,25 +1544,27 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
 @ adds r0, #1
     ldr r0, =0x3001BC03
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ cmp r0, r1
 @ it ne
     ldr r0, =0xBF184288
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ pushne {r0, r1}
     PUSH_INT16 #0xB403                  @ ( -- opcode )
-    bl h_comma                          @ Write opcode
+    bl h_comma                          @ ( opcode -- )
 
-@ Resolve do-sys
-    bl here
-    SWAP
-    bl bne_comma
+@ Resolve dest
+    bl here                             @ ( -- dest orig )
+    SWAP                                @ ( dest orig -- orig dest )
+    ldr r0, =0xF0408000                 @ beq
+    PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
+    bl bc_comma                         @ ( orig dest opcode -- )
 
 @ Take care of leave(s)
-    bl csp_comma
+    bl csp_comma                        @ ( C: loop-sys -- )
 
 @ Return
     pop {pc}
@@ -1758,13 +1759,15 @@ WORD FLAG_COMPILE_IMMEDIATE, "repeat"
     push {lr}
 
 @ Resolve dest
-    bl here
-    SWAP
-    bl b_comma
+    bl here                             @ ( orig dest -- orig dest orig )
+    SWAP                                @ ( orig dest orig -- orig orig dest )
+    bl b_comma                          @ ( orig orig dest -- orig )
 
 @ Resolve orig
-    bl here
-    bl beq_comma
+    bl here                             @ ( orig -- orig dest )
+    ldr r0, =0xF0008000                 @ beq
+    PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
+    bl bc_comma                         @ ( orig dest opcode -- )
 
 @ Return
     pop {pc}
@@ -1852,8 +1855,8 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "swap"
 @ then
 @ ( orig1 | orig2 -- )
 @ Append the run-time semantics given below to the current definition. Resolve
-@ the forward reference orig using the location of the appended run-time
-@ semantics.
+@ the forward reference orig1 or orig2 using the location of the appended
+@ run-time semantics.
 @
 @ ( -- )
 @ Continue execution.
@@ -1865,14 +1868,16 @@ WORD FLAG_COMPILE_IMMEDIATE, "then"
 @ Resolve orig1 or orig2 based on whether LSB is set
     ands r0, tos, #1
     bne 1f
-        bl here
-        bl beq_comma
+        bl here                         @ ( orig1 -- orig1 dest )
+        ldr r0, =0xF0008000             @ beq
+        PUSH_REGS r0                    @ ( orig1 dest -- orig1 dest opcode )
+        bl bc_comma                     @ ( orig1 dest opcode -- )
         b 6f                            @ Goto return
 
 @ Resolve orig2
 1:  eors tos, r0                        @ Clear bit0
-    bl here
-    bl b_comma
+    bl here                             @ ( orig2 -- orig2 dest )
+    bl b_comma                          @ ( orig2 dest -- )
 
 @ Return
 6:  pop {pc}
@@ -1914,8 +1919,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "unloop"
     push {lr}
 
 @ pop {r0, r1}
-    PUSH_INT16 #0xBC03
-    bl h_comma
+    PUSH_INT16 #0xBC03                  @ ( -- opcode )
+    bl h_comma                          @ ( opcode -- )
 
 @ Return
     pop {pc}
@@ -1940,16 +1945,18 @@ WORD FLAG_COMPILE_IMMEDIATE, "until"
 @ ldmia dsp!, {tos}
     ldr r0, =0xCF400030
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma                            @ Write opcode
+    bl comma                            @ ( opcode -- )
 
 @ cmp r0, #0
     PUSH_INT16 #0x2800                  @ ( -- opcode )
-    bl h_comma                          @ Write opcode
+    bl h_comma                          @ ( opcode -- )
 
 @ Resolve dest
-    bl here
-    SWAP
-    bl beq_comma
+    bl here                             @ ( dest -- dest orig )
+    SWAP                                @ ( dest orig -- orig dest )
+    ldr r0, =0xF0008000                 @ beq
+    PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
+    bl bc_comma                         @ ( orig dest opcode -- )
 
 @ Return
     pop {pc}
@@ -1971,20 +1978,20 @@ WORD FLAG_INTERPRET_COMPILE, "variable"
     push {lr}
 
 @ Create word
-    bl word_comma
+    bl word_comma                       @ ( -- )
 
 @ Write literal with the reserved cells address
     ldr r0, =data_end
     ldr r1, [r0]
     movs r2, #0                         @ Zero initialize cell
     str r2, [r1, #-4]!
-    PUSH_REGS r1
+    PUSH_REGS r1                        @ ( -- x )
     str r1, [r0]
-    bl literal
+    bl literal                          @ ( x -- )
 
 @ bx lr
-    PUSH_INT16 #0x4770
-    bl h_comma
+    PUSH_INT16 #0x4770                  @ ( -- opcode )
+    bl h_comma                          @ ( opcode -- )
 
 @ Change flags set by create to also reserve a cell
 @ r0    link
@@ -2019,15 +2026,15 @@ WORD FLAG_COMPILE_IMMEDIATE, "while"
 @ ldmia dsp!, {tos}
     ldr r0, =0xCF400030
     PUSH_REGS r0                        @ ( -- opcode )
-    bl comma
+    bl comma                            @ ( opcode -- )
 
 @ cmp r0, #0
     PUSH_INT16 #0x2800                  @ ( -- opcode )
-    bl h_comma
+    bl h_comma                          @ ( opcode -- )
 
 @ Reserve space for orig
-    bl here
-    SWAP
+    bl here                             @ ( dest -- dest orig )
+    SWAP                                @ ( dest orig -- orig dest )
     PUSH_INT8 #4                        @ Reserve space for branch instruction
     bl allot
 
@@ -2102,8 +2109,8 @@ WORD FLAG_INTERPRET, "]", bracket_right
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0<>", zero_ne
     cmp tos, #0
     ite ne
-    movne tos, #-1
-    moveq tos, #0
+    movne tos, #-1                      @ ( x -- flag )
+    moveq tos, #0                       @ ( x -- flag )
     bx lr
 .endif
 
@@ -2116,8 +2123,8 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0<>", zero_ne
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "0>", zero_more
     cmp tos, #0
     ite gt
-    movgt tos, #-1
-    movle tos, #0
+    movgt tos, #-1                      @ ( n -- flag )
+    movle tos, #0                       @ ( n -- flag )
     bx lr
 .endif
 
@@ -2172,11 +2179,11 @@ WORD FLAG_SKIP, ":noname", colon_noname
 @ ------------------------------------------------------------------------------
 .if ENABLE_NE == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<>", ne
-    ldmia dsp!, {r0}
+    ldmia dsp!, {r0}                    @ ( x1 x2 -- x2 )
     cmp r0, tos
     ite ne
-    movne tos, #-1
-    moveq tos, #0
+    movne tos, #-1                      @ ( x2 -- flag )
+    moveq tos, #0                       @ ( x2 -- flag )
     bx lr
 .endif
 
@@ -2203,9 +2210,9 @@ WORD FLAG_COMPILE_IMMEDIATE, "again"
     push {lr}
 
 @ Resolve branch to begin
-    bl here                             @ ( -- orig )
-    SWAP
-    bl b_comma
+    bl here                             @ ( dest -- dest orig )
+    SWAP                                @ ( dest orig -- orig dest )
+    bl b_comma                          @ ( orig dest -- )
 
 @ Return
     pop {pc}
@@ -2217,7 +2224,7 @@ WORD FLAG_SKIP, "buffer:", buffer_colon
 
 @ ------------------------------------------------------------------------------
 @ case
-@ ( -- case-sys  \ technically there ain't nothing to "mark" )
+@ ( -- )
 @ Mark the start of the case...of...endof...endcase structure. Append the
 @ run-time semantics given below to the current definition.
 @
@@ -2321,7 +2328,7 @@ WORD FLAG_COMPILE, "compile,", compile_comma
     ands r1, r0                         @ imm10
     orrs tos, tos, r1, lsl #16          @ Or imm10 into template
 
-    bl rev_comma                        @ Write opcode
+    bl rev_comma                        @ ( opcode -- )
         b 6f                            @ Goto return
 
 @ movw movt blx
@@ -2349,7 +2356,7 @@ WORD FLAG_COMPILE, "compile,", compile_comma
     orrs tos, tos, r1, lsl #4
 
     push {r2}                           @ Save xt
-    bl rev_comma                        @ Write opcode
+    bl rev_comma                        @ ( opcode -- )
     pop {r2}
 
 @ movt
@@ -2370,11 +2377,11 @@ WORD FLAG_COMPILE, "compile,", compile_comma
     ands r1, r0, #0xF000                @ imm4
     orrs tos, tos, r1, lsl #4
 
-    bl rev_comma                        @ Write opcode
+    bl rev_comma                        @ ( opcode -- )
 
 @ blx r0
     PUSH_INT16 #0x4780                  @ ( -- opcode )
-    bl h_comma                          @ Write opcode
+    bl h_comma                          @ ( opcode -- )
 
 @ Return
 6:  pop {pc}
@@ -2394,7 +2401,7 @@ WORD FLAG_SKIP, "defer@", defer_fetch
 
 @ ------------------------------------------------------------------------------
 @ endcase
-@ ( case-sys -- )
+@ ( C: case-sys -- )
 @ Mark the end of the case...of...endof...endcase structure. Use case-sys to
 @ resolve the entire structure. Append the run-time semantics given below to the
 @ current definition.
@@ -2409,11 +2416,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 @ If the case selector never matched, discard it now before we resolve the
 @ branch(es) from endof(s)
 @ ldmia dsp!, {tos}
-    PUSH_INT16 #0xCF40
-    bl h_comma
+    PUSH_INT16 #0xCF40                  @ ( -- opcode )
+    bl h_comma                          @ ( opcode -- )
 
 @ Take care of endof(s)
-    bl csp_comma
+    bl csp_comma                        @ ( C: case-sys -- )
 
 @ Return
     pop {pc}
@@ -2421,11 +2428,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 
 @ ------------------------------------------------------------------------------
 @ endof
-@ ( C: case-sys1 of-sys -- case-sys2 )
+@ ( C: orig1 -- orig2 )
 @ Mark the end of the of...endof part of the case structure. The next location
-@ for a transfer of control resolves the reference given by of-sys. Append the
-@ run-time semantics given below to the current definition. Replace case-sys1
-@ with case-sys2 on the control-flow stack, to be resolved by endcase.
+@ for a transfer of control resolves the reference given by orig1. Append the
+@ run-time semantics given below to the current definition. Replace orig1 with
+@ orig2 on the control-flow stack, to be resolved by endcase.
 @
 @ ( -- )
 @ Continue execution at the location specified by the consumer of case-sys2.
@@ -2434,7 +2441,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 WORD FLAG_COMPILE_IMMEDIATE, "endof"
     push {lr}
 
-@ Reverse push case-sys2 onto the stack
+@ Reverse push orig2 onto the stack
 @ r0    csp address
 @ r1    csp
     bl here
@@ -2444,13 +2451,15 @@ WORD FLAG_COMPILE_IMMEDIATE, "endof"
     str r1, [r0]
     DROP
 
-@ Reserve space for orig
+@ Reserve space for orig2
     PUSH_INT8 #4
     bl allot
 
-@ Resolve of-sys
-    bl here
-    bl bne_comma
+@ Resolve orig1
+    bl here                             @ ( orig1 -- orig1 dest )
+    ldr r0, =0xF0408000                 @ bne
+    PUSH_REGS r0                        @ ( orig1 dest -- orig1 dest opcode )
+    bl bc_comma                         @ ( orig1 dest opcode -- )
 
 @ Return
     pop {pc}
@@ -2506,10 +2515,10 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "nip"
 
 @ ------------------------------------------------------------------------------
 @ of
-@ ( -- of-sys )
-@ Put of-sys onto the stack. Append the run-time semantics given below to the
+@ ( -- orig1 )
+@ Put orig1 onto the stack. Append the run-time semantics given below to the
 @ current definition. The semantics are incomplete until resolved by a consumer
-@ of of-sys such as endof.
+@ of orig such as endof.
 @
 @ ( x1 x2 -- | x1 )
 @ If the two values on the stack are not equal, discard the top value and
@@ -2524,21 +2533,21 @@ WORD FLAG_COMPILE_IMMEDIATE, "of"
 @ movs r0, tos
 @ ldmia dsp!, {tos}
     ldr r0, =0xCF400030
-    PUSH_REGS r0
-    bl comma
+    PUSH_REGS r0                        @ ( -- opcode )
+    bl comma                            @ ( opcode -- )
 
 @ cmp r0, tos
-    PUSH_INT16 #0x42B0
-    bl h_comma
+    PUSH_INT16 #0x42B0                  @ ( -- opcode )
+    bl h_comma                          @ ( opcode -- )
 
-@ of-sys
-    bl here
+@ orig1
+    bl here                             @ ( -- orig1 )
     PUSH_INT8 #4
     bl allot
 
 @ ldmia dsp!, {tos}
-    PUSH_INT16 #0xCF40
-    bl h_comma
+    PUSH_INT16 #0xCF40                  @ ( -- opcode )
+    bl h_comma                          @ ( opcode -- )
 
 @ Return
     pop {pc}
@@ -2550,12 +2559,12 @@ WORD FLAG_SKIP, "pad"
 
 @ ------------------------------------------------------------------------------
 @ parse-name
-@ ( "<spaces>name<space>" -- c-addr u )
+@ ( "<spaces>name<space>" -- token-addr token-u )
 @ Skip leading space delimiters. Parse name delimited by a space.
 @
-@ c-addr is the address of the selected string within the input buffer and u is
-@ its length in characters. If the parse area is empty or contains only white
-@ space, the resulting string has length zero.
+@ token-addr is the address of the selected string within the input buffer and
+@ token-u is its length in characters. If the parse area is empty or contains
+@ only white space, the resulting string has length zero.
 @ ------------------------------------------------------------------------------
 .if ENABLE_PARSE == 1
 WORD FLAG_INTERPRET_COMPILE, "parse-name", parse_name
@@ -2671,11 +2680,11 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "tuck"
 @ ------------------------------------------------------------------------------
 .if ENABLE_U_MORE == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u>", u_more
-    ldmia dsp!, {r0}
+    ldmia dsp!, {r0}                    @ ( u1 u2 -- u2 )
     cmp r0, tos
     ite hi
-    movhi tos, #-1
-    movls tos, #0
+    movhi tos, #-1                      @ ( u2 -- flag )
+    movls tos, #0                       @ ( u2 -- flag )
     bx lr
 .endif
 

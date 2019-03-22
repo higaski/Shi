@@ -23,6 +23,11 @@
 ///
 /// -# Conditional branch funktionen (beq, bne) ließen sich zusammenlegen
 ///
+/// -# I unterscheid zw. c-addr u und token-addr und token-u ... sonst kennt si
+///    ka sau aus
+///
+/// -# Evaluate könnt ma kübeln oder? Genau genommen könnt ma interpret direkt
+///    von da API anspringen
 ///
 /// \page page_interpret Interpret loop
 /// \dot

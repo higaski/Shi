@@ -256,7 +256,7 @@ WORD_TAIL FLAG_SKIP
 @ ------------------------------------------------------------------------------
 .thumb_func
 shi_init_asm:
-    push {tos-lfp, lr}
+    push {tos-lfp, lr}                  @ ( R: -- tos dsp lfp lr )
 
 @ Store data addresses
 @ r0    init_t address
@@ -302,26 +302,7 @@ shi_init_asm:
 
 @ Return
     EXIT                                @ Store context
-    pop {tos-lfp, pc}
-
-@ ------------------------------------------------------------------------------
-@ Fill data with 0xFF
-@ ------------------------------------------------------------------------------
-.thumb_func
-fill_data:
-@ r0    data_begin
-@ r1    data_end
-@ r2    erased word
-    ldr r2, =data_begin
-    ldmia r2, {r0, r1}
-    movs r2, #ERASED_WORD
-1:  cmp r0, r1
-    beq 6f
-        str r2, [r0], #4 @TODO write last few bytes single... who says data is 4-byte aligned?
-        b 1b
-
-@ Return
-6:  bx lr
+    pop {tos-lfp, pc}                   @ ( R: tos dsp lfp lr -- )
 
 @ ------------------------------------------------------------------------------
 @ Search through text dictionary to look for definitions which need to reserve
@@ -337,11 +318,11 @@ sweep_text:
     ldr r1, =shi_dict_begin
     ldr r3, =data_end
     ldr r12, [r3]
-1:  ldrb r2, [r1, #4]                   @ Flags
+1:  ldrb r2, [r1, #4]                   @ flags
     mvns r2, r2                         @ Invert flags
     ands r2, r2, #BIT_RESERVE_RAM       @ Extract reserve ram bits from flags
     subs r12, r2                        @ If bits are set subtract amount of bytes from data_end
-    ldr r1, [r1]                        @ Link
+    ldr r1, [r1]                        @ link
     cmp r1, #LINK_INVALID               @ End of dictionary?
     itt ne
     movne r0, r1
@@ -354,13 +335,32 @@ sweep_text:
     bx lr
 
 @ ------------------------------------------------------------------------------
+@ Fill data with 0xFF
+@ ------------------------------------------------------------------------------
+.thumb_func
+fill_data:
+@ r0    data_begin
+@ r1    data_end
+@ r2    erased word
+    ldr r2, =data_begin
+    ldmia r2, {r0, r1}
+    movs r2, #ERASED_WORD
+1:  cmp r0, r1
+    beq 6f
+        str r2, [r0], #4                @TODO write last few bytes single... who says data is 4-byte aligned?
+        b 1b
+
+@ Return
+6:  bx lr
+
+@ ------------------------------------------------------------------------------
 @ Forth evaluate
 @ r0    c-addr  (cstring address)
 @ r1    u       (cstring length)
 @ ------------------------------------------------------------------------------
 .thumb_func
 shi_evaluate_asm:
-    push {tos-lfp, lr}
+    push {tos-lfp, lr}                  @ ( R: -- tos dsp lfp lr )
 
 @ Enter forth
 1:  ENTRY                               @ Restore context
@@ -373,14 +373,14 @@ shi_evaluate_asm:
     EXIT                                @ Store context
 
 @ Return
-6:  pop {tos-lfp, pc}
+6:  pop {tos-lfp, pc}                   @ ( R: tos dsp lfp lr -- )
 
 @ ------------------------------------------------------------------------------
 @ Clear stack
 @ ------------------------------------------------------------------------------
 .thumb_func
 shi_clear_asm:
-    push {tos-lfp, lr}
+    push {tos-lfp, lr}                  @ ( R: -- tos dsp lfp lr )
 
 @ r0    shi_stack_begin
 @ tos   0
@@ -396,8 +396,8 @@ shi_clear_asm:
 @ Return
 6:  movs lfp, #0                        @ Put zero into lfp...
     movs tos, #'*'                      @ Put stars onto tos ;)
-    EXIT
-    pop {tos-lfp, pc}
+    EXIT                                @ Store context
+    pop {tos-lfp, pc}                   @ ( R: tos dsp lfp lr -- )
 .ltorg
 
 @ ------------------------------------------------------------------------------
@@ -407,7 +407,7 @@ shi_clear_asm:
 @ ------------------------------------------------------------------------------
 .thumb_func
 shi_tick_asm:
-    push {tos-lfp, lr}
+    push {tos-lfp, lr}                  @ ( R: -- tos dsp lfp lr )
 
 @ Enter forth
 1:  ENTRY                               @ Restore context
@@ -423,7 +423,7 @@ shi_tick_asm:
     EXIT                                @ Store context
 
 @ Return
-    pop {tos-lfp, pc}
+    pop {tos-lfp, pc}                   @ ( R: tos dsp lfp lr -- )
 
 @ ------------------------------------------------------------------------------
 @ Forth C variable
@@ -432,7 +432,7 @@ shi_tick_asm:
 @ ------------------------------------------------------------------------------
 .thumb_func
 shi_c_variable_asm:
-    push {tos-lfp, lr}
+    push {tos-lfp, lr}                  @ ( R: -- tos dsp lfp lr )
 
 @ Enter forth
     ENTRY                               @ Restore context
@@ -451,4 +451,4 @@ shi_c_variable_asm:
     EXIT                                @ Store context
 
 @ Return
-    pop {tos-lfp, pc}
+    pop {tos-lfp, pc}                   @ ( R: tos dsp lfp lr -- )
