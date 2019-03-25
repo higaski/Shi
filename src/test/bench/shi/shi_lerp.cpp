@@ -1,10 +1,8 @@
 #include <cstdio>
 #include <vector>
-#include "dwt_cyccnt.h"
+#include "bench.h"
 #include "lerp_data.h"
 #include "shi.hpp"
-#include "stm32f4xx.h"
-#include "stm32f4xx_hal.h"
 
 using shi::operator""_s;
 
@@ -34,8 +32,5 @@ void shi_lerp() {
   }
   STOP_CYC_CNT();
 
-//  if (!equal(begin(y), end(y), &lerp_data.y[0]))
-//    printf("lua lerp false...\n");
-//  else
-//    printf("lua lerp done\n");
+  bench_assert(equal(begin(y), end(y), &lerp_data.y[0]));
 }

@@ -10,7 +10,7 @@ void bench() {
   c_bench();
   lua_bench();
   mp_bench();
-  //shi_bench();
+  shi_bench();
 }
 
 extern "C" [[noreturn]] void bench_assert_func(char const* file,

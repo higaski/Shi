@@ -60,13 +60,13 @@
 /// Although Forth systems are usually rather simple to develop there are still
 /// topics which should be covered in some detail. This applies above all to
 /// things that are not enforced by the standard such as
-/// - The actual quantity and implementation of data-, control- and return-stack
+/// - The implementation of data-, control- and return-stack
 /// - Dictionary entry layouts and word flags
 /// - Relationship between code- and data space
 /// - Action on an ambiguous condition
 ///
 /// and of course to non-standard additions such as
-/// - Compilation to flash by offering two different data-spaces (data/text aka
+/// - Compilation to flash by offering two different data-spaces (data/text ==
 ///   ram/flash)
 /// - Optimizations such as inlining and constant folding
 ///
@@ -102,8 +102,8 @@
 /// [until](https://forth-standard.org/standard/core/UNTIL),
 /// [while](https://forth-standard.org/standard/core/WHILE), ...) are so called
 /// "compile only" words which means that they can only be used when creating a
-/// new definition. The way the standard phrases this is that interpretation
-/// semantics for these word are undefined.
+/// new definition. The way the standard phrases this is that *interpretation
+/// semantics are undefined*.
 ///
 /// So this works
 ///
@@ -493,10 +493,10 @@
 /// extended the dictionary or not.
 ///
 /// **2.Fill data**<br>
-/// Shi does not rely on whether the data-space passed in is set
-/// zero-initialized or not. In any case it gets overwritten by the value
-/// defined by \ref SHI_ERASED_WORD. By default that's 0xFFFFFFFF which mimics
-/// what most cleared flash devices are.
+/// Shi does not rely on whether the data-space passed in is zero-initialized or
+/// not. In any case it gets overwritten by the value defined by \ref
+/// SHI_ERASED_WORD. By default that's 0xFFFFFFFF which mimics what most cleared
+/// flash devices are.
 ///
 /// **3.Set context**<br>
 /// Initializing the Shi context which means initializing the following
@@ -755,28 +755,51 @@
 /// ```
 ///
 /// LERP ->
+///
 /// 'y1 y2 y1 - x x1 - * x2 x1 - / +'
+///
 /// 'x x1 x2 y1 y2'
+///
 /// over
+///
 /// 'x x1 x2 y1 y2 y1'
+///
 /// -
+///
 /// 'x x1 x2 y1 (y2-y1)'
+///
 /// 4 roll
+///
 /// 'x1 x2 y1 (y2-y1) x'
+///
 /// 4 pick
+///
 /// 'x1 x2 y1 (y2-y1) x x1'
+///
 /// -
+///
 /// 'x1 x2 y1 (y2-y1) (x-x1)'
+///
 /// *
+///
 /// 'x1 x2 y1 (y2-y1)*(x-x1)'
+///
 /// 2swap
+///
 /// 'y1 (y2-y1)*(x-x1) x1 x2'
+///
 /// swap
+///
 /// 'y1 (y2-y1)*(x-x1) x2 x1'
+///
 /// -
+///
 /// 'y1 (y2-y1)*(x-x1) (x2-x1)'
+///
 /// /
+///
 /// 'y1 (y2-y1)*(x-x1)/(x2-x1)'
+///
 /// +
 ///
 /// ... done
@@ -785,10 +808,10 @@
 #pragma once
 
 // clang-format off
-/// Data-stack size
+/// Data-stack size (must be a multiple of 4 bytes)
 #define SHI_STACK_SIZE 256
 #if SHI_STACK_SIZE % 4
-#  error SHI_STACK_SIZE must be a multiple of 4
+#  error SHI_STACK_SIZE must be a multiple of 4 bytes
 #endif
 
 /// Most flash types are 0xFF erased

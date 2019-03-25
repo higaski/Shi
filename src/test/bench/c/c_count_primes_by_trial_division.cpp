@@ -25,8 +25,9 @@ uint32_t count_primes(uint32_t n) {
 }
 
 void c_count_primes_by_trial_division() {
+  volatile auto n{COUNT_PRIMES_TILL};
   START_CYC_CNT();
-  uint32_t retval{count_primes(COUNT_PRIMES_TILL)};
+  uint32_t retval{count_primes(n)};
   STOP_CYC_CNT();
 
   bench_assert(retval == RESULT_PRIMES_TILL);

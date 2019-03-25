@@ -20,7 +20,7 @@
       "label": "Run qemu2",
       "type": "shell",
       "isBackground": true,
-      "command": "${workspaceFolder}/qemu/2.8.0-3-20180523-0703/bin/qemu-system-gnuarmeclipse -verbose -mcu STM32F407VG --image ${workspaceFolder}/build/test/test.elf"
+      "command": "qemu-system-arm -cpu cortex-m3 -machine lm3s6965evb -nographic -semihosting-config enable=on,target=native -gdb tcp::1234 -S -kernel build/test/test.elf"
     }
   ]
 }

@@ -26,13 +26,13 @@ void mp_count_primes_by_trial_division() {
               MP_PARSE_FILE_INPUT);
 
   // clang-format off
-  START_CYC_CNT();
   mp_obj_t count_primes_by_trial_division_bytecode = mp_compilestring(
       "n = count_primes("xstr(COUNT_PRIMES_TILL)")\n", MP_PARSE_FILE_INPUT);
-  STOP_CYC_CNT();
   // clang-format on
 
+  START_CYC_CNT();
   mp_dobytecode(count_primes_by_trial_division_bytecode);
+  STOP_CYC_CNT();
 
   mp_dostring("print(n)\n", MP_PARSE_FILE_INPUT);  // TODO REMOVE
 }

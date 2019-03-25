@@ -15,55 +15,29 @@ using shi::operator""_w;
 
 void semihosting_example();
 
+namespace {
+
 void stack_dump() {
   printf("stack dump:\n");
   for (auto i{0u}; i < shi::size(); ++i)
     printf("%d. on stack: %d\n", i, shi::top(i));
 }
 
+}  // namespace
+
+alignas(4) std::array<uint8_t, 32 * 1024> shi_ram{};
+
+void shi_acker();
+
 extern "C" int test() {
-  shi::init({.data_begin = SHI_RAM_START,
-             .data_end = SHI_RAM_END,
-             .text_begin = SHI_FLASH_START,
-             .text_end = SHI_FLASH_END});
+  using std::begin, std::end;
 
-  // die variante geht nicht???
-  ": acker "
-  "over 0= if nip 1+ exit then "
-  "swap 1- swap "
-  "dup 0= if 1+ recurse exit then "
-  "1- over 1+ swap recurse recurse ;"_s;
+  shi::init({.data_begin = reinterpret_cast<uint32_t>(begin(shi_ram)),
+             .data_end = reinterpret_cast<uint32_t>(end(shi_ram)),
+             .text_begin = FLASH_END - (32 * 1024),
+             .text_end = FLASH_END});
 
-  asm volatile("nop");
-  "3 4"_s;
-  asm volatile("nop");
-  "acker"_s;
-
-  asm volatile("nop");
-  stack_dump();
-
-  // die aber scho? hä?
-  ": ackermann "
-  "over "
-  "0 over = if drop nip 1+     else "
-  "1 over = if drop nip 2 +    else "
-  "2 over = if drop nip 2* 3 + else "
-  "3 over = if drop swap 5 + swap lshift 3 - else "
-  "  drop swap 1- swap dup "
-  "  if "
-  "    1- over 1+ swap recurse recurse exit "
-  "  else "
-  "    1+ recurse exit "
-  "  then "
-  "then then then then "
-  ";"_s;
-
-  asm volatile("nop");
-  "3 4"_s;
-  asm volatile("nop");
-  "ackermann"_s;
-
-  stack_dump();
+  shi_acker();
 
   //  shi::push(1);
   //  shi::push(2);
@@ -111,7 +85,7 @@ extern "C" int test() {
   //  "20 indexed-array foo"_s;
   //  asm volatile("nop");
 
-  bench();
+  // bench();
 
   // semihosting_example();
 
