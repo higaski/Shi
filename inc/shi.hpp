@@ -1229,7 +1229,7 @@ inline remove_cvref_t<T> pop() {
                  "movs %0, tos \n"
                  "ldmia dsp!, {tos} \n"
                  "strd tos, dsp, [%1] \n"
-                 : "=r"(t)
+                 : "=&r"(t)
                  : "r"(&shi_context)
                  : "cc", "memory", "r0", "r1");
   else if constexpr (sizeof(V) == 8 && is_arithmetic_v<V>)

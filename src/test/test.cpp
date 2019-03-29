@@ -15,19 +15,16 @@ using shi::operator""_w;
 
 void semihosting_example();
 
-namespace {
-
 void stack_dump() {
   printf("stack dump:\n");
   for (auto i{0u}; i < shi::size(); ++i)
     printf("%d. on stack: %d\n", i, shi::top(i));
 }
 
-}  // namespace
-
 alignas(4) std::array<uint8_t, 32 * 1024> shi_ram{};
 
 void shi_acker();
+void shi_lerp();
 
 extern "C" int test() {
   using std::begin, std::end;
@@ -37,7 +34,8 @@ extern "C" int test() {
              .text_begin = FLASH_END - (32 * 1024),
              .text_end = FLASH_END});
 
-  shi_acker();
+  shi_lerp();
+  // shi_acker();
 
   //  shi::push(1);
   //  shi::push(2);

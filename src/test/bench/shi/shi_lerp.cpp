@@ -33,4 +33,23 @@ void shi_lerp() {
   STOP_CYC_CNT();
 
   bench_assert(equal(begin(y), end(y), &lerp_data.y[0]));
+
+  ": lerp2 over - 2>r over 2swap - r> * r> swap 2swap - / + ;"_s;
+
+  vector<int32_t> y2(n);
+
+  //START_CYC_CNT();
+  for (auto i{0u}; i < n; ++i) {
+    shi::push(lerp_data.x[i]);
+    shi::push(lerp_data.x1[i]);
+    shi::push(lerp_data.x2[i]);
+    shi::push(lerp_data.y1[i]);
+    shi::push(lerp_data.y2[i]);
+    "lerp2"_s;
+    y2[i] = shi::top();
+    shi::pop();
+  }
+  //STOP_CYC_CNT();
+
+  bench_assert(equal(begin(y2), end(y2), &lerp_data.y[0]));
 }
