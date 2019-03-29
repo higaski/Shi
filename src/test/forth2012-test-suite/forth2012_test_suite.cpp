@@ -44,6 +44,7 @@ TEST(corner_cases_while);
 // C/C++ api
 TEST(c_api);
 TEST(cpp_api_word);
+TEST(cpp_push_8);
 
 int forth2012_test_suite() {
   UNITY_BEGIN();
@@ -89,6 +90,7 @@ int forth2012_test_suite() {
 
   RUN_TEST(c_api);
   RUN_TEST(cpp_api_word);
+  RUN_TEST(cpp_push_8);
 
   return UNITY_END();
 }

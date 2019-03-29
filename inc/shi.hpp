@@ -189,7 +189,7 @@
 /// | text_align      | User defined alignment for flash                                                   | 1            |
 // clang-format on
 ///
-/// Most variables should be more or less evident but some are most likely not:
+/// Most variables should be more or less evident with some exceptions:
 ///
 /// \page page_variables Variables
 /// **shi_context**<br>
@@ -474,6 +474,9 @@
 /// }
 /// \enddot
 ///
+/// An implication of this search order is that definitions in data are found
+/// faster than those in text.
+///
 /// \page page_init Initialization
 /// To initialize Shi the functions shi::init or shi_init can be used. Both
 /// functions take a struct which contains the begin and end addresses of the
@@ -554,184 +557,184 @@
 /// \page page_wordlist Wordlist
 /// | Core word set | Description |
 /// | ------------- | ------------- |
-/// | [!](https://forth-standard.org/standard/core/Store)                     | unimplemented |
+/// | [!](https://forth-standard.org/standard/core/Store)                     | exactly ANS |
 /// | [#](https://forth-standard.org/standard/core/num)                       | unimplemented |
 /// | [#&gt;](https://forth-standard.org/standard/core/num-end)               | unimplemented |
 /// | [#s](https://forth-standard.org/standard/core/numS)                     | unimplemented |
-/// | ['](https://forth-standard.org/standard/core/Tick)                      | unimplemented |
+/// | ['](https://forth-standard.org/standard/core/Tick)                      | exactly ANS |
 /// | [(](https://forth-standard.org/standard/core/p)                         | unimplemented |
-/// | [*](https://forth-standard.org/standard/core/Times)                     | unimplemented |
-/// | [*&frasl;](https://forth-standard.org/standard/core/TimesDiv)           | unimplemented |
+/// | [*](https://forth-standard.org/standard/core/Times)                     | exactly ANS |
+/// | [*&frasl;](https://forth-standard.org/standard/core/TimesDiv)           | exactly ANS |
 /// | [*&frasl;mod](https://forth-standard.org/standard/core/TimesDivMOD)     | unimplemented |
-/// | [+](https://forth-standard.org/standard/core/Plus)                      | unimplemented |
-/// | [+!](https://forth-standard.org/standard/core/PlusStore)                | unimplemented |
-/// | [+loop](https://forth-standard.org/standard/core/PlusLOOP)              | unimplemented |
-/// | [,](https://forth-standard.org/standard/core/Comma)                     | unimplemented |
-/// | [-](https://forth-standard.org/standard/core/Minus)                     | unimplemented |
+/// | [+](https://forth-standard.org/standard/core/Plus)                      | exactly ANS |
+/// | [+!](https://forth-standard.org/standard/core/PlusStore)                | exactly ANS |
+/// | [+loop](https://forth-standard.org/standard/core/PlusLOOP)              | exactly ANS |
+/// | [,](https://forth-standard.org/standard/core/Comma)                     | exactly ANS |
+/// | [-](https://forth-standard.org/standard/core/Minus)                     | exactly ANS |
 /// | [.](https://forth-standard.org/standard/core/d)                         | unimplemented |
 /// | [.&quot;](https://forth-standard.org/standard/core/Dotq)                | unimplemented |
-/// | [&frasl;](https://forth-standard.org/standard/core/Div)                 | unimplemented |
+/// | [&frasl;](https://forth-standard.org/standard/core/Div)                 | exactly ANS |
 /// | [&frasl;mod](https://forth-standard.org/standard/core/DivMOD)           | unimplemented |
-/// | [0&lt;](https://forth-standard.org/standard/core/Zeroless)              | unimplemented |
-/// | [0=](https://forth-standard.org/standard/core/ZeroEqual)                | unimplemented |
-/// | [1+](https://forth-standard.org/standard/core/OnePlus)                  | unimplemented |
-/// | [1-](https://forth-standard.org/standard/core/OneMinus)                 | unimplemented |
-/// | [2!](https://forth-standard.org/standard/core/TwoStore)                 | unimplemented |
-/// | [2*](https://forth-standard.org/standard/core/TwoTimes)                 | unimplemented |
-/// | [2&frasl;](https://forth-standard.org/standard/core/TwoDiv)             | unimplemented |
-/// | [2@@](https://forth-standard.org/standard/core/TwoFetch)                | unimplemented |
-/// | [2drop](https://forth-standard.org/standard/core/TwoDROP)               | unimplemented |
-/// | [2dup](https://forth-standard.org/standard/core/TwoDUP)                 | unimplemented |
-/// | [2over](https://forth-standard.org/standard/core/TwoOVER)               | unimplemented |
-/// | [2swap](https://forth-standard.org/standard/core/TwoSWAP)               | unimplemented |
-/// | [:](https://forth-standard.org/standard/core/Colon)                     | unimplemented |
-/// | [;](https://forth-standard.org/standard/core/Semi)                      | unimplemented |
-/// | [&lt;](https://forth-standard.org/standard/core/less)                   | unimplemented |
+/// | [0&lt;](https://forth-standard.org/standard/core/Zeroless)              | exactly ANS |
+/// | [0=](https://forth-standard.org/standard/core/ZeroEqual)                | exactly ANS |
+/// | [1+](https://forth-standard.org/standard/core/OnePlus)                  | exactly ANS |
+/// | [1-](https://forth-standard.org/standard/core/OneMinus)                 | exactly ANS |
+/// | [2!](https://forth-standard.org/standard/core/TwoStore)                 | exactly ANS |
+/// | [2*](https://forth-standard.org/standard/core/TwoTimes)                 | exactly ANS |
+/// | [2&frasl;](https://forth-standard.org/standard/core/TwoDiv)             | exactly ANS |
+/// | [2@@](https://forth-standard.org/standard/core/TwoFetch)                | exactly ANS |
+/// | [2drop](https://forth-standard.org/standard/core/TwoDROP)               | exactly ANS |
+/// | [2dup](https://forth-standard.org/standard/core/TwoDUP)                 | exactly ANS |
+/// | [2over](https://forth-standard.org/standard/core/TwoOVER)               | exactly ANS |
+/// | [2swap](https://forth-standard.org/standard/core/TwoSWAP)               | exactly ANS |
+/// | [:](https://forth-standard.org/standard/core/Colon)                     | exactly ANS |
+/// | [;](https://forth-standard.org/standard/core/Semi)                      | exactly ANS |
+/// | [&lt;](https://forth-standard.org/standard/core/less)                   | exactly ANS |
 /// | [&lt;#](https://forth-standard.org/standard/core/num-start)             | unimplemented |
-/// | [=](https://forth-standard.org/standard/core/Equal)                     | unimplemented |
-/// | [&gt;](https://forth-standard.org/standard/core/more)                   | unimplemented |
-/// | [&gt;body](https://forth-standard.org/standard/core/toBODY)             | unimplemented |
-/// | [&gt;in](https://forth-standard.org/standard/core/toIN)                 | unimplemented |
+/// | [=](https://forth-standard.org/standard/core/Equal)                     | exactly ANS |
+/// | [&gt;](https://forth-standard.org/standard/core/more)                   | exactly ANS |
+/// | [&gt;body](https://forth-standard.org/standard/core/toBODY)             | exactly ANS |
+/// | [&gt;in](https://forth-standard.org/standard/core/toIN)                 | exactly ANS |
 /// | [&gt;number](https://forth-standard.org/standard/core/toNUMBER)         | unimplemented |
-/// | [&gt;r](https://forth-standard.org/standard/core/toR)                   | unimplemented |
-/// | [?dup](https://forth-standard.org/standard/core/qDUP)                   | unimplemented |
-/// | [@@](https://forth-standard.org/standard/core/Fetch)                    | unimplemented |
+/// | [&gt;r](https://forth-standard.org/standard/core/toR)                   | exactly ANS |
+/// | [?dup](https://forth-standard.org/standard/core/qDUP)                   | exactly ANS |
+/// | [@@](https://forth-standard.org/standard/core/Fetch)                    | exactly ANS |
 /// | [abort](https://forth-standard.org/standard/core/ABORT)                 | would require tracking of return-stack |
 /// | [abort&quot;](https://forth-standard.org/standard/core/ABORTq)          | unimplemented |
-/// | [abs](https://forth-standard.org/standard/core/ABS)                     | unimplemented |
+/// | [abs](https://forth-standard.org/standard/core/ABS)                     | exactly ANS |
 /// | [accept](https://forth-standard.org/standard/core/ACCEPT)               | unimplemented |
-/// | [align](https://forth-standard.org/standard/core/ALIGN)                 | unimplemented |
-/// | [aligned](https://forth-standard.org/standard/core/ALIGNED)             | unimplemented |
-/// | [allot](https://forth-standard.org/standard/core/ALLOT)                 | unimplemented |
-/// | [and](https://forth-standard.org/standard/core/AND)                     | unimplemented |
-/// | [base](https://forth-standard.org/standard/core/BASE)                   | unimplemented |
-/// | [begin](https://forth-standard.org/standard/core/BEGIN)                 | unimplemented |
+/// | [align](https://forth-standard.org/standard/core/ALIGN)                 | exactly ANS |
+/// | [aligned](https://forth-standard.org/standard/core/ALIGNED)             | exactly ANS |
+/// | [allot](https://forth-standard.org/standard/core/ALLOT)                 | exactly ANS |
+/// | [and](https://forth-standard.org/standard/core/AND)                     | exactly ANS |
+/// | [base](https://forth-standard.org/standard/core/BASE)                   | exactly ANS |
+/// | [begin](https://forth-standard.org/standard/core/BEGIN)                 | exactly ANS |
 /// | [bl](https://forth-standard.org/standard/core/BL)                       | unimplemented |
-/// | [c!](https://forth-standard.org/standard/core/CStore)                   | unimplemented |
-/// | [c,](https://forth-standard.org/standard/core/CComma)                   | unimplemented |
-/// | [c@@](https://forth-standard.org/standard/core/CFetch)                  | unimplemented |
-/// | [cell+](https://forth-standard.org/standard/core/CELLPlus)              | unimplemented |
-/// | [cells](https://forth-standard.org/standard/core/CELLS)                 | unimplemented |
+/// | [c!](https://forth-standard.org/standard/core/CStore)                   | exactly ANS |
+/// | [c,](https://forth-standard.org/standard/core/CComma)                   | exactly ANS |
+/// | [c@@](https://forth-standard.org/standard/core/CFetch)                  | exactly ANS |
+/// | [cell+](https://forth-standard.org/standard/core/CELLPlus)              | exactly ANS |
+/// | [cells](https://forth-standard.org/standard/core/CELLS)                 | exactly ANS |
 /// | [char](https://forth-standard.org/standard/core/CHAR)                   | unimplemented |
-/// | [char+](https://forth-standard.org/standard/core/CHARPlus)              | unimplemented |
-/// | [chars](https://forth-standard.org/standard/core/CHARS)                 | unimplemented |
-/// | [constant](https://forth-standard.org/standard/core/CONSTANT)           | unimplemented |
+/// | [char+](https://forth-standard.org/standard/core/CHARPlus)              | exactly ANS |
+/// | [chars](https://forth-standard.org/standard/core/CHARS)                 | exactly ANS |
+/// | [constant](https://forth-standard.org/standard/core/CONSTANT)           | exactly ANS |
 /// | [count](https://forth-standard.org/standard/core/COUNT)                 | unimplemented |
 /// | [cr](https://forth-standard.org/standard/core/CR)                       | unimplemented |
-/// | [create](https://forth-standard.org/standard/core/CREATE)               | unimplemented |
-/// | [decimal](https://forth-standard.org/standard/core/DECIMAL)             | unimplemented |
-/// | [depth](https://forth-standard.org/standard/core/DEPTH)                 | unimplemented |
-/// | [do](https://forth-standard.org/standard/core/DO)                       | unimplemented |
-/// | [does&gt;](https://forth-standard.org/standard/core/DOES)               | unimplemented |
-/// | [drop](https://forth-standard.org/standard/core/DROP)                   | unimplemented |
-/// | [dup](https://forth-standard.org/standard/core/DUP)                     | unimplemented |
-/// | [else](https://forth-standard.org/standard/core/ELSE)                   | unimplemented |
+/// | [create](https://forth-standard.org/standard/core/CREATE)               | exactly ANS |
+/// | [decimal](https://forth-standard.org/standard/core/DECIMAL)             | exactly ANS |
+/// | [depth](https://forth-standard.org/standard/core/DEPTH)                 | exactly ANS |
+/// | [do](https://forth-standard.org/standard/core/DO)                       | exactly ANS |
+/// | [does&gt;](https://forth-standard.org/standard/core/DOES)               | exactly ANS |
+/// | [drop](https://forth-standard.org/standard/core/DROP)                   | exactly ANS |
+/// | [dup](https://forth-standard.org/standard/core/DUP)                     | exactly ANS |
+/// | [else](https://forth-standard.org/standard/core/ELSE)                   | exactly ANS |
 /// | [emit](https://forth-standard.org/standard/core/EMIT)                   | unimplemented |
 /// | [environment?](https://forth-standard.org/standard/core/ENVIRONMENTq)   | unimplemented |
 /// | [evaluate](https://forth-standard.org/standard/core/EVALUATE)           | unimplemented |
-/// | [execute](https://forth-standard.org/standard/core/EXECUTE)             | unimplemented |
-/// | [exit](https://forth-standard.org/standard/core/EXIT)                   | unimplemented |
+/// | [execute](https://forth-standard.org/standard/core/EXECUTE)             | exactly ANS |
+/// | [exit](https://forth-standard.org/standard/core/EXIT)                   | exactly ANS |
 /// | [fill](https://forth-standard.org/standard/core/FILL)                   | unimplemented |
 /// | [find](https://forth-standard.org/standard/core/FIND)                   | not ANS (returns xt flags instead of xt 1 or xt -1) |
 /// | [fm&frasl;mod](https://forth-standard.org/standard/core/FMDivMOD)       | unimplemented |
-/// | [here](https://forth-standard.org/standard/core/HERE)                   | unimplemented |
+/// | [here](https://forth-standard.org/standard/core/HERE)                   | exactly ANS |
 /// | [hold](https://forth-standard.org/standard/core/HOLD)                   | unimplemented |
-/// | [i](https://forth-standard.org/standard/core/I)                         | unimplemented |
-/// | [if](https://forth-standard.org/standard/core/IF)                       | unimplemented |
+/// | [i](https://forth-standard.org/standard/core/I)                         | exactly ANS |
+/// | [if](https://forth-standard.org/standard/core/IF)                       | exactly ANS |
 /// | [immediate](https://forth-standard.org/standard/core/IMMEDIATE)         | unimplemented |
-/// | [invert](https://forth-standard.org/standard/core/INVERT)               | unimplemented |
-/// | [j](https://forth-standard.org/standard/core/J)                         | unimplemented |
+/// | [invert](https://forth-standard.org/standard/core/INVERT)               | exactly ANS |
+/// | [j](https://forth-standard.org/standard/core/J)                         | exactly ANS |
 /// | [key](https://forth-standard.org/standard/core/KEY)                     | unimplemented |
-/// | [leave](https://forth-standard.org/standard/core/LEAVE)                 | unimplemented |
-/// | [literal](https://forth-standard.org/standard/core/LITERAL)             | unimplemented |
-/// | [loop](https://forth-standard.org/standard/core/LOOP)                   | unimplemented |
-/// | [lshift](https://forth-standard.org/standard/core/LSHIFT)               | unimplemented |
+/// | [leave](https://forth-standard.org/standard/core/LEAVE)                 | exactly ANS |
+/// | [literal](https://forth-standard.org/standard/core/LITERAL)             | exactly ANS |
+/// | [loop](https://forth-standard.org/standard/core/LOOP)                   | exactly ANS |
+/// | [lshift](https://forth-standard.org/standard/core/LSHIFT)               | exactly ANS |
 /// | [m*](https://forth-standard.org/standard/core/MTimes)                   | unimplemented |
-/// | [max](https://forth-standard.org/standard/core/MAX)                     | unimplemented |
-/// | [min](https://forth-standard.org/standard/core/MIN)                     | unimplemented |
-/// | [mod](https://forth-standard.org/standard/core/MOD)                     | unimplemented |
+/// | [max](https://forth-standard.org/standard/core/MAX)                     | exactly ANS |
+/// | [min](https://forth-standard.org/standard/core/MIN)                     | exactly ANS |
+/// | [mod](https://forth-standard.org/standard/core/MOD)                     | exactly ANS |
 /// | [move](https://forth-standard.org/standard/core/MOVE)                   | unimplemented |
-/// | [negate](https://forth-standard.org/standard/core/NEGATE)               | unimplemented |
-/// | [or](https://forth-standard.org/standard/core/OR)                       | unimplemented |
-/// | [over](https://forth-standard.org/standard/core/OVER)                   | unimplemented |
-/// | [postpone](https://forth-standard.org/standard/core/POSTPONE)           | unimplemented |
+/// | [negate](https://forth-standard.org/standard/core/NEGATE)               | exactly ANS |
+/// | [or](https://forth-standard.org/standard/core/OR)                       | exactly ANS |
+/// | [over](https://forth-standard.org/standard/core/OVER)                   | exactly ANS |
+/// | [postpone](https://forth-standard.org/standard/core/POSTPONE)           | exactly ANS |
 /// | [quit](https://forth-standard.org/standard/core/QUIT)                   | would require tracking of return-stack |
-/// | [r&gt;](https://forth-standard.org/standard/core/Rfrom)                 | unimplemented |
-/// | [r@@](https://forth-standard.org/standard/core/RFetch)                  | unimplemented |
-/// | [recurse](https://forth-standard.org/standard/core/RECURSE)             | unimplemented |
-/// | [repeat](https://forth-standard.org/standard/core/REPEAT)               | unimplemented |
-/// | [rot](https://forth-standard.org/standard/core/ROT)                     | unimplemented |
-/// | [rshift](https://forth-standard.org/standard/core/RSHIFT)               | unimplemented |
+/// | [r&gt;](https://forth-standard.org/standard/core/Rfrom)                 | exactly ANS |
+/// | [r@@](https://forth-standard.org/standard/core/RFetch)                  | exactly ANS |
+/// | [recurse](https://forth-standard.org/standard/core/RECURSE)             | exactly ANS |
+/// | [repeat](https://forth-standard.org/standard/core/REPEAT)               | exactly ANS |
+/// | [rot](https://forth-standard.org/standard/core/ROT)                     | exactly ANS |
+/// | [rshift](https://forth-standard.org/standard/core/RSHIFT)               | exactly ANS |
 /// | [s&quot;](https://forth-standard.org/standard/core/Sq)                  | unimplemented |
 /// | [s&gt;d](https://forth-standard.org/standard/core/StoD)                 | unimplemented |
 /// | [sign](https://forth-standard.org/standard/core/SIGN)                   | unimplemented |
 /// | [sm&frasl;rem](https://forth-standard.org/standard/core/SMDivREM)       | unimplemented |
-/// | [source](https://forth-standard.org/standard/core/SOURCE)               | unimplemented |
+/// | [source](https://forth-standard.org/standard/core/SOURCE)               | exactly ANS |
 /// | [space](https://forth-standard.org/standard/core/SPACE)                 | unimplemented |
 /// | [spaces](https://forth-standard.org/standard/core/SPACES)               | unimplemented |
-/// | [state](https://forth-standard.org/standard/core/STATE)                 | unimplemented |
-/// | [swap](https://forth-standard.org/standard/core/SWAP)                   | unimplemented |
-/// | [then](https://forth-standard.org/standard/core/THEN)                   | unimplemented |
+/// | [state](https://forth-standard.org/standard/core/STATE)                 | exactly ANS |
+/// | [swap](https://forth-standard.org/standard/core/SWAP)                   | exactly ANS |
+/// | [then](https://forth-standard.org/standard/core/THEN)                   | exactly ANS |
 /// | [type](https://forth-standard.org/standard/core/TYPE)                   | unimplemented |
 /// | [u.](https://forth-standard.org/standard/core/Ud)                       | unimplemented |
-/// | [u&lt;](https://forth-standard.org/standard/core/Uless)                 | unimplemented |
+/// | [u&lt;](https://forth-standard.org/standard/core/Uless)                 | exactly ANS |
 /// | [um*](https://forth-standard.org/standard/core/UMTimes)                 | unimplemented |
 /// | [um&frasl;mod](https://forth-standard.org/standard/core/UMDivMOD)       | unimplemented |
-/// | [unloop](https://forth-standard.org/standard/core/UNLOOP)               | unimplemented |
-/// | [until](https://forth-standard.org/standard/core/UNTIL)                 | unimplemented |
-/// | [variable](https://forth-standard.org/standard/core/VARIABLE)           | unimplemented |
-/// | [while](https://forth-standard.org/standard/core/WHILE)                 | unimplemented |
+/// | [unloop](https://forth-standard.org/standard/core/UNLOOP)               | exactly ANS |
+/// | [until](https://forth-standard.org/standard/core/UNTIL)                 | exactly ANS |
+/// | [variable](https://forth-standard.org/standard/core/VARIABLE)           | exactly ANS |
+/// | [while](https://forth-standard.org/standard/core/WHILE)                 | exactly ANS |
 /// | [word](https://forth-standard.org/standard/core/WORD)                   | obsolete |
-/// | [xor](https://forth-standard.org/standard/core/XOR)                     | unimplemented |
-/// | [\[](https://forth-standard.org/standard/core/Bracket)                  | unimplemented |
-/// | [\['\]](https://forth-standard.org/standard/core/BracketTick)           | unimplemented |
+/// | [xor](https://forth-standard.org/standard/core/XOR)                     | exactly ANS |
+/// | [\[](https://forth-standard.org/standard/core/Bracket)                  | exactly ANS |
+/// | [\['\]](https://forth-standard.org/standard/core/BracketTick)           | exactly ANS |
 /// | [\[char\]](https://forth-standard.org/standard/core/BracketCHAR)        | unimplemented |
-/// | [\]](https://forth-standard.org/standard/core/right-bracket)            | unimplemented |
+/// | [\]](https://forth-standard.org/standard/core/right-bracket)            | exactly ANS |
 /// | [.(](https://forth-standard.org/standard/core/Dotp)                     | unimplemented |
 /// | [.r](https://forth-standard.org/standard/core/DotR)                     | unimplemented |
-/// | [0&lt;&gt;](https://forth-standard.org/standard/core/Zerone)            | unimplemented |
-/// | [0&gt;](https://forth-standard.org/standard/core/Zeromore)              | unimplemented |
-/// | [2&gt;r](https://forth-standard.org/standard/core/TwotoR)               | unimplemented |
-/// | [2r&gt;](https://forth-standard.org/standard/core/TwoRfrom)             | unimplemented |
-/// | [2r@@](https://forth-standard.org/standard/core/TwoRFetch)              | unimplemented |
+/// | [0&lt;&gt;](https://forth-standard.org/standard/core/Zerone)            | exactly ANS |
+/// | [0&gt;](https://forth-standard.org/standard/core/Zeromore)              | exactly ANS |
+/// | [2&gt;r](https://forth-standard.org/standard/core/TwotoR)               | exactly ANS |
+/// | [2r&gt;](https://forth-standard.org/standard/core/TwoRfrom)             | exactly ANS |
+/// | [2r@@](https://forth-standard.org/standard/core/TwoRFetch)              | exactly ANS |
 /// | [:noname](https://forth-standard.org/standard/core/ColonNONAME)         | unimplemented |
-/// | [&lt;&gt;](https://forth-standard.org/standard/core/ne)                 | unimplemented |
+/// | [&lt;&gt;](https://forth-standard.org/standard/core/ne)                 | exactly ANS |
 /// | [?do](https://forth-standard.org/standard/core/qDO)                     | unimplemented |
 /// | [action-of](https://forth-standard.org/standard/core/ACTION-OF)         | unimplemented |
-/// | [again](https://forth-standard.org/standard/core/AGAIN)                 | unimplemented |
+/// | [again](https://forth-standard.org/standard/core/AGAIN)                 | exactly ANS |
 /// | [buffer:](https://forth-standard.org/standard/core/BUFFERColon)         | unimplemented |
 /// | [c&quot;](https://forth-standard.org/standard/core/Cq)                  | unimplemented |
-/// | [case](https://forth-standard.org/standard/core/CASE)                   | unimplemented |
-/// | [compile,](https://forth-standard.org/standard/core/COMPILEComma)       | unimplemented |
+/// | [case](https://forth-standard.org/standard/core/CASE)                   | exactly ANS |
+/// | [compile,](https://forth-standard.org/standard/core/COMPILEComma)       | exactly ANS |
 /// | [defer](https://forth-standard.org/standard/core/DEFER)                 | unimplemented |
 /// | [defer!](https://forth-standard.org/standard/core/DEFERStore)           | unimplemented |
 /// | [defer@@](https://forth-standard.org/standard/core/DEFERFetch)          | unimplemented |
-/// | [endcase](https://forth-standard.org/standard/core/ENDCASE)             | unimplemented |
-/// | [endof](https://forth-standard.org/standard/core/ENDOF)                 | unimplemented |
+/// | [endcase](https://forth-standard.org/standard/core/ENDCASE)             | exactly ANS |
+/// | [endof](https://forth-standard.org/standard/core/ENDOF)                 | exactly ANS |
 /// | [erase](https://forth-standard.org/standard/core/ERASE)                 | unimplemented |
-/// | [false](https://forth-standard.org/standard/core/FALSE)                 | unimplemented |
-/// | [hex](https://forth-standard.org/standard/core/HEX)                     | unimplemented |
+/// | [false](https://forth-standard.org/standard/core/FALSE)                 | exactly ANS |
+/// | [hex](https://forth-standard.org/standard/core/HEX)                     | exactly ANS |
 /// | [holds](https://forth-standard.org/standard/core/HOLDS)                 | unimplemented |
 /// | [is](https://forth-standard.org/standard/core/IS)                       | unimplemented |
 /// | [marker](https://forth-standard.org/standard/core/MARKER)               | unimplemented |
-/// | [nip](https://forth-standard.org/standard/core/NIP)                     | unimplemented |
-/// | [of](https://forth-standard.org/standard/core/OF)                       | unimplemented |
+/// | [nip](https://forth-standard.org/standard/core/NIP)                     | exactly ANS |
+/// | [of](https://forth-standard.org/standard/core/OF)                       | exactly ANS |
 /// | [pad](https://forth-standard.org/standard/core/PAD)                     | unimplemented |
 /// | [parse](https://forth-standard.org/standard/core/PARSE)                 | obsolete |
-/// | [parse-name](https://forth-standard.org/standard/core/PARSE-NAME)       | unimplemented |
-/// | [pick](https://forth-standard.org/standard/core/PICK)                   | unimplemented |
+/// | [parse-name](https://forth-standard.org/standard/core/PARSE-NAME)       | exactly ANS |
+/// | [pick](https://forth-standard.org/standard/core/PICK)                   | exactly ANS |
 /// | [refill](https://forth-standard.org/standard/core/REFILL)               | unimplemented |
 /// | [restore-input](https://forth-standard.org/standard/core/RESTORE-INPUT) | unimplemented |
-/// | [roll](https://forth-standard.org/standard/core/ROLL)                   | unimplemented |
+/// | [roll](https://forth-standard.org/standard/core/ROLL)                   | exactly ANS |
 /// | [s\&quot;](https://forth-standard.org/standard/core/Seq)                | unimplemented |
 /// | [save-input](https://forth-standard.org/standard/core/SAVE-INPUT)       | unimplemented |
 /// | [source-id](https://forth-standard.org/standard/core/SOURCE-ID)         | unimplemented |
 /// | [to](https://forth-standard.org/standard/core/TO)                       | unimplemented |
-/// | [true](https://forth-standard.org/standard/core/TRUE)                   | unimplemented |
-/// | [tuck](https://forth-standard.org/standard/core/TUCK)                   | unimplemented |
+/// | [true](https://forth-standard.org/standard/core/TRUE)                   | exactly ANS |
+/// | [tuck](https://forth-standard.org/standard/core/TUCK)                   | exactly ANS |
 /// | [u.r](https://forth-standard.org/standard/core/UDotR)                   | unimplemented |
-/// | [u&gt;](https://forth-standard.org/standard/core/Umore)                 | unimplemented |
-/// | [unused](https://forth-standard.org/standard/core/UNUSED)               | unimplemented |
+/// | [u&gt;](https://forth-standard.org/standard/core/Umore)                 | exactly ANS |
+/// | [unused](https://forth-standard.org/standard/core/UNUSED)               | exactly ANS |
 /// | [value](https://forth-standard.org/standard/core/VALUE)                 | unimplemented |
 /// | [within](https://forth-standard.org/standard/core/WITHIN)               | unimplemented |
 /// | [\[compile\]](https://forth-standard.org/standard/core/BracketCOMPILE)  | obsolete |
@@ -1048,11 +1051,12 @@ extern "C" {
 #  endif
 
 typedef void (*void_fp)();
-extern void shi_evaluate_asm(char const* str, size_t len);
-extern void shi_clear_asm();
-extern void_fp shi_tick_asm(char const* str, size_t len);
-extern void shi_c_variable_asm(char const* name, size_t len);
 extern uint32_t shi_context;
+
+void shi_evaluate_asm(char const* str, size_t len);
+void shi_c_variable_asm(char const* name, size_t len);
+void shi_clear_asm();
+void_fp shi_tick_asm(char const* str, size_t len);
 
 #  ifdef __cplusplus
 }
@@ -1060,6 +1064,115 @@ extern uint32_t shi_context;
 
 // C only
 #  ifndef __cplusplus
+
+static inline void shi_push_s(int32_t t) {
+  asm volatile("tos .req r0 \n"
+               "dsp .req r1 \n"
+               "ldrd tos, dsp, [%0] \n"
+               "str tos, [dsp, #-4]! \n"
+               "movs tos, %1 \n"
+               "strd tos, dsp, [%0] \n"
+               :
+               : "r"(&shi_context), "r"(t)
+               : "cc", "memory", "r0", "r1");
+}
+
+static inline void shi_push_d(int64_t t) {
+  asm volatile("tos .req r0 \n"
+               "dsp .req r1 \n"
+               "ldrd tos, dsp, [%0] \n"
+               "ldrd r2, r3, [%1] \n"
+               "strd r2, tos, [dsp, #-8]! \n"
+               "movs tos, r3 \n"
+               "strd tos, dsp, [%0] \n"
+               :
+               : "r"(&shi_context), "r"(&t)
+               : "cc", "memory", "r0", "r1", "r2", "r3");
+}
+
+static inline int32_t shi_pop_s() {
+  int32_t t;
+
+  asm volatile("tos .req r0 \n"
+               "dsp .req r1 \n"
+               "ldrd tos, dsp, [%1] \n"
+               "movs %0, tos \n"
+               "ldmia dsp!, {tos} \n"
+               "strd tos, dsp, [%1] \n"
+               : "=&r"(t)
+               : "r"(&shi_context)
+               : "cc", "memory", "r0", "r1");
+
+  return t;
+}
+
+static inline int32_t shi_pop_d() {
+  int64_t t;
+
+  asm volatile("tos .req r0 \n"
+               "dsp .req r1 \n"
+               "ldrd tos, dsp, [%0] \n"
+               "ldrd r2, r3, [dsp], #8 \n"
+               "strd r2, tos, [%1] \n"
+               "movs tos, r3 \n"
+               "strd tos, dsp, [%0] \n"
+               :
+               : "r"(&shi_context), "r"(&t)
+               : "cc", "memory", "r0", "r1", "r2", "r3");
+
+  return t;
+}
+
+/// Remove element from the top of the stack
+static inline void shi_pop() {
+  asm volatile("tos .req r0 \n"
+               "dsp .req r1 \n"
+               "ldrd tos, dsp, [%0] \n"
+               "ldmia dsp!, {tos} \n"
+               "strd tos, dsp, [%0] \n"
+               :
+               : "r"(&shi_context)
+               : "cc", "memory", "r0", "r1");
+}
+
+static inline int32_t shi_top(size_t offset) {
+  int32_t t;
+
+  asm volatile("cmp %2, #0 \n"
+               "iteee eq \n"
+               "ldreq %0, [%1] \n"
+               "subne r1, %2, #1 \n"
+               "ldrne r0, [%1, #4] \n"
+               "ldrne %0, [r0, r1, lsl #2] \n"
+               : "=r"(t)
+               : "r"(&shi_context), "r"(offset)
+               : "cc", "memory", "r0", "r1");
+
+  return t;
+}
+
+/// Returns the number of elements on the stack
+///
+/// \return Number of elements on stack
+static inline size_t shi_depth() {
+  size_t size;
+
+  asm volatile("ldr r0, [%1, #4] \n"
+               "subs %0, %1, r0 \n"
+               "lsrs %0, %0, #2 \n"
+               : "=r"(size)
+               : "r"(&shi_context)
+               : "cc", "memory", "r0");
+
+  return size;
+}
+
+/// Returns the number of elements on the stack
+///
+/// \return Number of elements on stack
+static inline size_t shi_size() {
+  return shi_depth();
+}
 
 typedef struct {
   uint32_t data_begin;
@@ -1074,14 +1187,14 @@ void shi_init_asm(shi_init_t*);
 /// Initialize
 ///
 /// \param  s   Init structure
-inline void shi_init(shi_init_t s) {
+static inline void shi_init(shi_init_t s) {
   shi_init_asm(&s);
 }
 
 /// Call of word evaluate
 ///
 /// \param  str Pointer to the null-terminated byte string
-inline void shi_evaluate(char const* str) {
+static inline void shi_evaluate(char const* str) {
   shi_evaluate_asm(str, strlen(str));
 }
 
@@ -1089,24 +1202,49 @@ inline void shi_evaluate(char const* str) {
 ///
 /// \param  str Pointer to the null-terminated byte string
 /// \param  len Length of the null-terminated string
-inline void shi_evaluate_len(char const* str, size_t len) {
+static inline void shi_evaluate_len(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
-inline void shi_c_variable(char const* str, void* adr) {
+static inline void shi_c_variable(char const* str, void* adr) {
   push((int32_t)(adr));
   shi_c_variable_asm(str, strlen(str));
+}
+
+/// Clear stack
+static inline void shi_clear() {
+  shi_clear_asm();
+}
+
+static inline void_fp shi_tick(char const* str) {
+  return shi_tick_asm(str, strlen(str));
+}
+
+static inline void_fp shi_tick_len(char const* str, size_t len) {
+  return shi_tick_asm(str, len);
+}
+
+static inline void shi_call_tick(void_fp fp) {
+  if (fp)
+    asm volatile("ldmia %0, {r6, r7, r8} \n"
+                 "push {%0} \n"
+                 "blx %1 \n"
+                 "pop {%0} \n"
+                 "stmia %0, {r6, r7, r8} \n"
+                 :
+                 : "r"(&shi_context), "r"(fp)
+                 : "cc", "memory", "r6", "r7", "r8", "lr");
 }
 
 // C++ only
 #  else
 
-#    include <cstdio>
 #    include <tuple>
 #    include <type_traits>
 
 namespace shi {
 
+// Shouldn't that be part of C++20?
 template<typename T>
 struct remove_cvref {
   using type = std::remove_cv_t<std::remove_reference_t<T>>;
@@ -1123,28 +1261,6 @@ struct is_reference_wrapper<std::reference_wrapper<U>> : std::true_type {};
 
 template<typename T>
 inline constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
-
-struct init_t {
-  uint32_t data_begin{};
-  uint32_t data_end{};
-  uint32_t text_begin{};
-  uint32_t text_end{};
-  uint8_t text_p2align{2};
-};
-
-extern "C" void shi_init_asm(init_t&);
-
-/// Initialize
-///
-/// \param  s   Init structure
-inline void init(init_t s) {
-  shi_init_asm(s);
-}
-
-/// Clear stack
-inline void clear() {
-  shi_clear_asm();
-}
 
 /// Returns the number of elements on the stack
 ///
@@ -1175,12 +1291,10 @@ inline size_t size() {
 /// \param  t   Value to push
 template<typename T>
 inline void push(T&& t) {
-  using std::addressof;
-  using std::is_arithmetic_v;
-  using std::is_pointer_v;
+  using std::addressof, std::is_arithmetic_v, std::is_pointer_v;
   using V = remove_cvref_t<T>;
 
-  static_assert(sizeof(V) <= SHI_STACK_SIZE * 4);
+  static_assert(sizeof(V) <= SHI_STACK_SIZE);
 
   if constexpr (sizeof(V) <= 4 && (is_arithmetic_v<V> || is_pointer_v<V> ||
                                    is_reference_wrapper_v<V>))
@@ -1205,7 +1319,18 @@ inline void push(T&& t) {
                  : "r"(&shi_context), "r"(addressof(t))
                  : "cc", "memory", "r0", "r1", "r2", "r3");
   else
-    asm volatile("nop");  // basically memcpy here?
+    ;  // basically memcpy here?
+}
+
+/// Add elements to the top of the stack
+///
+/// \tparam Ts  Types of elements to push
+/// \param  ts  Values to push
+template<typename... Ts>
+inline void push(Ts&&... ts) {
+  static_assert((0 + ... + sizeof(Ts)) <= SHI_STACK_SIZE);
+
+  (push(std::forward<Ts>(ts)), ...);
 }
 
 /// Remove element from the top of the stack
@@ -1214,10 +1339,10 @@ inline void push(T&& t) {
 /// \return Value
 template<typename T>
 inline remove_cvref_t<T> pop() {
-  using std::addressof;
-  using std::is_arithmetic_v;
-  using std::is_pointer_v;
+  using std::addressof, std::is_arithmetic_v, std::is_pointer_v;
   using V = remove_cvref_t<T>;
+
+  static_assert(sizeof(V) <= SHI_STACK_SIZE);
 
   T t;
 
@@ -1244,9 +1369,22 @@ inline remove_cvref_t<T> pop() {
                  : "r"(&shi_context), "r"(addressof(t))
                  : "cc", "memory", "r0", "r1", "r2", "r3");
   else
-    asm volatile("nop");  // basically memcpy here?
+    ;  // basically memcpy here?
 
   return t;
+}
+
+/// Remove elements from the top of the stack
+///
+/// \tparam Ts  Types of element to pop
+/// \return Values
+template<typename... Ts, typename = std::enable_if_t<(sizeof...(Ts) > 1)>>
+inline std::tuple<remove_cvref_t<Ts>...> pop() {
+  using std::tuple;
+
+  static_assert((0 + ... + sizeof(Ts)) <= SHI_STACK_SIZE);
+
+  return tuple<Ts...>{pop<Ts>()...};
 }
 
 /// Remove element from the top of the stack
@@ -1262,7 +1400,7 @@ inline void pop() {
 }
 
 inline int32_t top(size_t offset = 0) {
-  int32_t cell;
+  int32_t t;
 
   asm volatile("cmp %2, #0 \n"
                "iteee eq \n"
@@ -1270,11 +1408,28 @@ inline int32_t top(size_t offset = 0) {
                "subne r1, %2, #1 \n"
                "ldrne r0, [%1, #4] \n"
                "ldrne %0, [r0, r1, lsl #2] \n"
-               : "=r"(cell)
+               : "=r"(t)
                : "r"(&shi_context), "r"(offset)
                : "cc", "memory", "r0", "r1");
 
-  return cell;
+  return t;
+}
+
+struct init_t {
+  uint32_t data_begin{};
+  uint32_t data_end{};
+  uint32_t text_begin{};
+  uint32_t text_end{};
+  uint8_t text_p2align{2};
+};
+
+extern "C" void shi_init_asm(init_t&);
+
+/// Initialize
+///
+/// \param  s   Init structure
+inline void init(init_t s) {
+  shi_init_asm(s);
 }
 
 /// Call of word evaluate
@@ -1303,6 +1458,11 @@ void c_variable(char const* str, T adr) {
   shi_c_variable_asm(str, strlen(str));
 }
 
+/// Clear stack
+inline void clear() {
+  shi_clear_asm();
+}
+
 struct word {
   constexpr word() = default;
   word(char const* str) : fp{shi_tick_asm(str, strlen(str))} {}
@@ -1312,16 +1472,18 @@ struct word {
   word& operator()(Ts&&... ts) {
     using std::forward;
 
-    (push(forward<Ts>(ts)), ...);
+    if (fp) {
+      push(forward<Ts>(ts)...);
 
-    asm volatile("ldmia %0, {r6, r7, r8} \n"
-                 "push {%0} \n"
-                 "blx %1 \n"
-                 "pop {%0} \n"
-                 "stmia %0, {r6, r7, r8} \n"
-                 :
-                 : "r"(&shi_context), "r"(fp)
-                 : "cc", "memory", "r6", "r7", "r8", "lr");
+      asm volatile("ldmia %0, {r6, r7, r8} \n"
+                   "push {%0} \n"
+                   "blx %1 \n"
+                   "pop {%0} \n"
+                   "stmia %0, {r6, r7, r8} \n"
+                   :
+                   : "r"(&shi_context), "r"(fp)
+                   : "cc", "memory", "r6", "r7", "r8", "lr");
+    }
 
     return *this;
   }
@@ -1333,7 +1495,7 @@ struct word {
 
   template<typename... Ts>
   operator std::tuple<Ts...>() {
-    return std::tuple<Ts...>{(pop<Ts>(), ...)};
+    return pop<Ts...>();
   }
 
 private:

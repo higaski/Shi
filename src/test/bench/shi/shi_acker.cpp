@@ -3,8 +3,7 @@
 #include "bench.h"
 #include "shi.hpp"
 
-using shi::operator""_s;
-using shi::operator""_w;
+using shi::operator""_s, shi::operator""_w;
 
 // A(0, 0) = 1
 // A(0, 1) = 2

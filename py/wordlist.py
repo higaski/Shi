@@ -91,7 +91,7 @@ def print_shi_words_asm_equs(d):
             print('.equ ENABLE_' + str + ', SHI_ENABLE_' + str)       
 
 # Print c header or assembly list
-#print_words(d_name)
-print_words_as_markdown_table(l_url)
+print_words(d_name)
+#print_words_as_markdown_table(l_url)
 #print_shi_word_c_macros(d_label)
 #print_shi_word_asm_equs(d_label)

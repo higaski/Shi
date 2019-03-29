@@ -8,7 +8,7 @@
 .thumb
 .arch armv7-m
 
-.global shi_init_asm, shi_c_variable_asm, shi_evaluate_asm, shi_clear_asm, shi_tick_asm
+.global shi_init_asm, shi_evaluate_asm, shi_c_variable_asm, shi_clear_asm, shi_tick_asm
 
 .section .text
 
@@ -376,6 +376,34 @@ shi_evaluate_asm:
 6:  pop {tos-lfp, pc}                   @ ( R: tos dsp lfp lr -- )
 
 @ ------------------------------------------------------------------------------
+@ Forth C variable
+@ r0    c-addr  (cstring address)
+@ r1    u       (cstring length)
+@ ------------------------------------------------------------------------------
+.thumb_func
+shi_c_variable_asm:
+    push {tos-lfp, lr}                  @ ( R: -- tos dsp lfp lr )
+
+@ Enter forth
+    ENTRY                               @ Restore context
+
+@ Store source
+    ldr r2, =src
+    stmia r2, {r0, r1}
+
+@ Set >IN 0
+    SET_IN #0                           @ Set >in zero
+
+@ C variable
+    bl c_variable
+
+@ Leave forth
+    EXIT                                @ Store context
+
+@ Return
+    pop {tos-lfp, pc}                   @ ( R: tos dsp lfp lr -- )
+
+@ ------------------------------------------------------------------------------
 @ Clear stack
 @ ------------------------------------------------------------------------------
 .thumb_func
@@ -418,34 +446,6 @@ shi_tick_asm:
     ldr r0, [dsp]
     orrs r0, #1                         @ xt + 1
     TWO_DROP                            @ ( -- )
-
-@ Leave forth
-    EXIT                                @ Store context
-
-@ Return
-    pop {tos-lfp, pc}                   @ ( R: tos dsp lfp lr -- )
-
-@ ------------------------------------------------------------------------------
-@ Forth C variable
-@ r0    c-addr  (cstring address)
-@ r1    u       (cstring length)
-@ ------------------------------------------------------------------------------
-.thumb_func
-shi_c_variable_asm:
-    push {tos-lfp, lr}                  @ ( R: -- tos dsp lfp lr )
-
-@ Enter forth
-    ENTRY                               @ Restore context
-
-@ Store source
-    ldr r2, =src
-    stmia r2, {r0, r1}
-
-@ Set >IN 0
-    SET_IN #0                           @ Set >in zero
-
-@ C variable
-    bl c_variable
 
 @ Leave forth
     EXIT                                @ Store context
