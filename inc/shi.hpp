@@ -30,7 +30,7 @@
 ///   }
 ///
 ///   subgraph cluster_forth {
-///     label = "Forth";
+///     label = "Shi";
 ///     labeljust="l";
 ///     style="dotted";
 ///     word[shape=diamond, label="word?"];
@@ -72,17 +72,18 @@
 ///
 // clang-format off
 /// \page page_implementation Implementation
-/// | Page                             | Content                                           |
-/// | -------------------------------- | ------------------------------------------------- |
-/// | \subpage page_stacks             | Handling of data-, control-flow- and return-stack |
-/// | \subpage page_variables          | Internally used variables                         |
-/// | \subpage page_dictionary         | Layout of words, core- and user dictionary        |
-/// | \subpage page_init               | Initialization                                    |
-/// | \subpage page_control_structures | Control structures                                |
-/// | \subpage page_interpret          | Interpretation loop in detail                     |
-/// | \subpage page_wordlist           | Wordlist                                          |
-/// | \subpage page_todo               | d                                                 |
-/// | \subpage page_lerp               | c                                                 |
+/// | Page                              | Content                                           |
+/// | --------------------------------- | ------------------------------------------------- |
+/// | \subpage page_stacks              | Handling of data-, control-flow- and return-stack |
+/// | \subpage page_variables           | Internally used variables                         |
+/// | \subpage page_dictionary          | Layout of words, core- and user dictionary        |
+/// | \subpage page_init                | Initialization                                    |
+/// | \subpage page_control_structures  | Control structures                                |
+/// | \subpage page_interpret           | Interpretation loop in detail                     |
+/// | \subpage page_wordlist            | Wordlist                                          |
+/// | \subpage page_ambiguous_condition | Ambiguous conditions                              |
+/// | \subpage page_todo                | d                                                 |
+/// | \subpage page_lerp                | c                                                 |
 // clang-format on
 ///
 ///
@@ -748,6 +749,24 @@
 /// | >text        | unimplemented |
 /// | >data        | unimplemented |
 // clang-format on
+///
+///
+/// \page page_ambiguous_condition Ambiguous conditions
+/// The following passage is taken from the
+/// [standard](https://forth-standard.org/standard/usage) on ambiguous
+/// conditions.
+/// > When an ambiguous condition exists, a system may take one or more of the
+/// > following actions:
+/// > - ignore and continue;
+/// > - display a message;
+/// > - execute a particular word;
+/// > - set interpretation state and begin text interpretation;
+/// > - take other implementation-defined actions;
+/// > - take implementation-dependent actions.
+/// >
+/// > The response to a particular ambiguous condition need not be the same
+/// > under all circumstances.
+///
 ///
 ///
 /// \page page_lerp Lerp

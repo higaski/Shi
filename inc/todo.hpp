@@ -30,6 +30,8 @@
 ///    von da API anspringen
 ///
 /// \page page_interpret Interpret loop
+/// This graph is a more detailed version of the one on the \ref index mainpage.
+///
 /// \dot
 /// digraph G {
 ///
