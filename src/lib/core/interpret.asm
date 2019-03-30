@@ -160,6 +160,5 @@ interpret_done:
 
 @ Return
 interpret_return:
-    SET_SOURCE #0, #0                   @ Clear source
     pop {pc}
 .ltorg

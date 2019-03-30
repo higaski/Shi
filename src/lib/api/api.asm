@@ -365,9 +365,18 @@ shi_evaluate_asm:
 @ Enter forth
 1:  ENTRY                               @ Restore context
 
-@ Call evaluate
-    PUSH_REGS top=r1, from=r0           @ ( -- c-addr u )
-    bl evaluate
+@ Store source
+@ r0    c-addr
+@ r1    u
+@ r2    src address
+    ldr r2, =src
+    strd r0, r1, [r2]
+
+@ Set >IN 0
+    SET_IN #0                           @ Set >in zero
+
+@ Call interpret
+    bl interpret
 
 @ Leave forth
     EXIT                                @ Store context

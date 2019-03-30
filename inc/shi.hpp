@@ -541,17 +541,8 @@
 ///
 /// Dokumentieren dass else bei orig des unterste bit setzt...
 ///
-/// beq_comma wird 4x genutzt
-/// else
-/// repeat
-/// then
-/// until
-///
-/// bne_comma wird 3x genutzt
-/// endof
-/// loop
-/// +loop
-///
+/// Ausserdem dass es nur mehr 1x conditional branch funktion gibt und das
+/// "template" fürn OPCODE vorher am stack landet
 ///
 ///
 // clang-format off

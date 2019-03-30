@@ -1031,38 +1031,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "else"
 .endif
 
 @ ------------------------------------------------------------------------------
-@ evaluate
-@ ( i*x c-addr u -- j*x )
-@ Save the current input source specification. Store minus-one (-1) in SOURCE-ID
-@ if it is present. Make the string described by c-addr and u both the input
-@ source and input buffer, set >IN to zero, and interpret. When the parse area
-@ is empty, restore the prior input source specification. Other stack effects
-@ are due to the words EVALUATEd.
-@ ------------------------------------------------------------------------------
-.if ENABLE_EVALUATE == 1
-WORD FLAG_INTERPRET_COMPILE, "evaluate"
-    push {lr}
-
-@ Store source
-@ r0    c-addr
-@ r1    src address
-@ tos   u
-    ldr r0, [dsp]
-    ldr r1, =src
-    stmia r1, {r0, tos}
-    TWO_DROP                            @ ( c-addr u -- )
-
-@ Set >IN 0
-    SET_IN #0                           @ Set >in zero
-
-@ Interpret
-    bl interpret                        @ Start interpreter
-
-@ Return
-    pop {pc}
-.endif
-
-@ ------------------------------------------------------------------------------
 @ execute
 @ ( i * x xt -- j * x )
 @ Remove xt from the stack and perform the semantics identified by it. Other
