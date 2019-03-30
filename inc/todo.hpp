@@ -37,11 +37,6 @@
 ///
 ///   ratio=auto; node[fontsize=12]; newrank=true;
 ///
-///   # Check cstring lenght in forthEvaluate
-///   check_cstring_length->return[label="no + error"];
-///   check_cstring_length->enter[label="yes"];
-///   check_cstring_length[shape=diamond, label="cstring length > 0"];
-///
 ///   # Enter forth
 ///   enter[label="restore forth context\npush cstring\ncall evaluate"];
 ///   enter->evaluate;
