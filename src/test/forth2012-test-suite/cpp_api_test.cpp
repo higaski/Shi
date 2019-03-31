@@ -9,7 +9,7 @@ TEST(cpp_api_word) {
   ": seven 7 ;"_s;
 
   // Create instance of word
-  auto seven{shi::word("seven")};
+  auto seven{shi::Word("seven")};
   TEST_ASSERT_EQUAL(0, shi::size());
 
   // Call

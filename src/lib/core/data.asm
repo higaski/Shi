@@ -16,14 +16,12 @@ shi_stack_begin:                        @ Data-stack begin
 .space STACK_SIZE                       @ Data-stack size in bytes
 shi_stack_end:                          @ Data-stack end
 
-.p2align 2
 shi_context:                            @ Used to store the forth context
 .space 12                               @ Save tos, dsp and lfp
 
 @ ------------------------------------------------------------------------------
 @ Data-space pointers
 @ ------------------------------------------------------------------------------
-.p2align 2
 to_text_begin:
 .word 0
 data_begin:                             @ Pointer to data
@@ -53,7 +51,6 @@ link:                                   @ Last link
 status:                                 @ Current state (state is taken as word)
 .word 0                                 @ false: interpret, true: compile
 
-.p2align 2                              @ Make sure src is 4-byte aligned
 src:                                    @ Source
 .word 0                                 @ c-addr
 .word 0                                 @ u

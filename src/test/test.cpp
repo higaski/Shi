@@ -30,18 +30,6 @@ extern "C" int test() {
              .text_begin = FLASH_END - (32 * 1024),
              .text_end = FLASH_END});
 
-  //  "2 allot"_s;
-
-  //  printf("begin shi_ram %X\n", reinterpret_cast<uint32_t>(begin(shi_ram)));
-
-  // this never worked
-  // endcase currently also resolved the branch from leave
-  // which means when we leave we land right before "loop" which pops the loop
-  // control parameters a SECOND TIME
-  //  ": CS do i case 1 of leave endof 2 of 222 endof 3 of 333 endof endcase
-  //  loop ;"_s; shi::push(4, 1); printf("%d\n", shi::size()); "CS"_s;
-  //  printf("%d\n", shi::size());
-
   //  ": add1 1+ ;"_s;
   //  auto add1 = shi::word("add1");
   //  asm volatile("nop");

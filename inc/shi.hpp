@@ -539,10 +539,38 @@
 /// while -> ( dest -- orig dest )
 /// repeat -> ( orig dest -- )
 ///
-/// Dokumentieren dass else bei orig des unterste bit setzt...
+///
+/// Sonderwürschtl:<br>
+/// - else setzt das unterste bit von orig damit then unterscheiden kann obs an
+///   conditional oder unconditional branch auflösen muss
+/// - endof setzt das unterste bit damit csp_comma unterscheiden kann ob der
+///   orig von endof oder leave kommt
+///
+/// Dokumentieren dass else bei orig des unterste bit setzt (if nicht)...
+/// Und so wies ausschaut wird das bei endof jetzt auch gleich passieren (leave
+/// nicht)
 ///
 /// Ausserdem dass es nur mehr 1x conditional branch funktion gibt und das
 /// "template" fürn OPCODE vorher am stack landet
+///
+/// Shi besitzt eine Limitierung was control structures angeht. Es is nicht
+/// möglich
+/// - case zu nesten
+/// - leave in nested loops zu nutzen
+///
+/// Beides geht nicht weil dann beim auflösen von endof und leave wissen müsst
+/// zu welchem level die ghören.
+///
+// clang-format off
+/// \page page_control_structures Control structures
+/// also sowas geht nicht<br>
+/// : do ... if ... leave ... then ... do ... loop ... loop ;<br>
+/// weil das 1.loop leave auflösen würde und ned des 2.
+///
+/// und sowas auch nicht<br>
+/// : case ... of ... endof ... of ... case ... of ... endof ... endcase ... endof ... endcase ;<br>
+/// weil des 1.endcase des allererste endof auflösen würde
+// clang-format on
 ///
 ///
 // clang-format off
@@ -1190,14 +1218,14 @@ typedef struct {
   uint32_t text_begin;
   uint32_t text_end;
   uint8_t text_p2align;
-} shi_init_t;
+} Shi_init;
 
-void shi_init_asm(shi_init_t*);
+void shi_init_asm(Shi_init*);
 
 /// Initialize
 ///
 /// \param  s   Init structure
-static inline void shi_init(shi_init_t s) {
+static inline void shi_init(Shi_init s) {
   shi_init_asm(&s);
 }
 
@@ -1425,7 +1453,7 @@ inline int32_t top(size_t offset = 0) {
   return t;
 }
 
-struct init_t {
+struct Init {
   uint32_t data_begin{};
   uint32_t data_end{};
   uint32_t text_begin{};
@@ -1433,12 +1461,12 @@ struct init_t {
   uint8_t text_p2align{2};
 };
 
-extern "C" void shi_init_asm(init_t&);
+extern "C" void shi_init_asm(Init&);
 
 /// Initialize
 ///
 /// \param  s   Init structure
-inline void init(init_t s) {
+inline void init(Init s) {
   shi_init_asm(s);
 }
 
@@ -1473,13 +1501,13 @@ inline void clear() {
   shi_clear_asm();
 }
 
-struct word {
-  constexpr word() = default;
-  word(char const* str) : fp{shi_tick_asm(str, strlen(str))} {}
-  word(char const* str, size_t len) : fp{shi_tick_asm(str, len)} {}
+struct Word {
+  constexpr Word() = default;
+  Word(char const* str) : fp{shi_tick_asm(str, strlen(str))} {}
+  Word(char const* str, size_t len) : fp{shi_tick_asm(str, len)} {}
 
   template<typename... Ts>
-  word& operator()(Ts&&... ts) {
+  Word& operator()(Ts&&... ts) {
     using std::forward;
 
     if (fp) {
@@ -1517,9 +1545,9 @@ inline void operator"" _s(char const* str, size_t len) {
 }
 
 template<typename T, T... Cs>
-word operator""_w() {
+Word operator""_w() {
   static constexpr char c[]{Cs...};
-  static auto literal_word{word(c, sizeof...(Cs))};
+  static auto literal_word{Word(c, sizeof...(Cs))};
   return literal_word;
 }
 

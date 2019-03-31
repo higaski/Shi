@@ -419,6 +419,7 @@ shi_c_variable_asm:
 shi_clear_asm:
     push {tos-lfp, lr}                  @ ( R: -- tos dsp lfp lr )
 
+@ Clear stack from begin to end
 @ r0    shi_stack_begin
 @ tos   0
 @ dsp   shi_stack_end

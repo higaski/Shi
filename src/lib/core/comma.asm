@@ -16,6 +16,7 @@
 b_comma:
     push {lr}
 
+@ Calculate pc-relative address
 @ r0    dest
 @ r1    pc-relative address (dest - (orig + 4))
 @ tos   orig
@@ -51,8 +52,7 @@ b_comma:
     bhs 1f
         movs r12, #1                    @ Set flag
         str tos, [r2]                   @ Temporarily store orig as data_begin
-        movs tos, r3
-        PUSH_TOS                        @ ( -- data_begin )
+        push {r3}                       @ ( R: -- data_begin )
 
 @ r1    pc-relative address (dest - (orig + 4))
 @ r2    J1 | J2 | imm11 | imm10
@@ -102,10 +102,11 @@ b_comma:
 
 @ Write opcode and reset data_begin
 @ r0    data_begin address
+@ r3    data_begin
 1:  bl rev_comma                        @ ( opcode -- )
     ldr r0, =data_begin
-    str tos, [r0]
-    DROP                                @ ( data_begin -- )
+    pop {r3}                            @ ( R: data_begin -- )
+    str r3, [r0]
 
 @ Return
 6:  pop {pc}
@@ -120,6 +121,7 @@ b_comma:
 bc_comma:
     push {lr}
 
+@ Calculate pc-relative address
 @ r0    dest
 @ r1    orig
     ldmia dsp!, {r0, r1}                @ ( orig dest opcode -- opcode )
@@ -188,6 +190,7 @@ bc_comma:
 
 @ Write opcode and reset data_begin
 @ r0    data_begin address
+@ r3    data_begin
 1:  bl rev_comma                        @ ( opcode -- )
     ldr r0, =data_begin
     pop {r3}                            @ ( R: data_begin -- )
@@ -198,46 +201,63 @@ bc_comma:
 
 @ ------------------------------------------------------------------------------
 @ csp,
-@ ( C: case-sys | loop-sys -- )
+@ (                               flag -- )
+@ ( C: orig | orig2 ... orign | orig2n -- )
 @ ------------------------------------------------------------------------------
 .thumb_func
 csp_comma:
     push {lr}
 
-@ r0    csp address
-@ r1    csp
-@ r2    shi_stack_begin
-    ldr r0, =csp
-    ldr r1, [r0]
-    ldr r2, =shi_stack_begin
-    cmp r1, r2
-    beq 6f
-
 @ Check if csp and dsp clash
-@ r1    csp
-    cmp r1, dsp
+@ r0    csp
+@ r12   flag
+    POP_REGS r12                        @ ( flag -- )
+    ldr r0, =csp
+    ldr r0, [r0]
+    cmp r0, dsp
     blo 1f
         PRINT "csp, stack overflow"
         b 6f
 
-@ r0    csp address
-@ r1    csp
+@ Resolve orig (leave) or orig2 (endof)
+@ r0    csp
+@ r1    flag to indicate that orig can't be resolved
 @ r2    scratch
-1:  ldr r2, [r1, #-4]
+@ r3    scratch
+@ r12   flag to indicate if csp_comma should compile endof or leave
+1:  movs r1, #0
+1:  ldr r2, =shi_stack_begin
+    cmp r0, r2                          @ csp - shi_stack_begin
+    beq 6f                              @ Goto return
+        ldr r2, [r0, #-4]
+        ands r3, r2, #1
+        cmp r3, r12
+        beq 2f
+            cmp r1, #0
+            ittt eq
+            ldreq r2, =csp              @ Store csp in case orig can't be resolved
+            streq r0, [r2]
+            moveq r1, #1                @ Set flag to indicate that orig can't be resolved
+            subs r0, #4
+            b 1b
+2:  bics r2, #1                         @ Clear bit0
     PUSH_REGS r2                        @ ( -- orig )
-    movs r2, #0
-    str r2, [r1, #-4]!
-    push {r0, r1}                       @ ( R: -- csp-addr csp )
+    push {r0, r1, r12}                  @ ( R: -- csp flag0 flag1 )
     bl here                             @ ( -- dest )
     bl b_comma
-    pop {r0, r1}                        @ ( R: csp-addr csp -- )
-    ldr r2, =shi_stack_begin
-    cmp r1, r2
-    bhi 1b
-      str r2, [r0]
+    pop {r0, r1, r12}                   @ ( R: csp flag0 flag1 -- )
+    subs r0, #4
+    b 1b
 
 @ Return
-6:  pop {pc}
+@ r0    csp
+@ r1    flag to indicate that orig can't be resolved
+@ r2    csp address
+6:  cmp r1, #0                          @ At least one orig couldn't be resolved
+    itt eq                              @ Do not write csp
+    ldreq r2, =csp
+    streq r0, [r2]
+    pop {pc}
 
 @ ------------------------------------------------------------------------------
 @ h,
