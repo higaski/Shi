@@ -201,63 +201,62 @@ bc_comma:
 
 @ ------------------------------------------------------------------------------
 @ csp,
-@ (                               flag -- )
-@ ( C: orig | orig2 ... orign | orig2n -- )
+@ (                     lvl -- )
+@ ( C: leave-sys | case-sys -- )
 @ ------------------------------------------------------------------------------
 .thumb_func
 csp_comma:
-    push {lr}
+    push {r4, lr}
 
 @ Check if csp and dsp clash
-@ r0    csp
-@ r12   flag
-    POP_REGS r12                        @ ( flag -- )
-    ldr r0, =csp
-    ldr r0, [r0]
-    cmp r0, dsp
+@ r4    csp
+    ldr r4, =csp
+    ldr r4, [r4]
+    cmp r4, dsp
     blo 1f
         PRINT "csp, stack overflow"
         b 6f
 
-@ Resolve orig (leave) or orig2 (endof)
-@ r0    csp
-@ r1    flag to indicate that orig can't be resolved
-@ r2    scratch
-@ r3    scratch
-@ r12   flag to indicate if csp_comma should compile endof or leave
-1:  movs r1, #0
-1:  ldr r2, =shi_stack_begin
-    cmp r0, r2                          @ csp - shi_stack_begin
-    beq 6f                              @ Goto return
-        ldr r2, [r0, #-4]
-        ands r3, r2, #1
-        cmp r3, r12
+@ Resolve leave-sys or case-sys
+@ r0    leave_lvl | case_lvl
+@ r1    leave-sys | case-sys
+@ r4    csp
+@ r5    flag to indicate that sys can't be resolved
+@ tos   lvl
+1:  push {r5}
+    movs r5, #0
+1:  ldr r0, =shi_stack_begin
+    cmp r0, r4                          @ csp - shi_stack_begin
+    beq 5f
+        ldrd r0, r1, [r4, #-8]
+        cmp r0, tos
         beq 2f
-            cmp r1, #0
+            cmp r5, #0
             ittt eq
-            ldreq r2, =csp              @ Store csp in case orig can't be resolved
-            streq r0, [r2]
-            moveq r1, #1                @ Set flag to indicate that orig can't be resolved
-            subs r0, #4
+            ldreq r0, =csp              @ Store csp in case sys can't be resolved
+            streq r4, [r0]
+            moveq r5, #1
+            subs r4, #8
             b 1b
-2:  bics r2, #1                         @ Clear bit0
-    PUSH_REGS r2                        @ ( -- orig )
-    push {r0, r1, r12}                  @ ( R: -- csp flag0 flag1 )
-    bl here                             @ ( -- dest )
-    bl b_comma
-    pop {r0, r1, r12}                   @ ( R: csp flag0 flag1 -- )
-    subs r0, #4
+2:  PUSH_REGS r1                        @ ( -- sys )
+    bl here                             @ ( sys -- sys dest )
+    bl b_comma                          @ ( sys dest -- )
+    subs r4, #8
     b 1b
 
-@ Return
-@ r0    csp
-@ r1    flag to indicate that orig can't be resolved
-@ r2    csp address
-6:  cmp r1, #0                          @ At least one orig couldn't be resolved
+@ Store csp in case all sys could be resolved
+@ r0    csp address
+@ r4    csp
+@ r5    flag to indicate that sys can't be resolved
+5:  cmp r5, #0                          @ At least one sys couldn't be resolved
     itt eq                              @ Do not write csp
-    ldreq r2, =csp
-    streq r0, [r2]
-    pop {pc}
+    ldreq r0, =csp
+    streq r4, [r0]
+    pop {r5}
+
+@ Return
+6:  DROP                                @ ( lvl -- )
+    pop {r4, pc}
 
 @ ------------------------------------------------------------------------------
 @ h,

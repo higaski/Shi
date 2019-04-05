@@ -13,6 +13,30 @@ TEST(corner_cases_loop) {
   TEST_ASSERT_EQUAL(-2, shi::top());
   TEST_ASSERT_EQUAL(2, shi::top(1));
 
+  ": GD8 do 111 i 0= if leave then 4 1 do 222 j 2 > if leave then loop loop ;"_s;
+  TEST_ASSERT_EQUAL(2, shi::size());
+  "4 1 GD8"_s;
+  TEST_ASSERT_EQUAL(12, shi::size());
+  TEST_ASSERT_EQUAL(222, shi::top());
+  TEST_ASSERT_EQUAL(111, shi::top(1));
+  TEST_ASSERT_EQUAL(222, shi::top(2));
+  TEST_ASSERT_EQUAL(222, shi::top(3));
+  TEST_ASSERT_EQUAL(222, shi::top(4));
+  TEST_ASSERT_EQUAL(111, shi::top(5));
+  TEST_ASSERT_EQUAL(222, shi::top(6));
+  TEST_ASSERT_EQUAL(222, shi::top(7));
+  TEST_ASSERT_EQUAL(222, shi::top(8));
+  TEST_ASSERT_EQUAL(111, shi::top(9));
+  "4 0 GD8"_s;
+  TEST_ASSERT_EQUAL(13, shi::size());
+  TEST_ASSERT_EQUAL(111, shi::top());
+  "5 3 GD8"_s;
+  TEST_ASSERT_EQUAL(17, shi::size());
+  TEST_ASSERT_EQUAL(222, shi::top());
+  TEST_ASSERT_EQUAL(111, shi::top(1));
+  TEST_ASSERT_EQUAL(222, shi::top(2));
+  TEST_ASSERT_EQUAL(111, shi::top(3));
+
   shi::clear();
 }
 

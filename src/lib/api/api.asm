@@ -397,8 +397,11 @@ shi_c_variable_asm:
     ENTRY                               @ Restore context
 
 @ Store source
+@ r0    c-addr
+@ r1    u
+@ r2    src address
     ldr r2, =src
-    stmia r2, {r0, r1}
+    strd r0, r1, [r2]
 
 @ Set >IN 0
     SET_IN #0                           @ Set >in zero

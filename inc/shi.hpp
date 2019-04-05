@@ -543,23 +543,15 @@
 /// Sonderwürschtl:<br>
 /// - else setzt das unterste bit von orig damit then unterscheiden kann obs an
 ///   conditional oder unconditional branch auflösen muss
-/// - endof setzt das unterste bit damit csp_comma unterscheiden kann ob der
-///   orig von endof oder leave kommt
+/// - leave und endof haben zählvariablen für ihr "lvl", des is notwendig damit
+///   die csp, routine nur die sprünge schreibt die fürs aktuelle nest-lvl
+///   notwendig sind. Das heißt von jetzt an kann ma leave und endof beliebig
+///   nesten... (zumindest bis 128 lvls tief :D )
 ///
-/// Dokumentieren dass else bei orig des unterste bit setzt (if nicht)...
-/// Und so wies ausschaut wird das bei endof jetzt auch gleich passieren (leave
-/// nicht)
 ///
 /// Ausserdem dass es nur mehr 1x conditional branch funktion gibt und das
 /// "template" fürn OPCODE vorher am stack landet
 ///
-/// Shi besitzt eine Limitierung was control structures angeht. Es is nicht
-/// möglich
-/// - case zu nesten
-/// - leave in nested loops zu nutzen
-///
-/// Beides geht nicht weil dann beim auflösen von endof und leave wissen müsst
-/// zu welchem level die ghören.
 ///
 // clang-format off
 /// \page page_control_structures Control structures

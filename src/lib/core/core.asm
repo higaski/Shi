@@ -131,11 +131,11 @@ WORD FLAG_INTERPRET_COMPILE, "+!", plus_store
 
 @ ------------------------------------------------------------------------------
 @ +loop
-@ (            dest -- )
-@ ( C: orig...orign -- )
+@ (         dest -- )
+@ ( C: leave-sys -- )
 @ Append the run-time semantics given below to the current definition. Resolve
 @ the destination of all unresolved occurrences of leave between the location
-@ given by dest and the next location for a transfer of control, to execute
+@ given by leave-sys and the next location for a transfer of control, to execute
 @ the words following +loop.
 @
 @ (            n --             )
@@ -208,9 +208,16 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
     PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
     bl bc_comma                         @ ( orig dest opcode -- )
 
-@ Take care of leave(s)
-    PUSH_INT8 #0
-    bl csp_comma                        @ ( C: orig...orign -- )
+@ Resolve leave-sys and decrement leave_lvl
+@ r0    leave_lvl address
+@ r1    leave_lvl decremented
+@ tos   leave_lvl
+    PUSH_TOS
+    ldr r0, =leave_lvl
+    ldrb tos, [r0]                      @ ( -- leave_lvl )
+    subs r1, tos, #1
+    strb r1, [r0]
+    bl csp_comma                        @ ( leave_lvl -- ) ( C: leave-sys -- )
 
 @ Return
     pop {pc}
@@ -931,6 +938,14 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 @ Dest
     bl here                             @ ( -- dest )
 
+@ Increment leave_lvl
+@ r0    leave_lvl address
+@ r1    leave_lvl
+    ldr r0, =leave_lvl
+    ldrb r1, [r0]
+    adds r1, #1
+    strb r1, [r0]
+
 @ Return
     pop {pc}                          
 .endif
@@ -1250,8 +1265,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "j"
 
 @ ------------------------------------------------------------------------------
 @ leave
-@ ( C:          -- orig )
-@ ( R: loop-sys --          )
+@ ( C:          -- leave-sys )
+@ ( R: loop-sys --           )
 @ Discard the current loop control parameters. An ambiguous condition exists if
 @ they are unavailable. Continue execution immediately following the innermost
 @ syntactically enclosing do...loop or do...+loop.
@@ -1263,21 +1278,25 @@ WORD FLAG_COMPILE_IMMEDIATE, "leave"
 @ Unloop
     bl unloop                           @ ( R: loop-sys -- )
 
-@ Orig
-    bl here                             @ ( -- orig )
+@ Leave-sys
+    bl here                             @ ( -- leave-sys )
 
-@ Reserve space for orig
+@ Reserve space for leave-sys
     PUSH_INT8 #4                        @ Reserve space for branch instruction
     bl allot
 
-@ Reverse push orig onto the stack
+@ Reverse push leave-sys onto the stack
 @ r0    csp address
 @ r1    csp
+@ r2    leave_lvl
+@ tos   leave-sys
     ldr r0, =csp
     ldr r1, [r0]
-    str tos, [r1], #4                   @ ( C: -- orig )
+    ldr r2, =leave_lvl
+    ldrb r2, [r2]
+    strd r2, tos, [r1], #8              @ ( C: -- leave-sys )
     str r1, [r0]
-    DROP                                @ ( orig -- )
+    DROP                                @ ( leave-sys -- )
 
 @ Return
     pop {pc}
@@ -1490,11 +1509,11 @@ WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
 
 @ ------------------------------------------------------------------------------
 @ loop
-@ (            dest -- )
-@ ( C: orig...orign -- )
+@ (         dest -- )
+@ ( C: leave-sys -- )
 @ Append the run-time semantics given below to the current definition. Resolve
 @ the destination of all unresolved occurrences of leave between the location
-@ given by dest and the next location for a transfer of control, to execute
+@ given by leave-sys and the next location for a transfer of control, to execute
 @ the words following the loop.
 @
 @ (              --             )
@@ -1531,9 +1550,16 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
     PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
     bl bc_comma                         @ ( orig dest opcode -- )
 
-@ Take care of leave(s)
-    PUSH_INT8 #0
-    bl csp_comma                        @ ( C: orig...orign -- )
+@ Resolve leave-sys and decrement leave_lvl
+@ r0    leave_lvl address
+@ r1    leave_lvl decremented
+@ tos   leave_lvl
+    PUSH_TOS
+    ldr r0, =leave_lvl
+    ldrb tos, [r0]                      @ ( -- leave_lvl )
+    subs r1, tos, #1
+    strb r1, [r0]
+    bl csp_comma                        @ ( leave_lvl -- ) ( C: leave-sys -- )
 
 @ Return
     pop {pc}
@@ -2202,6 +2228,13 @@ WORD FLAG_SKIP, "buffer:", buffer_colon
 @ ------------------------------------------------------------------------------
 .if ENABLE_CASE == 1
 WORD FLAG_COMPILE_IMMEDIATE, "case"
+@ Increment case_lvl
+@ r0    case_lvl address
+@ r1    case_lvl
+    ldr r0, =case_lvl
+    ldrb r1, [r0]
+    adds r1, #1
+    strb r1, [r0]
     bx lr
 .endif
 
@@ -2370,10 +2403,10 @@ WORD FLAG_SKIP, "defer@", defer_fetch
 
 @ ------------------------------------------------------------------------------
 @ endcase
-@ ( C: orig2...orig2n -- )
-@ Mark the end of the case...of...endof...endcase structure. Use orig2...orig2n
-@ to resolve the entire structure. Append the run-time semantics given below to
-@ the current definition.
+@ ( C: case-sys -- )
+@ Mark the end of the case...of...endof...endcase structure. Use case-sys to
+@ resolve the entire structure. Append the run-time semantics given below to the
+@ current definition.
 @
 @ ( x -- )
 @ Discard the case selector x and continue execution
@@ -2388,9 +2421,16 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
     PUSH_INT16 #0xCF40                  @ ( -- opcode )
     bl h_comma                          @ ( opcode -- )
 
-@ Take care of endof(s)
-    PUSH_INT8 #1
-    bl csp_comma                        @ ( C: orig2...orig2n -- )
+@ Resolve case-sys and decrement case_lvl
+@ r0    case_lvl address
+@ r1    case_lvl decremented
+@ tos   case_lvl
+    PUSH_TOS
+    ldr r0, =case_lvl
+    ldrb tos, [r0]                      @ ( -- case_lvl )
+    subs r1, tos, #1
+    strb r1, [r0]
+    bl csp_comma                        @ ( case_lvl -- ) ( C: case-sys -- )
 
 @ Return
     pop {pc}
@@ -2398,12 +2438,13 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 
 @ ------------------------------------------------------------------------------
 @ endof
-@ ( orig1 -- )
-@ ( C: -- orig2 )
+@ (    orig --          )
+@ ( C:      -- case-sys )
 @ Mark the end of the of...endof part of the case structure. The next location
-@ for a transfer of control resolves the reference given by orig1. Append the
+@ for a transfer of control resolves the reference given by orig. Append the
 @ run-time semantics given below to the current definition. Resolve the
-@ reference given by orig1 and place orig2 on the control-flow stack, to be resolved by endcase.
+@ reference given by orig and place case-sys on the control-flow stack, to be
+@ resolved by endcase.
 @
 @ ( -- )
 @ Continue execution at the location specified by the consumer of case-sys2.
@@ -2412,26 +2453,29 @@ WORD FLAG_COMPILE_IMMEDIATE, "endcase"
 WORD FLAG_COMPILE_IMMEDIATE, "endof"
     push {lr}
 
-@ Reverse push orig2 onto the stack
+@ Reverse push case-sys onto the stack
 @ r0    csp address
 @ r1    csp
-    bl here                             @ ( -- orig2 )
-    orrs tos, #1                        @ Signal to csp_comma that orig2 comes from endof
+@ r2    case_lvl
+@ tos   case-sys
+    bl here                             @ ( -- case-sys )
     ldr r0, =csp
     ldr r1, [r0]
-    str tos, [r1], #4                   @ ( C: -- orig2 )
+    ldr r2, =case_lvl
+    ldrb r2, [r2]
+    strd r2, tos, [r1], #8              @ ( C: -- case-sys )
     str r1, [r0]
-    DROP                                @ ( orig2 -- )
+    DROP                                @ ( case-sys -- )
 
-@ Reserve space for orig2
+@ Reserve space for case-sys
     PUSH_INT8 #4
     bl allot
 
-@ Resolve orig1
-    bl here                             @ ( orig1 -- orig1 dest )
+@ Resolve orig
+    bl here                             @ ( orig -- orig dest )
     ldr r0, =0xF0408000                 @ bne
-    PUSH_REGS r0                        @ ( orig1 dest -- orig1 dest opcode )
-    bl bc_comma                         @ ( orig1 dest opcode -- )
+    PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
+    bl bc_comma                         @ ( orig dest opcode -- )
 
 @ Return
     pop {pc}
@@ -2487,8 +2531,8 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "nip"
 
 @ ------------------------------------------------------------------------------
 @ of
-@ ( -- orig1 )
-@ Put orig1 onto the stack. Append the run-time semantics given below to the
+@ ( -- orig )
+@ Put orig onto the stack. Append the run-time semantics given below to the
 @ current definition. The semantics are incomplete until resolved by a consumer
 @ of orig such as endof.
 @
@@ -2512,8 +2556,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "of"
     PUSH_INT16 #0x42B0                  @ ( -- opcode )
     bl h_comma                          @ ( opcode -- )
 
-@ orig1
-    bl here                             @ ( -- orig1 )
+@ orig
+    bl here                             @ ( -- orig )
     PUSH_INT8 #4
     bl allot
 

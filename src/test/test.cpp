@@ -24,6 +24,9 @@ alignas(4) std::array<uint8_t, 32 * 1024> shi_ram{};
 
 extern "C" int test() {
   using std::begin, std::end;
+  using namespace shi;
+
+  printf("shi_ram begin %X\n", &shi_ram[0]);
 
   shi::init({.data_begin = reinterpret_cast<uint32_t>(begin(shi_ram)),
              .data_end = reinterpret_cast<uint32_t>(end(shi_ram)),
