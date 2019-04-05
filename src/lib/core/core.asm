@@ -152,49 +152,49 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
 
 @ pop {r0, r1}
 @ subs r2, r1, r0
-    ldr r0, =0x1A0ABC03
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0x1A0ABC03                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ adds r0, r0, tos
 @ ldmia dsp!, {tos}
-    ldr r0, =0xCF401980
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0xCF401980                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ subs r3, r1, r0
 @ cmp r2, #0
-    ldr r0, =0x2A001A0B
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0x2A001A0B                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ ite le
 @ movle r2, #0
-    ldr r0, =0x2200BFD4
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0x2200BFD4                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ movgt r2, #1
 @ cmp r3, #0
-    ldr r0, =0x2B002201
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0x2B002201                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ ite gt
 @ movgt r3, r2
-    ldr r0, =0x4613BFCC
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0x4613BFCC                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ eorle r3, r2, #1
-    ldr r0, =0x0301F082
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0x0301F082                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ cmp r3, #0
 @ it ne
-    ldr r0, =0xBF182B00
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0xBF182B00                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ pushne {r0, r1}
@@ -204,8 +204,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "+loop", plus_loop
 @ Resolve dest
     bl here                             @ ( dest -- dest orig )
     SWAP                                @ ( dest orig -- orig dest )
-    ldr r0, =0xF0408000                 @ bne
-    PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
+    PUSH_TOS                            @ bne
+    ldr tos, =0xF0408000                @ ( orig dest -- orig dest opcode )
     bl bc_comma                         @ ( orig dest opcode -- )
 
 @ Resolve leave-sys and decrement leave_lvl
@@ -927,8 +927,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 @ Do consumes n1 and n2 and pushes it onto the return stack
 @ movs r0, tos
 @ ldmia dsp!, {r1, tos}
-    ldr r0, =0xCF420030
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0xCF420030                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ push {r0, r1}
@@ -968,18 +968,18 @@ WORD FLAG_COMPILE_IMMEDIATE, "do"
 .if ENABLE_DOES == 1
 WORD FLAG_COMPILE, "does>", does
 @ Get address of bx lr of latest definition's create
-@ r0    bx lr address
-    ldr r0, =link
-    ldr r0, [r0]
-    ldrb r1, [r0, #5]                   @ c-addr
-    adds r0, r0, r1
-    adds r0, #4+2+8                     @ align(link + c-addr + 8 + 2, 4)
-    P2ALIGN2 align=r0, scratch=r12
+@ tos   bx lr address
+    PUSH_TOS
+    ldr tos, =link
+    ldr tos, [tos]
+    ldrb r1, [tos, #5]                  @ c-addr
+    adds tos, r1
+    adds tos, #4+2+8                    @ align(link + c-addr + 8 + 2, 4)
+    P2ALIGN2 align=tos, scratch=r12
 
 @ Replace bx lr of create with branch to code after does>
-@ r0    bx lr address
+@ tos   bx lr address
 @ lr    does> link address
-    PUSH_REGS r0                        @ ( -- orig )
     PUSH_REGS lr                        @ ( -- orig dest )
     bl b_comma                          @ ( orig dest -- )
 
@@ -1036,8 +1036,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "else"
 @ Resolve orig1
     SWAP                                @ ( orig1 orig2 -- orig2 orig1 )
     bl here                             @ ( orig2 orig1 -- orig2 orig1 dest )
-    ldr r0, =0xF0008000                 @ beq
-    PUSH_REGS r0                        @ ( orig2 orig1 dest -- orig2 orig1 dest opcode )
+    PUSH_TOS                            @ beq
+    ldr tos, =0xF0008000                @ ( orig2 orig1 dest -- orig2 orig1 dest opcode )
     bl bc_comma                         @ ( orig2 orig1 dest opcode -- orig2 )
 
 @ Return
@@ -1173,8 +1173,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "i"
     push {lr}
 
 @ str tos, [dsp, #-4]!
-    ldr r0, =0x6D04F847
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0x6D04F847                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ ldr tos, [sp]
@@ -1204,8 +1204,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "if"
 @ If needs to consume its own flag
 @ movs r0, tos
 @ ldmia dsp!, {tos}
-    ldr r0, =0xCF400030
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0xCF400030                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ cmp r0, #0
@@ -1251,8 +1251,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "j"
     push {lr}
 
 @ str tos, [dsp, #-4]!
-    ldr r0, =0x6D04F847
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0x6D04F847                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ ldr tos, [sp, #8]
@@ -1318,6 +1318,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "leave"
 WORD FLAG_COMPILE_IMMEDIATE, "literal", literal
     push {lr}
 
+@ str tos, [dsp, #-4]!
     PUSH_TOS
     ldr tos, =0x6D04F847                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
@@ -1529,14 +1530,14 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
 
 @ pop {r0, r1}
 @ adds r0, #1
-    ldr r0, =0x3001BC03
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0x3001BC03                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ cmp r0, r1
 @ it ne
-    ldr r0, =0xBF184288
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0xBF184288                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ pushne {r0, r1}
@@ -1546,8 +1547,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "loop"
 @ Resolve dest
     bl here                             @ ( -- dest orig )
     SWAP                                @ ( dest orig -- orig dest )
-    ldr r0, =0xF0408000                 @ beq
-    PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
+    PUSH_TOS                            @ beq
+    ldr tos, =0xF0408000                @ ( orig dest -- orig dest opcode )
     bl bc_comma                         @ ( orig dest opcode -- )
 
 @ Resolve leave-sys and decrement leave_lvl
@@ -1760,8 +1761,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "repeat"
 
 @ Resolve orig
     bl here                             @ ( orig -- orig dest )
-    ldr r0, =0xF0008000                 @ beq
-    PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
+    PUSH_TOS                            @ beq
+    ldr tos, =0xF0008000                @ ( orig dest -- orig dest opcode )
     bl bc_comma                         @ ( orig dest opcode -- )
 
 @ Return
@@ -1864,8 +1865,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "then"
     ands r0, tos, #1
     bne 1f
         bl here                         @ ( orig1 -- orig1 dest )
-        ldr r0, =0xF0008000             @ beq
-        PUSH_REGS r0                    @ ( orig1 dest -- orig1 dest opcode )
+        PUSH_TOS                        @ beq
+        ldr tos, =0xF0008000            @ ( orig1 dest -- orig1 dest opcode )
         bl bc_comma                     @ ( orig1 dest opcode -- )
         b 6f                            @ Goto return
 
@@ -1938,8 +1939,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "until"
 @ Until needs to consume its own flag
 @ movs r0, tos
 @ ldmia dsp!, {tos}
-    ldr r0, =0xCF400030
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0xCF400030                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ cmp r0, #0
@@ -1949,8 +1950,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "until"
 @ Resolve dest
     bl here                             @ ( dest -- dest orig )
     SWAP                                @ ( dest orig -- orig dest )
-    ldr r0, =0xF0008000                 @ beq
-    PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
+    PUSH_TOS                            @ beq
+    ldr tos, =0xF0008000                @ ( orig dest -- orig dest opcode )
     bl bc_comma                         @ ( orig dest opcode -- )
 
 @ Return
@@ -2019,8 +2020,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "while"
 @ While needs to consume its own flag
 @ movs r0, tos
 @ ldmia dsp!, {tos}
-    ldr r0, =0xCF400030
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0xCF400030                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ cmp r0, #0
@@ -2473,8 +2474,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "endof"
 
 @ Resolve orig
     bl here                             @ ( orig -- orig dest )
-    ldr r0, =0xF0408000                 @ bne
-    PUSH_REGS r0                        @ ( orig dest -- orig dest opcode )
+    PUSH_TOS                            @ bne
+    ldr tos, =0xF0408000                @ ( orig dest -- orig dest opcode )
     bl bc_comma                         @ ( orig dest opcode -- )
 
 @ Return
@@ -2548,8 +2549,8 @@ WORD FLAG_COMPILE_IMMEDIATE, "of"
 
 @ movs r0, tos
 @ ldmia dsp!, {tos}
-    ldr r0, =0xCF400030
-    PUSH_REGS r0                        @ ( -- opcode )
+    PUSH_TOS
+    ldr tos, =0xCF400030                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
 @ cmp r0, tos

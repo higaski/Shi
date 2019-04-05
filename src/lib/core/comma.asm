@@ -222,11 +222,12 @@ csp_comma:
 @ r1    leave-sys | case-sys
 @ r4    csp
 @ r5    flag to indicate that sys can't be resolved
+@ r9    shi_stack_begin
 @ tos   lvl
-1:  push {r5}
+1:  push {r5, r9}
     movs r5, #0
-1:  ldr r0, =shi_stack_begin
-    cmp r0, r4                          @ csp - shi_stack_begin
+    ldr r9, =shi_stack_begin
+1:  cmp r4, r9                          @ csp - shi_stack_begin
     beq 5f
         ldrd r0, r1, [r4, #-8]
         cmp r0, tos
@@ -252,7 +253,7 @@ csp_comma:
     itt eq                              @ Do not write csp
     ldreq r0, =csp
     streq r4, [r0]
-    pop {r5}
+    pop {r5, r9}
 
 @ Return
 6:  DROP                                @ ( lvl -- )
@@ -282,27 +283,25 @@ h_comma:
 @ ------------------------------------------------------------------------------
 .thumb_func
 inline_comma:
-    push {lr}
+    push {r4, lr}
 
 @ Copy opcodes from xt
-@ r0    xt
-@ r1    opcode
-@ r2    hword
-    POP_REGS r0
-    movw r1, #0x4770
-1:  ldrh r2, [r0], #2
-    cmp r2, r1                          @ End if opcode equals bx lr
+@ r0    hword
+@ r4    opcode
+@ tos   xt
+    movw r4, #0x4770
+1:  ldrh r0, [tos], #2
+    cmp r0, r4                          @ End if opcode equals bx lr
     beq 6f
-        cmp r2, #0xBD00                 @ or pop {pc}
+        cmp r0, #0xBD00                 @ or pop {pc}
         beq 6f
-            PUSH_REGS r2
-            push {r0, r1}               @ ( R: -- xt opcode )
-            bl h_comma
-            pop {r0, r1}                @ ( R: xt opcode -- )
+            PUSH_REGS r0                @ ( xt -- xt opcode )
+            bl h_comma                  @ ( xt opcode -- xt )
             b 1b
 
 @ Return
-6:  pop {pc}
+6:  DROP                                @ ( xt -- )
+    pop {r4, pc}
 
 @ ------------------------------------------------------------------------------
 @ rev,

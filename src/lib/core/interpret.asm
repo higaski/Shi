@@ -110,7 +110,7 @@ interpret_compile:
 @ r0    xt
 @ r1    flags
 @ r2    last literal address
-1:  push {r0, r1, lfp}                  @ Save xt, flags and literal-folding pointer
+1:  push {r0, r1, lfp}                  @ ( R: -- xt flags lfp )
 1:  PUSH_TOS
     ldr tos, [lfp, #-4]!
     push {r2}
@@ -118,7 +118,7 @@ interpret_compile:
     pop {r2}
     cmp r2, lfp
     blo 1b
-        pop {r0, r1, dsp}               @ Set data-stack pointer past literals
+        pop {r0, r1, dsp}               @ ( R: xt flags lfp -- )
         DROP                            @ ( literal -- )
         movs lfp, #0                    @ Clear literal-folding pointer
 

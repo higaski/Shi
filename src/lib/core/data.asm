@@ -64,10 +64,10 @@ radix:                                  @ Determine current numerical base (base
 text_align:                             @ Text alignment
 .byte 4
 
-leave_lvl:                              @ Current nesting level of leave
+leave_lvl:                              @ Current nesting level of do...loop
 .byte 0
 
-case_lvl:                               @ Current nesting level of case
+case_lvl:                               @ Current nesting level of case...of...endof...endcase
 .byte 0b10000000
 
 .p2align 1                              @ Make sure everything after is 2-byte aligned

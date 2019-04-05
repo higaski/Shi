@@ -188,6 +188,8 @@
 /// | in              | Index in terminal input buffer                                                     | 4            |
 /// | radix           | Determine current numerical base (base is taken as word)                           | 4            |
 /// | text_align      | User defined alignment for flash                                                   | 1            |
+/// | leave_lvl       | Current nesting level of do...loop                                                 | 1            |
+/// | case_lvl        | Current nesting level of case...of...endof...endcase                               | 1            |
 // clang-format on
 ///
 /// Most variables should be more or less evident with some exceptions:
