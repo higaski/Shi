@@ -3,10 +3,10 @@
 
 TEST(c_api) {
   TEST_ASSERT_EQUAL(0, shi_size());
-  shi_push_s(43);
+  shi_push_number(43);
   TEST_ASSERT_EQUAL(1, shi_size());
   TEST_ASSERT_EQUAL(43, shi_top(0));
-  int ret = shi_pop_s();
+  int ret = shi_pop_number();
   TEST_ASSERT_EQUAL(0, shi_size());
   TEST_ASSERT_EQUAL(43, ret);
 

@@ -1,10 +1,14 @@
-import math, itertools
+import math
+import itertools
 from matplotlib import pyplot as plt
 from matplotlib_venn import venn2, venn3
 import numpy as np
 
-# Generate list index for itertools combinations
+
 def gen_index(n):
+    """
+     Generate list index for itertools combinations
+    """
     x = -1
     while True:
         while True:
@@ -14,8 +18,10 @@ def gen_index(n):
         yield x
 
 
-# Generate all combinations of intersections
 def make_intersections(sets):
+    """
+    Generate all combinations of intersections
+    """
     l = [None] * 2 ** len(sets)
     for i in range(1, len(sets) + 1):
         ind = gen_index(i)
@@ -25,16 +31,19 @@ def make_intersections(sets):
     return l
 
 
-# Get weird reversed binary string id for venn
 def number2venn_id(x, n_fill):
+    """
+    Get weird reversed binary string id for venn
+    """
     id = bin(x)[2:].zfill(n_fill)
     id = id[::-1]
     return id
 
 
-# Iterate over all combinations and remove duplicates from intersections with
-# more sets
 def sets2dict(sets):
+    """
+    Iterate over all combinations and remove duplicates from intersections with more sets
+    """
     l = make_intersections(sets)
     d = {}
     for i in range(1, len(l)):

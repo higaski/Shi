@@ -37,13 +37,13 @@ TEST(unused0) {
   "unused"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
   auto top = shi::top();
-//  TEST_ASSERT_EQUAL_INT(SHI_RAM_END - SHI_RAM_START, shi::top());
+  //  TEST_ASSERT_EQUAL_INT(SHI_RAM_END - SHI_RAM_START, shi::top());
 
   ",toflash"_s;
   "unused"_s;
   TEST_ASSERT_EQUAL_INT(2, shi::size());
   top = shi::top();
-//  TEST_ASSERT_EQUAL_INT(SHI_FLASH_END - SHI_FLASH_START, shi::top());
+  //  TEST_ASSERT_EQUAL_INT(SHI_FLASH_END - SHI_FLASH_START, shi::top());
 
   ",toram"_s;
 
@@ -54,7 +54,7 @@ TEST(unused1) {
   ",toram"_s;
   "unused"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
-//  TEST_ASSERT_LESS_THAN_INT(SHI_RAM_END - SHI_RAM_START, shi::top());
+  //  TEST_ASSERT_LESS_THAN_INT(SHI_RAM_END - SHI_RAM_START, shi::top());
 
   shi::clear();
 }
@@ -110,7 +110,7 @@ TEST(top) {
 TEST(if_else_then) {
   ": gi2 if 123 else 234 then ;"_s;
   TEST_ASSERT_EQUAL_INT(0, shi::size());
-  //TEST_ASSERT_TRUE(shi::empty());
+  // TEST_ASSERT_TRUE(shi::empty());
 
   "-1 gi2"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
@@ -153,7 +153,7 @@ TEST(if_else_then) {
 
 TEST(loop) {
   ": gd1 do i loop ;"_s;
-  //TEST_ASSERT_TRUE(shi::empty());
+  // TEST_ASSERT_TRUE(shi::empty());
 
   "4 1 gd1"_s;
   TEST_ASSERT_EQUAL_INT(3, shi::size());
@@ -175,7 +175,7 @@ TEST(loop) {
 
 TEST(leave) {
   ": gd5 123 swap 0 do i 4 > if drop 234 leave then loop ;"_s;
-  //TEST_ASSERT_TRUE(shi::empty());
+  // TEST_ASSERT_TRUE(shi::empty());
 
   "1 gd5"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
@@ -197,10 +197,10 @@ TEST(leave) {
 
 TEST(variable) {
   "variable v1"_s;
-  //TEST_ASSERT_TRUE(shi::empty());
+  // TEST_ASSERT_TRUE(shi::empty());
 
   "123 v1 !"_s;
-  //TEST_ASSERT_TRUE(shi::empty());
+  // TEST_ASSERT_TRUE(shi::empty());
 
   "v1 @"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
@@ -211,7 +211,7 @@ TEST(variable) {
 
 TEST(constant) {
   "123 constant x123"_s;
-  //TEST_ASSERT_TRUE(shi::empty());
+  // TEST_ASSERT_TRUE(shi::empty());
 
   "x123"_s;
   TEST_ASSERT_EQUAL_INT(1, shi::size());
@@ -291,7 +291,7 @@ void shi_test() {
   asm volatile("nop");
   volatile uint32_t stars = 42;
   // equal to push(&stars) and evaluate("c-variable stars");
-  shi::c_variable("stars", &stars);
+  shi::c_variable(&stars, "stars");
   //  shi::stack_print(printf);
   shi::evaluate("stars @");
   //  shi::stack_print(printf);

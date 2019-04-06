@@ -24,21 +24,11 @@ alignas(4) std::array<uint8_t, 32 * 1024> shi_ram{};
 
 extern "C" int test() {
   using std::begin, std::end;
-  using namespace shi;
-
-  printf("shi_ram begin %X\n", &shi_ram[0]);
 
   shi::init({.data_begin = reinterpret_cast<uint32_t>(begin(shi_ram)),
              .data_end = reinterpret_cast<uint32_t>(end(shi_ram)),
              .text_begin = FLASH_END - (32 * 1024),
              .text_end = FLASH_END});
-
-  //  ": add1 1+ ;"_s;
-  //  auto add1 = shi::word("add1");
-  //  asm volatile("nop");
-  //  int retval = add1(7);
-  //  printf("%d\n", retval);
-  // add1(7);
 
   //  asm volatile("nop");
   //  ": indexed-array create cells allot does> swap cells + ;"_s;

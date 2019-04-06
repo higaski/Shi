@@ -1,4 +1,6 @@
-import os, re, urllib.request
+import os
+import re
+import urllib.request
 
 
 def escape(str):
@@ -58,8 +60,11 @@ for file in os.listdir(dir_path):
             if len(l_label):
                 d_label[os.path.splitext(filename)[0]] = l_label
 
-# Print markdown table based on words from forth-standard.org
+
 def print_words_as_markdown_table(l):
+    """
+    Print markdown table based on words from forth-standard.org
+    """
     longest = len(max(l, key=len))
     for str in l:
         string_length = len(str) + (longest - len(str))
@@ -67,8 +72,10 @@ def print_words_as_markdown_table(l):
         print("/// | " + str + " | unimplemented |")
 
 
-# Just print the words from .asm files
 def print_words(d):
+    """
+    Just print the words from .asm files
+    """
     for k, v in sorted(d.items()):
         print("\n>>> " + k + " <<<")
         for str in v:
@@ -99,8 +106,7 @@ def print_shi_words_asm_equs(d):
             print(".equ ENABLE_" + str + ", SHI_ENABLE_" + str)
 
 
-# Print c header or assembly list
-print_words(d_name)
+# print_words(d_name)
 # print_words_as_markdown_table(l_url)
-# print_shi_word_c_macros(d_label)
-# print_shi_word_asm_equs(d_label)
+# print_shi_words_c_macros(d_label)
+print_shi_words_asm_equs(d_label)

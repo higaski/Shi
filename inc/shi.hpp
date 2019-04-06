@@ -1097,7 +1097,7 @@ void_fp shi_tick_asm(char const* str, size_t len);
 // C only
 #  ifndef __cplusplus
 
-static inline void shi_push_s(int32_t t) {
+static inline void shi_push_number(int32_t t) {
   asm volatile("tos .req r0 \n"
                "dsp .req r1 \n"
                "ldrd tos, dsp, [%0] \n"
@@ -1109,7 +1109,7 @@ static inline void shi_push_s(int32_t t) {
                : "cc", "memory", "r0", "r1");
 }
 
-static inline void shi_push_d(int64_t t) {
+static inline void shi_push_double(int64_t t) {
   asm volatile("tos .req r0 \n"
                "dsp .req r1 \n"
                "ldrd tos, dsp, [%0] \n"
@@ -1122,7 +1122,9 @@ static inline void shi_push_d(int64_t t) {
                : "cc", "memory", "r0", "r1", "r2", "r3");
 }
 
-static inline int32_t shi_pop_s() {
+static inline void shi_push_struct(void* t, size_t n) {}
+
+static inline int32_t shi_pop_number() {
   int32_t t;
 
   asm volatile("tos .req r0 \n"
@@ -1138,7 +1140,7 @@ static inline int32_t shi_pop_s() {
   return t;
 }
 
-static inline int32_t shi_pop_d() {
+static inline int64_t shi_pop_double() {
   int64_t t;
 
   asm volatile("tos .req r0 \n"
@@ -1155,17 +1157,7 @@ static inline int32_t shi_pop_d() {
   return t;
 }
 
-/// Remove element from the top of the stack
-static inline void shi_pop() {
-  asm volatile("tos .req r0 \n"
-               "dsp .req r1 \n"
-               "ldrd tos, dsp, [%0] \n"
-               "ldmia dsp!, {tos} \n"
-               "strd tos, dsp, [%0] \n"
-               :
-               : "r"(&shi_context)
-               : "cc", "memory", "r0", "r1");
-}
+static inline void shi_pop_struct(void* t, size_t n) {}
 
 static inline int32_t shi_top(size_t offset) {
   int32_t t;
@@ -1322,7 +1314,7 @@ inline size_t size() {
 /// \tparam T   Type of element to push
 /// \param  t   Value to push
 template<typename T>
-inline void push(T&& t) {
+void push(T&& t) {
   using std::addressof, std::is_arithmetic_v, std::is_pointer_v;
   using V = remove_cvref_t<T>;
 
@@ -1351,7 +1343,40 @@ inline void push(T&& t) {
                  : "r"(&shi_context), "r"(addressof(t))
                  : "cc", "memory", "r0", "r1", "r2", "r3");
   else
-    ;  // basically memcpy here?
+    asm volatile("tos .req r0 \n"
+                 "dsp .req r1 \n"
+                 "ldrd tos, dsp, [%0] \n"
+                 "str tos, [dsp, #-4]! \n"
+
+                 "1: cmp %2, #4 \n"
+                 "bls 1f \n"
+                 "ldr r2, [%1], #4 \n"
+                 "str r2, [dsp, #-4]! \n"
+                 "subs %2, #4 \n"
+                 "b 1b \n"
+
+                 "1: cmp %2, #4 \n"
+                 "it eq \n"
+                 "ldreq tos, [%1] \n"
+
+                 "cmp %2, #3 \n"
+                 "ittt eq \n"
+                 "ldrheq tos, [%1], #2 \n"
+                 "ldrbeq r2, [%1] \n"
+                 "orreq tos, tos, r2, lsl #16 \n"
+
+                 "cmp %2, #2 \n"
+                 "it eq \n"
+                 "ldrheq tos, [%1] \n"
+
+                 "cmp %2, #1 \n"
+                 "it eq \n"
+                 "ldrbeq tos, [%1] \n"
+
+                 "strd tos, dsp, [%0] \n"
+                 :
+                 : "r"(&shi_context), "r"(addressof(t)), "r"(sizeof(V))
+                 : "cc", "memory", "r0", "r1", "r2");
 }
 
 /// Add elements to the top of the stack
@@ -1359,18 +1384,20 @@ inline void push(T&& t) {
 /// \tparam Ts  Types of elements to push
 /// \param  ts  Values to push
 template<typename... Ts>
-inline void push(Ts&&... ts) {
-  static_assert((0 + ... + sizeof(Ts)) <= SHI_STACK_SIZE);
+void push(Ts&&... ts) {
+  using std::forward;
 
-  (push(std::forward<Ts>(ts)), ...);
+  static_assert((0 + ... + sizeof(remove_cvref_t<Ts>)) <= SHI_STACK_SIZE);
+
+  (push(forward<Ts>(ts)), ...);
 }
 
 /// Remove element from the top of the stack
 ///
 /// \tparam T   Type of element to pop
 /// \return Value
-template<typename T>
-inline remove_cvref_t<T> pop() {
+template<typename T = int32_t>
+remove_cvref_t<T> pop() {
   using std::addressof, std::is_arithmetic_v, std::is_pointer_v;
   using V = remove_cvref_t<T>;
 
@@ -1401,7 +1428,39 @@ inline remove_cvref_t<T> pop() {
                  : "r"(&shi_context), "r"(addressof(t))
                  : "cc", "memory", "r0", "r1", "r2", "r3");
   else
-    ;  // basically memcpy here?
+    asm volatile("tos .req r0 \n"
+                 "dsp .req r1 \n"
+                 "ldrd tos, dsp, [%0] \n"
+
+                 "1: cmp %2, #4 \n"
+                 "bls 1f \n"
+                 "ldr r2, [dsp], #4 \n"
+                 "str r2, [%1], #4 \n"
+                 "subs %2, #4 \n"
+                 "b 1b \n"
+
+                 "1: cmp %2, #4 \n"
+                 "it eq \n"
+                 "streq tos, [%1] \n"
+
+                 "cmp %2, #3 \n"
+                 "ittt eq \n"
+                 "strheq tos, [%1], #2 \n"
+                 "lsreq tos, #16 \n"
+                 "strbeq tos, [%1] \n"
+
+                 "cmp %2, #2 \n"
+                 "it eq \n"
+                 "strheq tos, [%1] \n"
+
+                 "cmp %2, #1 \n"
+                 "it eq \n"
+                 "strbeq tos, [%1] \n"
+
+                 "strd tos, dsp, [%0] \n"
+                 :
+                 : "r"(&shi_context), "r"(addressof(t)), "r"(sizeof(V))
+                 : "cc", "memory", "r0", "r1", "r2");
 
   return t;
 }
@@ -1411,38 +1470,38 @@ inline remove_cvref_t<T> pop() {
 /// \tparam Ts  Types of element to pop
 /// \return Values
 template<typename... Ts, typename = std::enable_if_t<(sizeof...(Ts) > 1)>>
-inline std::tuple<remove_cvref_t<Ts>...> pop() {
+std::tuple<remove_cvref_t<Ts>...> pop() {
   using std::tuple;
 
-  static_assert((0 + ... + sizeof(Ts)) <= SHI_STACK_SIZE);
+  static_assert((0 + ... + sizeof(remove_cvref_t<Ts>)) <= SHI_STACK_SIZE);
 
-  return tuple<Ts...>{pop<Ts>()...};
+  return std::tuple<Ts...>{pop<Ts>()...};
 }
 
-/// Remove element from the top of the stack
-inline void pop() {
-  asm volatile("tos .req r0 \n"
-               "dsp .req r1 \n"
-               "ldrd tos, dsp, [%0] \n"
-               "ldmia dsp!, {tos} \n"
-               "strd tos, dsp, [%0] \n"
-               :
-               : "r"(&shi_context)
-               : "cc", "memory", "r0", "r1");
-}
+template<typename T = int32_t>
+remove_cvref_t<T> top(size_t offset = 0) {
+  using std::addressof, std::is_arithmetic_v, std::is_pointer_v;
+  using V = remove_cvref_t<T>;
 
-inline int32_t top(size_t offset = 0) {
-  int32_t t;
+  static_assert(sizeof(V) <= SHI_STACK_SIZE);
 
-  asm volatile("cmp %2, #0 \n"
-               "iteee eq \n"
-               "ldreq %0, [%1] \n"
-               "subne r1, %2, #1 \n"
-               "ldrne r0, [%1, #4] \n"
-               "ldrne %0, [r0, r1, lsl #2] \n"
-               : "=r"(t)
-               : "r"(&shi_context), "r"(offset)
-               : "cc", "memory", "r0", "r1");
+  T t;
+
+  if constexpr (sizeof(V) <= 4 && (is_arithmetic_v<V> || is_pointer_v<V> ||
+                                   is_reference_wrapper_v<V>))
+    asm volatile("cmp %2, #0 \n"
+                 "iteee eq \n"
+                 "ldreq %0, [%1] \n"
+                 "subne r1, %2, #1 \n"
+                 "ldrne r0, [%1, #4] \n"
+                 "ldrne %0, [r0, r1, lsl #2] \n"
+                 : "=r"(t)
+                 : "r"(&shi_context), "r"(offset)
+                 : "cc", "memory", "r0", "r1");
+  else if constexpr (sizeof(V) == 8 && is_arithmetic_v<V>)
+    ;
+  else
+    ;
 
   return t;
 }
@@ -1480,14 +1539,25 @@ inline void evaluate(char const* str, size_t len) {
 }
 
 template<typename T>
-void c_variable(char const* str, T adr) {
+void c_variable(T adr, char const* str) {
   using std::is_pointer_v;
 
-  static_assert(sizeof(T) <= 4 &&
+  static_assert(sizeof(T) == 4 &&
                 (is_pointer_v<T> || is_reference_wrapper_v<T>));
 
   push(adr);
   shi_c_variable_asm(str, strlen(str));
+}
+
+template<typename T>
+void c_variable(T adr, char const* str, size_t len) {
+  using std::is_pointer_v;
+
+  static_assert(sizeof(T) == 4 &&
+                (is_pointer_v<T> || is_reference_wrapper_v<T>));
+
+  push(adr);
+  shi_c_variable_asm(str, len);
 }
 
 /// Clear stack
