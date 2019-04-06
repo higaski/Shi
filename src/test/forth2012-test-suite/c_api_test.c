@@ -15,8 +15,8 @@ TEST(c_api) {
   TEST_ASSERT_EQUAL(1, shi_size());
   TEST_ASSERT_EQUAL(99, shi_top(0));
 
-  void_fp fp = shi_tick("c");
-  shi_call_tick(fp);
+  Word w = shi_tick("c");
+  shi_word(w);
   TEST_ASSERT_EQUAL(2, shi_size());
   TEST_ASSERT_EQUAL(99, shi_top(0));
   TEST_ASSERT_EQUAL(99, shi_top(1));

@@ -1,7 +1,7 @@
 /// Shi
 ///
 /// \file   shi.hpp
-/// \author	Vincent Hamp
+/// \author Vincent Hamp
 /// \date   27/07/2016
 
 /// \mainpage Shi
@@ -1230,9 +1230,14 @@ static inline void shi_evaluate_len(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
-static inline void shi_c_variable(char const* str, void* adr) {
+static inline void shi_c_variable(void* adr, char const* str) {
   push((int32_t)(adr));
   shi_c_variable_asm(str, strlen(str));
+}
+
+static inline void shi_c_variable_len(void* adr, char const* str, size_t len) {
+  push((int32_t)(adr));
+  shi_c_variable_asm(str, len);
 }
 
 /// Clear stack
@@ -1240,23 +1245,29 @@ static inline void shi_clear() {
   shi_clear_asm();
 }
 
-static inline void_fp shi_tick(char const* str) {
-  return shi_tick_asm(str, strlen(str));
+typedef struct {
+  void_fp fp;
+} Word;
+
+static inline Word shi_tick(char const* str) {
+  Word w = {shi_tick_asm(str, strlen(str))};
+  return w;
 }
 
-static inline void_fp shi_tick_len(char const* str, size_t len) {
-  return shi_tick_asm(str, len);
+static inline Word shi_tick_len(char const* str, size_t len) {
+  Word w = {shi_tick_asm(str, len)};
+  return w;
 }
 
-static inline void shi_call_tick(void_fp fp) {
-  if (fp)
+static inline void shi_word(Word w) {
+  if (w.fp)
     asm volatile("ldmia %0, {r6, r7, r8} \n"
                  "push {%0} \n"
                  "blx %1 \n"
                  "pop {%0} \n"
                  "stmia %0, {r6, r7, r8} \n"
                  :
-                 : "r"(&shi_context), "r"(fp)
+                 : "r"(&shi_context), "r"(w.fp)
                  : "cc", "memory", "r6", "r7", "r8", "lr");
 }
 
@@ -1268,7 +1279,7 @@ static inline void shi_call_tick(void_fp fp) {
 
 namespace shi {
 
-// Shouldn't that be part of C++20?
+// Shouldn't this be part of C++20?
 template<typename T>
 struct remove_cvref {
   using type = std::remove_cv_t<std::remove_reference_t<T>>;
@@ -1348,35 +1359,39 @@ void push(T&& t) {
                  "ldrd tos, dsp, [%0] \n"
                  "str tos, [dsp, #-4]! \n"
 
-                 "1: cmp %2, #4 \n"
+                 // Do not modify the contents of input-only operands
+                 "movs r3, %1 \n"
+                 "movs r0, %2 \n"
+
+                 "1: cmp r0, #4 \n"
                  "bls 1f \n"
-                 "ldr r2, [%1], #4 \n"
+                 "ldr r2, [r3], #4 \n"
                  "str r2, [dsp, #-4]! \n"
-                 "subs %2, #4 \n"
+                 "subs r0, #4 \n"
                  "b 1b \n"
 
-                 "1: cmp %2, #4 \n"
+                 "1: cmp r0, #4 \n"
                  "it eq \n"
-                 "ldreq tos, [%1] \n"
+                 "ldreq tos, [r3] \n"
 
-                 "cmp %2, #3 \n"
+                 "cmp r0, #3 \n"
                  "ittt eq \n"
-                 "ldrheq tos, [%1], #2 \n"
-                 "ldrbeq r2, [%1] \n"
+                 "ldrheq tos, [r3], #2 \n"
+                 "ldrbeq r2, [r3] \n"
                  "orreq tos, tos, r2, lsl #16 \n"
 
-                 "cmp %2, #2 \n"
+                 "cmp r0, #2 \n"
                  "it eq \n"
-                 "ldrheq tos, [%1] \n"
+                 "ldrheq tos, [r3] \n"
 
-                 "cmp %2, #1 \n"
+                 "cmp r0, #1 \n"
                  "it eq \n"
-                 "ldrbeq tos, [%1] \n"
+                 "ldrbeq tos, [r3] \n"
 
                  "strd tos, dsp, [%0] \n"
                  :
                  : "r"(&shi_context), "r"(addressof(t)), "r"(sizeof(V))
-                 : "cc", "memory", "r0", "r1", "r2");
+                 : "cc", "memory", "r0", "r1", "r2", "r3");
 }
 
 /// Add elements to the top of the stack
@@ -1432,35 +1447,39 @@ remove_cvref_t<T> pop() {
                  "dsp .req r1 \n"
                  "ldrd tos, dsp, [%0] \n"
 
-                 "1: cmp %2, #4 \n"
+                 // Do not modify the contents of input-only operands
+                 "movs r3, %1 \n"
+                 "movs r4, %2 \n"
+
+                 "1: cmp r4, #4 \n"
                  "bls 1f \n"
                  "ldr r2, [dsp], #4 \n"
-                 "str r2, [%1], #4 \n"
-                 "subs %2, #4 \n"
+                 "str r2, [r3], #4 \n"
+                 "subs r4, #4 \n"
                  "b 1b \n"
 
-                 "1: cmp %2, #4 \n"
+                 "1: cmp r4, #4 \n"
                  "it eq \n"
-                 "streq tos, [%1] \n"
+                 "streq tos, [r3] \n"
 
-                 "cmp %2, #3 \n"
+                 "cmp r4, #3 \n"
                  "ittt eq \n"
-                 "strheq tos, [%1], #2 \n"
+                 "strheq tos, [r3], #2 \n"
                  "lsreq tos, #16 \n"
-                 "strbeq tos, [%1] \n"
+                 "strbeq tos, [r3] \n"
 
-                 "cmp %2, #2 \n"
+                 "cmp r4, #2 \n"
                  "it eq \n"
-                 "strheq tos, [%1] \n"
+                 "strheq tos, [r3] \n"
 
-                 "cmp %2, #1 \n"
+                 "cmp r4, #1 \n"
                  "it eq \n"
-                 "strbeq tos, [%1] \n"
+                 "strbeq tos, [r3] \n"
 
                  "strd tos, dsp, [%0] \n"
                  :
                  : "r"(&shi_context), "r"(addressof(t)), "r"(sizeof(V))
-                 : "cc", "memory", "r0", "r1", "r2");
+                 : "cc", "memory", "r0", "r1", "r2", "r3", "r4");
 
   return t;
 }
@@ -1499,7 +1518,21 @@ remove_cvref_t<T> top(size_t offset = 0) {
                  : "r"(&shi_context), "r"(offset)
                  : "cc", "memory", "r0", "r1");
   else if constexpr (sizeof(V) == 8 && is_arithmetic_v<V>)
-    ;
+    asm volatile("tos .req r0 \n"
+                 "dsp .req r1 \n"
+                 "ldrd tos, dsp, [%0] \n"
+                 "cmp %2, #0 \n"
+                 "ittt eq \n"
+                 "ldreq r1, [dsp] \n"
+                 "strdeq r1, tos, [%1] \n"
+                 "beq 1f \n"
+                 "adds dsp, dsp, %2, lsl #2 \n"
+                 "ldrd r0, r1, [dsp, #-4] \n"
+                 "strd r1, r0, [%1] \n"
+                 "1: \n"
+                 :
+                 : "r"(&shi_context), "r"(addressof(t)), "r"(offset)
+                 : "cc", "memory", "r0", "r1");
   else
     ;
 
