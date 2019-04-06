@@ -209,14 +209,16 @@
 @ ------------------------------------------------------------------------------
 @ Restore forth context
 .macro ENTRY
-    ldr r12, =shi_context
-    ldmia r12, {tos, dsp, lfp}
+    ldr tos, =shi_context
+    ldrd dsp, lfp, [tos]
+    ldr tos, [dsp], #4
 .endm
 
 @ Save forth context
 .macro EXIT
-    ldr r12, =shi_context
-    stmia r12, {tos, dsp, lfp}
+    PUSH_TOS
+    ldr tos, =shi_context
+    strd dsp, lfp, [tos]
 .endm
 
 @ ------------------------------------------------------------------------------

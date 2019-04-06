@@ -1097,83 +1097,19 @@ void_fp shi_tick_asm(char const* str, size_t len);
 // C only
 #  ifndef __cplusplus
 
-static inline void shi_push_number(int32_t t) {
-  asm volatile("tos .req r0 \n"
-               "dsp .req r1 \n"
-               "ldrd tos, dsp, [%0] \n"
-               "str tos, [dsp, #-4]! \n"
-               "movs tos, %1 \n"
-               "strd tos, dsp, [%0] \n"
-               :
-               : "r"(&shi_context), "r"(t)
-               : "cc", "memory", "r0", "r1");
-}
+static inline void shi_push_number(int32_t t) {}
 
-static inline void shi_push_double(int64_t t) {
-  asm volatile("tos .req r0 \n"
-               "dsp .req r1 \n"
-               "ldrd tos, dsp, [%0] \n"
-               "ldrd r2, r3, [%1] \n"
-               "strd r2, tos, [dsp, #-8]! \n"
-               "movs tos, r3 \n"
-               "strd tos, dsp, [%0] \n"
-               :
-               : "r"(&shi_context), "r"(&t)
-               : "cc", "memory", "r0", "r1", "r2", "r3");
-}
+static inline void shi_push_double(int64_t t) {}
 
 static inline void shi_push_struct(void* t, size_t n) {}
 
-static inline int32_t shi_pop_number() {
-  int32_t t;
+static inline int32_t shi_pop_number() {}
 
-  asm volatile("tos .req r0 \n"
-               "dsp .req r1 \n"
-               "ldrd tos, dsp, [%1] \n"
-               "movs %0, tos \n"
-               "ldmia dsp!, {tos} \n"
-               "strd tos, dsp, [%1] \n"
-               : "=&r"(t)
-               : "r"(&shi_context)
-               : "cc", "memory", "r0", "r1");
-
-  return t;
-}
-
-static inline int64_t shi_pop_double() {
-  int64_t t;
-
-  asm volatile("tos .req r0 \n"
-               "dsp .req r1 \n"
-               "ldrd tos, dsp, [%0] \n"
-               "ldrd r2, r3, [dsp], #8 \n"
-               "strd r2, tos, [%1] \n"
-               "movs tos, r3 \n"
-               "strd tos, dsp, [%0] \n"
-               :
-               : "r"(&shi_context), "r"(&t)
-               : "cc", "memory", "r0", "r1", "r2", "r3");
-
-  return t;
-}
+static inline int64_t shi_pop_double() {}
 
 static inline void shi_pop_struct(void* t, size_t n) {}
 
-static inline int32_t shi_top(size_t offset) {
-  int32_t t;
-
-  asm volatile("cmp %2, #0 \n"
-               "iteee eq \n"
-               "ldreq %0, [%1] \n"
-               "subne r1, %2, #1 \n"
-               "ldrne r0, [%1, #4] \n"
-               "ldrne %0, [r0, r1, lsl #2] \n"
-               : "=r"(t)
-               : "r"(&shi_context), "r"(offset)
-               : "cc", "memory", "r0", "r1");
-
-  return t;
-}
+static inline int32_t shi_top(size_t offset) {}
 
 /// Returns the number of elements on the stack
 ///
@@ -1181,12 +1117,14 @@ static inline int32_t shi_top(size_t offset) {
 static inline size_t shi_depth() {
   size_t size;
 
-  asm volatile("ldr r0, [%1, #4] \n"
-               "subs %0, %1, r0 \n"
-               "lsrs %0, %0, #2 \n"
+  asm volatile("dsp .req r0 \n"
+               "ldr dsp, [%1] \n"
+               "sub %0, %1, dsp \n"
+               "lsr %0, %0, #2 \n"
+               "sub %0, #1 \n"
                : "=r"(size)
                : "r"(&shi_context)
-               : "cc", "memory", "r0");
+               : "memory", "r0");
 
   return size;
 }
@@ -1303,12 +1241,14 @@ inline constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
 inline size_t depth() {
   size_t size;
 
-  asm volatile("ldr r0, [%1, #4] \n"
-               "subs %0, %1, r0 \n"
-               "lsrs %0, %0, #2 \n"
+  asm volatile("dsp .req r0 \n"
+               "ldr dsp, [%1] \n"
+               "sub %0, %1, dsp \n"
+               "lsr %0, %0, #2 \n"
+               "sub %0, #1 \n"
                : "=r"(size)
                : "r"(&shi_context)
-               : "cc", "memory", "r0");
+               : "memory", "r0");
 
   return size;
 }
@@ -1333,65 +1273,24 @@ void push(T&& t) {
 
   if constexpr (sizeof(V) <= 4 && (is_arithmetic_v<V> || is_pointer_v<V> ||
                                    is_reference_wrapper_v<V>))
-    asm volatile("tos .req r0 \n"
-                 "dsp .req r1 \n"
-                 "ldrd tos, dsp, [%0] \n"
-                 "str tos, [dsp, #-4]! \n"
-                 "movs tos, %1 \n"
-                 "strd tos, dsp, [%0] \n"
+    asm volatile("dsp .req r0 \n"
+                 "ldr dsp, [%0] \n"
+                 "str %1, [dsp, #-4]! \n"
+                 "str dsp, [%0] \n"
                  :
                  : "r"(&shi_context), "r"(t)
-                 : "cc", "memory", "r0", "r1");
+                 : "cc", "memory", "r0");
   else if constexpr (sizeof(V) == 8 && is_arithmetic_v<V>)
-    asm volatile("tos .req r0 \n"
-                 "dsp .req r1 \n"
-                 "ldrd tos, dsp, [%0] \n"
-                 "ldrd r2, r3, [%1] \n"
-                 "strd r2, tos, [dsp, #-8]! \n"
-                 "movs tos, r3 \n"
-                 "strd tos, dsp, [%0] \n"
+    asm volatile("dsp .req r0 \n"
+                 "ldr dsp, [%0] \n"
+                 "ldrd r1, r2, [%1] \n"
+                 "strd r2, r1, [dsp, #-8]! \n"
+                 "str dsp, [%0] \n"
                  :
                  : "r"(&shi_context), "r"(addressof(t))
-                 : "cc", "memory", "r0", "r1", "r2", "r3");
+                 : "cc", "memory", "r0", "r1", "r2");
   else
-    asm volatile("tos .req r0 \n"
-                 "dsp .req r1 \n"
-                 "ldrd tos, dsp, [%0] \n"
-                 "str tos, [dsp, #-4]! \n"
-
-                 // Do not modify the contents of input-only operands
-                 "movs r3, %1 \n"
-                 "movs r0, %2 \n"
-
-                 "1: cmp r0, #4 \n"
-                 "bls 1f \n"
-                 "ldr r2, [r3], #4 \n"
-                 "str r2, [dsp, #-4]! \n"
-                 "subs r0, #4 \n"
-                 "b 1b \n"
-
-                 "1: cmp r0, #4 \n"
-                 "it eq \n"
-                 "ldreq tos, [r3] \n"
-
-                 "cmp r0, #3 \n"
-                 "ittt eq \n"
-                 "ldrheq tos, [r3], #2 \n"
-                 "ldrbeq r2, [r3] \n"
-                 "orreq tos, tos, r2, lsl #16 \n"
-
-                 "cmp r0, #2 \n"
-                 "it eq \n"
-                 "ldrheq tos, [r3] \n"
-
-                 "cmp r0, #1 \n"
-                 "it eq \n"
-                 "ldrbeq tos, [r3] \n"
-
-                 "strd tos, dsp, [%0] \n"
-                 :
-                 : "r"(&shi_context), "r"(addressof(t)), "r"(sizeof(V))
-                 : "cc", "memory", "r0", "r1", "r2", "r3");
+    ;
 }
 
 /// Add elements to the top of the stack
@@ -1422,64 +1321,24 @@ remove_cvref_t<T> pop() {
 
   if constexpr (sizeof(V) <= 4 && (is_arithmetic_v<V> || is_pointer_v<V> ||
                                    is_reference_wrapper_v<V>))
-    asm volatile("tos .req r0 \n"
-                 "dsp .req r1 \n"
-                 "ldrd tos, dsp, [%1] \n"
-                 "movs %0, tos \n"
-                 "ldmia dsp!, {tos} \n"
-                 "strd tos, dsp, [%1] \n"
+    asm volatile("dsp .req r0 \n"
+                 "ldr dsp, [%1] \n"
+                 "ldr %0, [dsp], #4 \n"
+                 "str dsp, [%1] \n"
                  : "=&r"(t)
                  : "r"(&shi_context)
-                 : "cc", "memory", "r0", "r1");
+                 : "cc", "memory", "r0");
   else if constexpr (sizeof(V) == 8 && is_arithmetic_v<V>)
-    asm volatile("tos .req r0 \n"
-                 "dsp .req r1 \n"
-                 "ldrd tos, dsp, [%0] \n"
-                 "ldrd r2, r3, [dsp], #8 \n"
-                 "strd r2, tos, [%1] \n"
-                 "movs tos, r3 \n"
-                 "strd tos, dsp, [%0] \n"
+    asm volatile("dsp .req r0 \n"
+                 "ldr dsp, [%0] \n"
+                 "ldrd r1, r2, [dsp], #8 \n"
+                 "strd r2, r1, [%1] \n"
+                 "str dsp, [%0] \n"
                  :
                  : "r"(&shi_context), "r"(addressof(t))
-                 : "cc", "memory", "r0", "r1", "r2", "r3");
+                 : "cc", "memory", "r0", "r1", "r2");
   else
-    asm volatile("tos .req r0 \n"
-                 "dsp .req r1 \n"
-                 "ldrd tos, dsp, [%0] \n"
-
-                 // Do not modify the contents of input-only operands
-                 "movs r3, %1 \n"
-                 "movs r4, %2 \n"
-
-                 "1: cmp r4, #4 \n"
-                 "bls 1f \n"
-                 "ldr r2, [dsp], #4 \n"
-                 "str r2, [r3], #4 \n"
-                 "subs r4, #4 \n"
-                 "b 1b \n"
-
-                 "1: cmp r4, #4 \n"
-                 "it eq \n"
-                 "streq tos, [r3] \n"
-
-                 "cmp r4, #3 \n"
-                 "ittt eq \n"
-                 "strheq tos, [r3], #2 \n"
-                 "lsreq tos, #16 \n"
-                 "strbeq tos, [r3] \n"
-
-                 "cmp r4, #2 \n"
-                 "it eq \n"
-                 "strheq tos, [r3] \n"
-
-                 "cmp r4, #1 \n"
-                 "it eq \n"
-                 "strbeq tos, [r3] \n"
-
-                 "strd tos, dsp, [%0] \n"
-                 :
-                 : "r"(&shi_context), "r"(addressof(t)), "r"(sizeof(V))
-                 : "cc", "memory", "r0", "r1", "r2", "r3", "r4");
+    ;
 
   return t;
 }
@@ -1494,9 +1353,10 @@ std::tuple<remove_cvref_t<Ts>...> pop() {
 
   static_assert((0 + ... + sizeof(remove_cvref_t<Ts>)) <= SHI_STACK_SIZE);
 
-  return std::tuple<Ts...>{pop<Ts>()...};
+  return tuple<Ts...>{pop<Ts>()...};
 }
 
+// hmm return ref here? because... why not?
 template<typename T = int32_t>
 remove_cvref_t<T> top(size_t offset = 0) {
   using std::addressof, std::is_arithmetic_v, std::is_pointer_v;
@@ -1508,31 +1368,13 @@ remove_cvref_t<T> top(size_t offset = 0) {
 
   if constexpr (sizeof(V) <= 4 && (is_arithmetic_v<V> || is_pointer_v<V> ||
                                    is_reference_wrapper_v<V>))
-    asm volatile("cmp %2, #0 \n"
-                 "iteee eq \n"
-                 "ldreq %0, [%1] \n"
-                 "subne r1, %2, #1 \n"
-                 "ldrne r0, [%1, #4] \n"
-                 "ldrne %0, [r0, r1, lsl #2] \n"
+    asm volatile("ldr r0, [%1] \n"
+                 "ldr %0, [r0, %2, lsl #2] \n"
                  : "=r"(t)
                  : "r"(&shi_context), "r"(offset)
-                 : "cc", "memory", "r0", "r1");
+                 : "cc", "memory", "r0");
   else if constexpr (sizeof(V) == 8 && is_arithmetic_v<V>)
-    asm volatile("tos .req r0 \n"
-                 "dsp .req r1 \n"
-                 "ldrd tos, dsp, [%0] \n"
-                 "cmp %2, #0 \n"
-                 "ittt eq \n"
-                 "ldreq r1, [dsp] \n"
-                 "strdeq r1, tos, [%1] \n"
-                 "beq 1f \n"
-                 "adds dsp, dsp, %2, lsl #2 \n"
-                 "ldrd r0, r1, [dsp, #-4] \n"
-                 "strd r1, r0, [%1] \n"
-                 "1: \n"
-                 :
-                 : "r"(&shi_context), "r"(addressof(t)), "r"(offset)
-                 : "cc", "memory", "r0", "r1");
+    ;
   else
     ;
 

@@ -40,5 +40,6 @@ extern "C" int test() {
 
   // semihosting_example();
 
-  return forth2012_test_suite();
+  // return forth2012_test_suite();
+  return 0;
 }
