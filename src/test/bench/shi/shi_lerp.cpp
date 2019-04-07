@@ -12,7 +12,7 @@ void shi_lerp_define() {
   // lerp ( x x1 x2 y1 y2 -- y )
   ": lerp over - 4 roll 4 pick - * 2swap swap - / + ;"_s;
 
-  // I thought one without roll would be faster... but it ain't
+  // I thought one without roll would be faster... but it ain't really
   // ": lerp over - 2>r over 2swap - r> * r> swap 2swap - / + ;"_s;
 }
 

@@ -33,6 +33,4 @@ void mp_count_primes_by_trial_division() {
   START_CYC_CNT();
   mp_dobytecode(count_primes_by_trial_division_bytecode);
   STOP_CYC_CNT();
-
-  mp_dostring("print(n)\n", MP_PARSE_FILE_INPUT);  // TODO REMOVE
 }
