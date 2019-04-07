@@ -8,10 +8,10 @@ TEST(cpp_api) {
   // Word and _w literal
   {
     // ( -- 7 )
-    ": seven 7 ;"_s;
+    ": cpp_seven 7 ;"_s;
 
     // Create instance of word
-    auto seven{shi::Word("seven")};
+    auto seven{shi::Word("cpp_seven")};
     TEST_ASSERT_EQUAL(0, shi::size());
 
     // Call word
@@ -20,7 +20,7 @@ TEST(cpp_api) {
     TEST_ASSERT_EQUAL(7, shi::top());
 
     // Same call using _w literal
-    "seven"_w();
+    "cpp_seven"_w();
     TEST_ASSERT_EQUAL(2, shi::size());
     TEST_ASSERT_EQUAL(7, shi::top());
     TEST_ASSERT_EQUAL(7, shi::top(1));
@@ -31,7 +31,7 @@ TEST(cpp_api) {
     TEST_ASSERT_EQUAL(7, ret);
 
     // Also works with _w literal
-    ret = "seven"_w();
+    ret = "cpp_seven"_w();
     TEST_ASSERT_EQUAL(2, shi::size());
     TEST_ASSERT_EQUAL(7, ret);
 
@@ -42,8 +42,8 @@ TEST(cpp_api) {
     TEST_ASSERT_EQUAL(42 + 7, sum);
 
     // Multiple returns
-    ": range 0 do i loop ;"_s;
-    tuple<uint32_t, uint32_t, uint32_t, uint32_t> t{"range"_w(4)};
+    ": cpp_range 0 do i loop ;"_s;
+    tuple<uint32_t, uint32_t, uint32_t, uint32_t> t{"cpp_range"_w(4)};
     TEST_ASSERT_EQUAL(2, shi::size());
     TEST_ASSERT_EQUAL(3, get<0>(t));
     TEST_ASSERT_EQUAL(2, get<1>(t));
@@ -53,7 +53,7 @@ TEST(cpp_api) {
     shi::clear();
   }
 
-  // Push and pop double-cell values
+  // Push and pop double-cell numbers
   {
     uint64_t big0{0xAAAABBBBCCCCDDDD};
     shi::push(big0);
@@ -76,6 +76,7 @@ TEST(cpp_api) {
     shi::clear();
   }
 
+  // Push and pop user-defined types
   {
     struct S {
       uint16_t a;
@@ -174,24 +175,54 @@ TEST(cpp_api) {
     shi::clear();
   }
 
+  // Top
   {
     uint64_t big{0xAAAABBBBCCCCDDDD};
     shi::push(big);
     auto big_top{shi::top<uint64_t>()};
+    TEST_ASSERT_EQUAL(2, shi::size());
     TEST_ASSERT_EQUAL_UINT64(big, big_top);
+
+    shi::clear();
   }
 
   {
     uint64_t big{0xAAAABBBBCCCCDDDD};
     shi::push(big, 100);
     auto big_top{shi::top<uint64_t>(1)};
+    TEST_ASSERT_EQUAL(3, shi::size());
     TEST_ASSERT_EQUAL_UINT64(big, big_top);
+
+    shi::clear();
   }
 
   {
     uint64_t big{0xAAAABBBBCCCCDDDD};
-    shi::push(100, 101, big, 100, 101);
+    shi::push(100, 101, big, 102, 103);
     auto big_top{shi::top<uint64_t>(2)};
+    TEST_ASSERT_EQUAL(6, shi::size());
     TEST_ASSERT_EQUAL_UINT64(big, big_top);
+    TEST_ASSERT_EQUAL(102, shi::top(1));
+
+    shi::clear();
+  }
+
+  {
+    struct S {
+      char a;
+      uint16_t b;
+      uint32_t c;
+    };
+
+    S s{'a', 1337, 16777216};
+    shi::push(s, 100);
+    auto size_before{shi::size()};
+    auto s_top{shi::top<S>(1)};
+    TEST_ASSERT_EQUAL(size_before, shi::size());
+    TEST_ASSERT_EQUAL(s.a, s_top.a);
+    TEST_ASSERT_EQUAL(s.b, s_top.b);
+    TEST_ASSERT_EQUAL(s.c, s_top.c);
+
+    shi::clear();
   }
 }

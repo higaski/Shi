@@ -881,194 +881,156 @@
 
 // Enable words individually
 // Core words
-#define SHI_ENABLE_STORE           1
-#define SHI_ENABLE_TICK            1
-#define SHI_ENABLE_P               0
-#define SHI_ENABLE_TIMES           1
-#define SHI_ENABLE_TIMES_DIV       1
-#define SHI_ENABLE_TIMES_DIV_MOD   0
-#define SHI_ENABLE_PLUS            1
-#define SHI_ENABLE_PLUS_STORE      1
-#define SHI_ENABLE_PLUS_LOOP       1
-#define SHI_ENABLE_COMMA           1
-#define SHI_ENABLE_MINUS           1
-#define SHI_ENABLE_D               0
-#define SHI_ENABLE_DOT_Q           0
-#define SHI_ENABLE_DIV             1
-#define SHI_ENABLE_DIV_MOD         0
-#define SHI_ENABLE_ZERO_LESS       1
-#define SHI_ENABLE_ZERO_EQUAL      1
-#define SHI_ENABLE_ONE_PLUS        1
-#define SHI_ENABLE_ONE_MINUS       1
-#define SHI_ENABLE_TWO_STORE       1
-#define SHI_ENABLE_TWO_TIMES       1
-#define SHI_ENABLE_TWO_DIV         1
-#define SHI_ENABLE_TWO_FETCH       1
-#define SHI_ENABLE_TWO_DROP        1
-#define SHI_ENABLE_TWO_DUP         1
-#define SHI_ENABLE_TWO_OVER        1
-#define SHI_ENABLE_TWO_SWAP        1
-#define SHI_ENABLE_COLON           1
-#define SHI_ENABLE_SEMI            1
-#define SHI_ENABLE_LESS            1
-#define SHI_ENABLE_NUM_START       0
-#define SHI_ENABLE_EQUAL           1
-#define SHI_ENABLE_MORE            1
-#define SHI_ENABLE_TO_BODY         1
-#define SHI_ENABLE_TO_IN           1
-#define SHI_ENABLE_TO_NUMBER       0
-#define SHI_ENABLE_TO_R            1
-#define SHI_ENABLE_Q_DUP           1
-#define SHI_ENABLE_FETCH           1
-#define SHI_ENABLE_ABORT           0
-#define SHI_ENABLE_ABORT_Q         0
-#define SHI_ENABLE_ABS             1
-#define SHI_ENABLE_ACCEPT          0
-#define SHI_ENABLE_ALIGN           1
-#define SHI_ENABLE_ALIGNED         1
-#define SHI_ENABLE_ALLOT           1
-#define SHI_ENABLE_AND             1
-#define SHI_ENABLE_BASE            1
-#define SHI_ENABLE_BEGIN           1
-#define SHI_ENABLE_BL              0
-#define SHI_ENABLE_C_STORE         1
-#define SHI_ENABLE_C_COMMA         1
-#define SHI_ENABLE_C_FETCH         1
-#define SHI_ENABLE_CELL_PLUS       1
-#define SHI_ENABLE_CELLS           1
-#define SHI_ENABLE_CHAR            0
-#define SHI_ENABLE_CHAR_PLUS       1
-#define SHI_ENABLE_CHARS           1
-#define SHI_ENABLE_CONSTANT        1
-#define SHI_ENABLE_COUNT           0
-#define SHI_ENABLE_CR              0
-#define SHI_ENABLE_CREATE          1
-#define SHI_ENABLE_DECIMAL         1
-#define SHI_ENABLE_DEPTH           1
-#define SHI_ENABLE_DO              1
-#define SHI_ENABLE_DOES            1
-#define SHI_ENABLE_DROP            1
-#define SHI_ENABLE_DUP             1
-#define SHI_ENABLE_ELSE            1
-#define SHI_ENABLE_EMIT            0
-#define SHI_ENABLE_ENVIRONMENT_Q   0
-#define SHI_ENABLE_EVALUATE        1
-#define SHI_ENABLE_EXECUTE         1
-#define SHI_ENABLE_EXIT            1
-#define SHI_ENABLE_FILL            0
-#define SHI_ENABLE_FIND            1
-#define SHI_ENABLE_FM_DIV_MOD      0
-#define SHI_ENABLE_HERE            1
-#define SHI_ENABLE_HOLD            0
-#define SHI_ENABLE_I               1
-#define SHI_ENABLE_IF              1
-#define SHI_ENABLE_IMMEDIATE       0
-#define SHI_ENABLE_INVERT          1
-#define SHI_ENABLE_J               1
-#define SHI_ENABLE_KEY             0
-#define SHI_ENABLE_LEAVE           1
-#define SHI_ENABLE_LITERAL         1
-#define SHI_ENABLE_LOOP            1
-#define SHI_ENABLE_LSHIFT          1
-#define SHI_ENABLE_M_TIMES         0
-#define SHI_ENABLE_MAX             1
-#define SHI_ENABLE_MIN             1
-#define SHI_ENABLE_MOD             1
-#define SHI_ENABLE_MOVE            0
-#define SHI_ENABLE_NEGATE          1
-#define SHI_ENABLE_OR              1
-#define SHI_ENABLE_OVER            1
-#define SHI_ENABLE_POSTPONE        1
-#define SHI_ENABLE_QUIT            0
-#define SHI_ENABLE_R_FROM          1
-#define SHI_ENABLE_R_FETCH         1
-#define SHI_ENABLE_RECURSE         1
-#define SHI_ENABLE_REPEAT          1
-#define SHI_ENABLE_ROT             1
-#define SHI_ENABLE_RSHIFT          1
-#define SHI_ENABLE_S_Q             0
-#define SHI_ENABLE_S_TO_D          0
-#define SHI_ENABLE_SIGN            0
-#define SHI_ENABLE_SM_DIV_REM      0
-#define SHI_ENABLE_SOURCE          1
-#define SHI_ENABLE_SPACE           0
-#define SHI_ENABLE_SPACES          0
-#define SHI_ENABLE_STATE           1
-#define SHI_ENABLE_SWAP            1
-#define SHI_ENABLE_THEN            1
-#define SHI_ENABLE_TYPE            0
-#define SHI_ENABLE_U_D             0
-#define SHI_ENABLE_U_LESS          1
-#define SHI_ENABLE_UM_TIMES        0
-#define SHI_ENABLE_UM_DIV_MOD      0
-#define SHI_ENABLE_UNLOOP          1
-#define SHI_ENABLE_UNTIL           1
-#define SHI_ENABLE_VARIABLE        1
-#define SHI_ENABLE_WHILE           1
-#define SHI_ENABLE_WORD            0
-#define SHI_ENABLE_XOR             1
-#define SHI_ENABLE_BRACKET_LEFT    1
-#define SHI_ENABLE_BRACKET_TICK    1
-#define SHI_ENABLE_BRACKET_CHAR    0
-#define SHI_ENABLE_BRACKET_RIGHT   1
-
-// Extension words
-#define SHI_ENABLE_DOT_COMMENT     0
-#define SHI_ENABLE_DOT_R           0
-#define SHI_ENABLE_ZERO_NE         1
-#define SHI_ENABLE_ZERO_MORE       1
-#define SHI_ENABLE_TWO_TO_R        1
-#define SHI_ENABLE_TWO_R_FROM      1
-#define SHI_ENABLE_TWO_R_FETCH     1
-#define SHI_ENABLE_COLON_NONAME    0
-#define SHI_ENABLE_NE              1
-#define SHI_ENABLE_Q_DO            0
-#define SHI_ENABLE_ACTION_OF       0
-#define SHI_ENABLE_AGAIN           1
-#define SHI_ENABLE_BUFFER_COLON    0
-#define SHI_ENABLE_C_Q             0
-#define SHI_ENABLE_CASE            1
-#define SHI_ENABLE_COMPILE_COMMA   1
-#define SHI_ENABLE_DEFER           0
-#define SHI_ENABLE_DEFER_STORE     0
-#define SHI_ENABLE_DEFER_FETCH     0
-#define SHI_ENABLE_ENDCASE         1
-#define SHI_ENABLE_ENDOF           1
-#define SHI_ENABLE_ERASE           0
-#define SHI_ENABLE_FALSE           1
-#define SHI_ENABLE_HEX             1
-#define SHI_ENABLE_HOLDS           0
-#define SHI_ENABLE_IS              0
-#define SHI_ENABLE_MARKER          0
-#define SHI_ENABLE_NIP             1
-#define SHI_ENABLE_OF              1
-#define SHI_ENABLE_PAD             0
-#define SHI_ENABLE_PARSE           1
-#define SHI_ENABLE_PARSE_NAME      0
-#define SHI_ENABLE_PICK            1
-#define SHI_ENABLE_REFILL          0
-#define SHI_ENABLE_RESTORE_INPUT   0
-#define SHI_ENABLE_ROLL            1
-#define SHI_ENABLE_S_EQ            0
-#define SHI_ENABLE_SAVE_INPUT      0
-#define SHI_ENABLE_SOURCE_ID       0
-#define SHI_ENABLE_TO              0
-#define SHI_ENABLE_TRUE            1
-#define SHI_ENABLE_TUCK            1
-#define SHI_ENABLE_U_DOT_R         0
-#define SHI_ENABLE_U_MORE          1
-#define SHI_ENABLE_UNUSED          1
-#define SHI_ENABLE_VALUE           0
-#define SHI_ENABLE_WITHIN          0
-#define SHI_ENABLE_BRACKET_COMPILE 0
-#define SHI_ENABLE_BS              0
+#define SHI_ENABLE_STORE         1
+#define SHI_ENABLE_TICK          1
+#define SHI_ENABLE_TIMES         1
+#define SHI_ENABLE_TIMES_DIV     1
+#define SHI_ENABLE_TIMES_DIV_MOD 1
+#define SHI_ENABLE_PLUS          1
+#define SHI_ENABLE_PLUS_STORE    1
+#define SHI_ENABLE_PLUS_LOOP     1
+#define SHI_ENABLE_COMMA         1
+#define SHI_ENABLE_MINUS         1
+#define SHI_ENABLE_DIV           1
+#define SHI_ENABLE_DIV_MOD       1
+#define SHI_ENABLE_ZERO_LESS     1
+#define SHI_ENABLE_ZERO_EQUAL    1
+#define SHI_ENABLE_ONE_PLUS      1
+#define SHI_ENABLE_ONE_MINUS     1
+#define SHI_ENABLE_TWO_STORE     1
+#define SHI_ENABLE_TWO_TIMES     1
+#define SHI_ENABLE_TWO_DIV       1
+#define SHI_ENABLE_TWO_FETCH     1
+#define SHI_ENABLE_TWO_DROP      1
+#define SHI_ENABLE_TWO_DUP       1
+#define SHI_ENABLE_TWO_OVER      1
+#define SHI_ENABLE_TWO_SWAP      1
+#define SHI_ENABLE_COLON         1
+#define SHI_ENABLE_SEMI          1
+#define SHI_ENABLE_LESS          1
+#define SHI_ENABLE_EQUAL         1
+#define SHI_ENABLE_MORE          1
+#define SHI_ENABLE_TO_BODY       1
+#define SHI_ENABLE_TO_IN         1
+#define SHI_ENABLE_TO_R          1
+#define SHI_ENABLE_Q_DUP         1
+#define SHI_ENABLE_FETCH         1
+#define SHI_ENABLE_ABORT         1
+#define SHI_ENABLE_ABORT_Q       1
+#define SHI_ENABLE_ABS           1
+#define SHI_ENABLE_ALIGN         1
+#define SHI_ENABLE_ALIGNED       1
+#define SHI_ENABLE_ALLOT         1
+#define SHI_ENABLE_AND           1
+#define SHI_ENABLE_BASE          1
+#define SHI_ENABLE_BEGIN         1
+#define SHI_ENABLE_C_STORE       1
+#define SHI_ENABLE_C_COMMA       1
+#define SHI_ENABLE_C_FETCH       1
+#define SHI_ENABLE_CELL_PLUS     1
+#define SHI_ENABLE_CELLS         1
+#define SHI_ENABLE_CHAR_PLUS     1
+#define SHI_ENABLE_CHARS         1
+#define SHI_ENABLE_CONSTANT      1
+#define SHI_ENABLE_CREATE        1
+#define SHI_ENABLE_DECIMAL       1
+#define SHI_ENABLE_DEPTH         1
+#define SHI_ENABLE_DO            1
+#define SHI_ENABLE_DOES          1
+#define SHI_ENABLE_DROP          1
+#define SHI_ENABLE_DUP           1
+#define SHI_ENABLE_ELSE          1
+#define SHI_ENABLE_EXECUTE       1
+#define SHI_ENABLE_EXIT          1
+#define SHI_ENABLE_FILL          1
+#define SHI_ENABLE_FIND          1
+#define SHI_ENABLE_FM_DIV_MOD    1
+#define SHI_ENABLE_HERE          1
+#define SHI_ENABLE_I             1
+#define SHI_ENABLE_IF            1
+#define SHI_ENABLE_IMMEDIATE     1
+#define SHI_ENABLE_INVERT        1
+#define SHI_ENABLE_J             1
+#define SHI_ENABLE_LEAVE         1
+#define SHI_ENABLE_LITERAL       1
+#define SHI_ENABLE_LOOP          1
+#define SHI_ENABLE_LSHIFT        1
+#define SHI_ENABLE_M_TIMES       1
+#define SHI_ENABLE_MAX           1
+#define SHI_ENABLE_MIN           1
+#define SHI_ENABLE_MOD           1
+#define SHI_ENABLE_MOVE          1
+#define SHI_ENABLE_NEGATE        1
+#define SHI_ENABLE_OR            1
+#define SHI_ENABLE_OVER          1
+#define SHI_ENABLE_POSTPONE      1
+#define SHI_ENABLE_QUIT          1
+#define SHI_ENABLE_R_FROM        1
+#define SHI_ENABLE_R_FETCH       1
+#define SHI_ENABLE_RECURSE       1
+#define SHI_ENABLE_REPEAT        1
+#define SHI_ENABLE_ROT           1
+#define SHI_ENABLE_RSHIFT        1
+#define SHI_ENABLE_S_TO_D        1
+#define SHI_ENABLE_SIGN          1
+#define SHI_ENABLE_SM_DIV_REM    1
+#define SHI_ENABLE_SOURCE        1
+#define SHI_ENABLE_STATE         1
+#define SHI_ENABLE_SWAP          1
+#define SHI_ENABLE_THEN          1
+#define SHI_ENABLE_U_LESS        1
+#define SHI_ENABLE_UM_TIMES      1
+#define SHI_ENABLE_UM_DIV_MOD    1
+#define SHI_ENABLE_UNLOOP        1
+#define SHI_ENABLE_UNTIL         1
+#define SHI_ENABLE_VARIABLE      1
+#define SHI_ENABLE_WHILE         1
+#define SHI_ENABLE_XOR           1
+#define SHI_ENABLE_BRACKET_LEFT  1
+#define SHI_ENABLE_BRACKET_TICK  1
+#define SHI_ENABLE_BRACKET_RIGHT 1
+#define SHI_ENABLE_ZERO_NE       1
+#define SHI_ENABLE_ZERO_MORE     1
+#define SHI_ENABLE_TWO_TO_R      1
+#define SHI_ENABLE_TWO_R_FROM    1
+#define SHI_ENABLE_TWO_R_FETCH   1
+#define SHI_ENABLE_COLON_NONAME  1
+#define SHI_ENABLE_NE            1
+#define SHI_ENABLE_Q_DO          1
+#define SHI_ENABLE_ACTION_OF     1
+#define SHI_ENABLE_AGAIN         1
+#define SHI_ENABLE_BUFFER_COLON  1
+#define SHI_ENABLE_CASE          1
+#define SHI_ENABLE_COMPILE_COMMA 1
+#define SHI_ENABLE_DEFER         1
+#define SHI_ENABLE_DEFER_STORE   1
+#define SHI_ENABLE_DEFER_FETCH   1
+#define SHI_ENABLE_ENDCASE       1
+#define SHI_ENABLE_ENDOF         1
+#define SHI_ENABLE_ERASE         1
+#define SHI_ENABLE_FALSE         1
+#define SHI_ENABLE_HEX           1
+#define SHI_ENABLE_IS            1
+#define SHI_ENABLE_MARKER        1
+#define SHI_ENABLE_NIP           1
+#define SHI_ENABLE_OF            1
+#define SHI_ENABLE_PAD           1
+#define SHI_ENABLE_PARSE_NAME    1
+#define SHI_ENABLE_PICK          1
+#define SHI_ENABLE_ROLL          1
+#define SHI_ENABLE_TRUE          1
+#define SHI_ENABLE_TUCK          1
+#define SHI_ENABLE_U_MORE        1
+#define SHI_ENABLE_UNUSED        1
+#define SHI_ENABLE_VALUE         1
+#define SHI_ENABLE_WITHIN        1
 
 // Shi words
-#define SHI_ENABLE_C_VARIABLE      1
-#define SHI_ENABLE_TO_TEXT_Q       1
-#define SHI_ENABLE_TO_DATA_Q       1
-#define SHI_ENABLE_TO_TEXT         1
-#define SHI_ENABLE_TO_DATA         1
+#define SHI_ENABLE_C_VARIABLE    1
+#define SHI_ENABLE_TO_TEXT_Q     1
+#define SHI_ENABLE_TO_DATA_Q     1
+#define SHI_ENABLE_TO_TEXT       1
+#define SHI_ENABLE_TO_DATA       1
 // clang-format on
 
 // C/C++
@@ -1097,19 +1059,152 @@ void_fp shi_tick_asm(char const* str, size_t len);
 // C only
 #  ifndef __cplusplus
 
-static inline void shi_push_number(int32_t t) {}
+/// Add number to the top of the stack
+///
+/// \param  t   Number to push
+static inline void shi_push_number(int32_t t) {
+  asm volatile("ldr r0, [%0] \n"
+               "str %1, [r0, #-4]! \n"
+               "str r0, [%0] \n"
+               :
+               : "r"(&shi_context), "r"(t)
+               : "memory", "r0");
+}
 
-static inline void shi_push_double(int64_t t) {}
+/// Add double-cell number to the top of the stack
+///
+/// \param  t   Double-cell number to push
+static inline void shi_push_double(int64_t t) {
+  asm volatile("ldr r0, [%0] \n"
+               "ldrd r1, r2, [%1] \n"
+               "strd r2, r1, [r0, #-8]! \n"
+               "str r0, [%0] \n"
+               :
+               : "r"(&shi_context), "r"(&t)
+               : "memory", "r0", "r1", "r2");
+}
 
-static inline void shi_push_struct(void* t, size_t n) {}
+/// Add user-defined type to the top of the stack
+///
+/// \param  t   Pointer to user-defined type
+/// \param  n   Size of user-defined type
+static inline void shi_push_struct(void* t, size_t n) {
+  asm volatile("ldr r0, [%0] \n"
 
-static inline int32_t shi_pop_number() {}
+               // Insert padding if size isn't multiple of 4
+               "mov r1, #0 \n"
+               "str r1, [r0, #-4] \n"
+               "and r1, %2, #3 \n"
+               "sub r0, r0, r1 \n"
 
-static inline int64_t shi_pop_double() {}
+               // Do not change input operands
+               "sub r1, r0, %2 \n"
+               "add r2, %1, %2 \n"
 
-static inline void shi_pop_struct(void* t, size_t n) {}
+               "1: cmp r0, r1 \n"
+               "beq 1f \n"
+               "ldrb r3, [r2, #-1]! \n"
+               "strb r3, [r0, #-1]! \n"
+               "b 1b \n"
 
-static inline int32_t shi_top(size_t offset) {}
+               "1: str r0, [%0] \n"
+               :
+               : "r"(&shi_context), "r"(t), "r"(n)
+               : "cc", "memory", "r0", "r1", "r2", "r3");
+}
+
+/// Remove number from the top of the stack
+///
+/// \return Number
+static inline int32_t shi_pop_number() {
+  int32_t t;
+
+  asm volatile("ldr r0, [%1] \n"
+               "ldr %0, [r0], #4 \n"
+               "str r0, [%1] \n"
+               : "=&r"(t)
+               : "r"(&shi_context)
+               : "memory", "r0");
+
+  return t;
+}
+
+/// Remove double-cell number from the top of the stack
+///
+/// \return Double-cell number
+static inline int64_t shi_pop_double() {
+  int64_t t;
+
+  asm volatile("ldr r0, [%0] \n"
+               "ldrd r1, r2, [r0], #8 \n"
+               "strd r2, r1, [%1] \n"
+               "str r0, [%0] \n"
+               :
+               : "r"(&shi_context), "r"(&t)
+               : "memory", "r0", "r1", "r2");
+
+  return t;
+}
+
+/// Remove user-defined type from the top of the stack
+///
+/// \param  t   Pointer to user-defined type
+/// \param  n   Size of user-defined type
+static inline void shi_pop_struct(void* t, size_t n) {
+  asm volatile("ldr r0, [%0] \n"
+
+               // Do not change input operands
+               "adds r1, r0, %2 \n"
+               "movs r2, %1 \n"
+
+               "1: cmp r0, r1 \n"
+               "beq 1f \n"
+               "ldrb r3, [r0], #1 \n"
+               "strb r3, [r2], #1 \n"
+               "b 1b \n"
+
+               // Align
+               "1: add r0, r0, #3 \n"
+               "bic r0, r0, #3 \n"
+               "str r0, [%0] \n"
+               :
+               : "r"(&shi_context), "r"(t), "r"(n)
+               : "cc", "memory", "r0", "r1", "r2", "r3");
+}
+
+static inline int32_t shi_top_number(size_t offset) {
+  int32_t t;
+
+  asm volatile("ldr r0, [%1] \n"
+               "ldr %0, [r0, %2, lsl #2] \n"
+               : "=r"(t)
+               : "r"(&shi_context), "r"(offset)
+               : "memory", "r0");
+
+  return t;
+}
+
+static inline int64_t shi_top_double(size_t offset) {
+  int64_t t;
+
+  asm volatile("ldr r0, [%0] \n"
+               "add r0, r0, %2, lsl #2 \n"
+               "ldrd r1, r2, [r0] \n"
+               "strd r2, r1, [%1] \n"
+               :
+               : "r"(&shi_context), "r"(&t), "r"(offset)
+               : "memory", "r0", "r1", "r2");
+
+  return t;
+}
+
+static inline void shi_top_struct(void** t, size_t offset) {
+  asm volatile("ldr r0, [%1] \n"
+               "add %0, r0, %2, lsl #2 \n"
+               : "=r"(*t)
+               : "r"(&shi_context), "r"(offset)
+               : "memory", "r0");
+}
 
 /// Returns the number of elements on the stack
 ///
@@ -1117,9 +1212,8 @@ static inline int32_t shi_top(size_t offset) {}
 static inline size_t shi_depth() {
   size_t size;
 
-  asm volatile("dsp .req r0 \n"
-               "ldr dsp, [%1] \n"
-               "sub %0, %1, dsp \n"
+  asm volatile("ldr r0, [%1] \n"
+               "sub %0, %1, r0 \n"
                "lsr %0, %0, #2 \n"
                "sub %0, #1 \n"
                : "=r"(size)
@@ -1199,11 +1293,13 @@ static inline Word shi_tick_len(char const* str, size_t len) {
 
 static inline void shi_word(Word w) {
   if (w.fp)
-    asm volatile("ldmia %0, {r6, r7, r8} \n"
+    asm volatile("ldrd r7, r8, [%0] \n"
+                 "ldr r6, [r7], #4 \n"
                  "push {%0} \n"
                  "blx %1 \n"
                  "pop {%0} \n"
-                 "stmia %0, {r6, r7, r8} \n"
+                 "str r6, [r7, #-4]! \n"
+                 "strd r7, r8, [%0] \n"
                  :
                  : "r"(&shi_context), "r"(w.fp)
                  : "cc", "memory", "r6", "r7", "r8", "lr");
@@ -1233,7 +1329,7 @@ template<typename U>
 struct is_reference_wrapper<std::reference_wrapper<U>> : std::true_type {};
 
 template<typename T>
-inline constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
+inline constexpr bool is_reference_wrapper_v{is_reference_wrapper<T>::value};
 
 /// Returns the number of elements on the stack
 ///
@@ -1241,9 +1337,8 @@ inline constexpr bool is_reference_wrapper_v = is_reference_wrapper<T>::value;
 inline size_t depth() {
   size_t size;
 
-  asm volatile("dsp .req r0 \n"
-               "ldr dsp, [%1] \n"
-               "sub %0, %1, dsp \n"
+  asm volatile("ldr r0, [%1] \n"
+               "sub %0, %1, r0 \n"
                "lsr %0, %0, #2 \n"
                "sub %0, #1 \n"
                : "=r"(size)
@@ -1269,28 +1364,47 @@ void push(T&& t) {
   using std::addressof, std::is_arithmetic_v, std::is_pointer_v;
   using V = remove_cvref_t<T>;
 
-  static_assert(sizeof(V) <= SHI_STACK_SIZE);
-
   if constexpr (sizeof(V) <= 4 && (is_arithmetic_v<V> || is_pointer_v<V> ||
                                    is_reference_wrapper_v<V>))
-    asm volatile("dsp .req r0 \n"
-                 "ldr dsp, [%0] \n"
-                 "str %1, [dsp, #-4]! \n"
-                 "str dsp, [%0] \n"
+    asm volatile("ldr r0, [%0] \n"
+                 "str %1, [r0, #-4]! \n"
+                 "str r0, [%0] \n"
                  :
                  : "r"(&shi_context), "r"(t)
-                 : "cc", "memory", "r0");
+                 : "memory", "r0");
   else if constexpr (sizeof(V) == 8 && is_arithmetic_v<V>)
-    asm volatile("dsp .req r0 \n"
-                 "ldr dsp, [%0] \n"
+    asm volatile("ldr r0, [%0] \n"
                  "ldrd r1, r2, [%1] \n"
-                 "strd r2, r1, [dsp, #-8]! \n"
-                 "str dsp, [%0] \n"
+                 "strd r2, r1, [r0, #-8]! \n"
+                 "str r0, [%0] \n"
                  :
                  : "r"(&shi_context), "r"(addressof(t))
-                 : "cc", "memory", "r0", "r1", "r2");
-  else
-    ;
+                 : "memory", "r0", "r1", "r2");
+  else {
+    static_assert(sizeof(V) <= SHI_STACK_SIZE);
+    asm volatile("ldr r0, [%0] \n"
+
+                 // Insert padding if size isn't multiple of 4
+                 "mov r1, #0 \n"
+                 "str r1, [r0, #-4] \n"
+                 "and r1, %2, #3 \n"
+                 "sub r0, r0, r1 \n"
+
+                 // Do not change input operands
+                 "sub r1, r0, %2 \n"
+                 "add r2, %1, %2 \n"
+
+                 "1: cmp r0, r1 \n"
+                 "beq 1f \n"
+                 "ldrb r3, [r2, #-1]! \n"
+                 "strb r3, [r0, #-1]! \n"
+                 "b 1b \n"
+
+                 "1: str r0, [%0] \n"
+                 :
+                 : "r"(&shi_context), "r"(addressof(t)), "r"(sizeof(V))
+                 : "cc", "memory", "r0", "r1", "r2", "r3");
+  }
 }
 
 /// Add elements to the top of the stack
@@ -1311,34 +1425,49 @@ void push(Ts&&... ts) {
 /// \tparam T   Type of element to pop
 /// \return Value
 template<typename T = int32_t>
-remove_cvref_t<T> pop() {
+T pop() {
   using std::addressof, std::is_arithmetic_v, std::is_pointer_v;
-  using V = remove_cvref_t<T>;
-
-  static_assert(sizeof(V) <= SHI_STACK_SIZE);
 
   T t;
 
-  if constexpr (sizeof(V) <= 4 && (is_arithmetic_v<V> || is_pointer_v<V> ||
-                                   is_reference_wrapper_v<V>))
-    asm volatile("dsp .req r0 \n"
-                 "ldr dsp, [%1] \n"
-                 "ldr %0, [dsp], #4 \n"
-                 "str dsp, [%1] \n"
+  if constexpr (sizeof(T) <= 4 && (is_arithmetic_v<T> || is_pointer_v<T> ||
+                                   is_reference_wrapper_v<T>))
+    asm volatile("ldr r0, [%1] \n"
+                 "ldr %0, [r0], #4 \n"
+                 "str r0, [%1] \n"
                  : "=&r"(t)
                  : "r"(&shi_context)
-                 : "cc", "memory", "r0");
-  else if constexpr (sizeof(V) == 8 && is_arithmetic_v<V>)
-    asm volatile("dsp .req r0 \n"
-                 "ldr dsp, [%0] \n"
-                 "ldrd r1, r2, [dsp], #8 \n"
+                 : "memory", "r0");
+  else if constexpr (sizeof(T) == 8 && is_arithmetic_v<T>)
+    asm volatile("ldr r0, [%0] \n"
+                 "ldrd r1, r2, [r0], #8 \n"
                  "strd r2, r1, [%1] \n"
-                 "str dsp, [%0] \n"
+                 "str r0, [%0] \n"
                  :
                  : "r"(&shi_context), "r"(addressof(t))
-                 : "cc", "memory", "r0", "r1", "r2");
-  else
-    ;
+                 : "memory", "r0", "r1", "r2");
+  else {
+    static_assert(sizeof(T) <= SHI_STACK_SIZE);
+    asm volatile("ldr r0, [%0] \n"
+
+                 // Do not change input operands
+                 "adds r1, r0, %2 \n"
+                 "movs r2, %1 \n"
+
+                 "1: cmp r0, r1 \n"
+                 "beq 1f \n"
+                 "ldrb r3, [r0], #1 \n"
+                 "strb r3, [r2], #1 \n"
+                 "b 1b \n"
+
+                 // Align
+                 "1: add r0, r0, #3 \n"
+                 "bic r0, r0, #3 \n"
+                 "str r0, [%0] \n"
+                 :
+                 : "r"(&shi_context), "r"(addressof(t)), "r"(sizeof(T))
+                 : "cc", "memory", "r0", "r1", "r2", "r3");
+  }
 
   return t;
 }
@@ -1348,37 +1477,54 @@ remove_cvref_t<T> pop() {
 /// \tparam Ts  Types of element to pop
 /// \return Values
 template<typename... Ts, typename = std::enable_if_t<(sizeof...(Ts) > 1)>>
-std::tuple<remove_cvref_t<Ts>...> pop() {
+std::tuple<Ts...> pop() {
   using std::tuple;
 
-  static_assert((0 + ... + sizeof(remove_cvref_t<Ts>)) <= SHI_STACK_SIZE);
+  static_assert((0 + ... + sizeof(Ts)) <= SHI_STACK_SIZE);
 
   return tuple<Ts...>{pop<Ts>()...};
 }
 
-// hmm return ref here? because... why not?
+/// Get element from the stack
+///
+/// \tparam T       Type of element to get
+/// \param  offset  Offset in cells
+/// \return Value for built-in types
+/// \return Reference for user-defined types
 template<typename T = int32_t>
-remove_cvref_t<T> top(size_t offset = 0) {
-  using std::addressof, std::is_arithmetic_v, std::is_pointer_v;
-  using V = remove_cvref_t<T>;
+decltype(auto) top(size_t offset = 0) {
+  using std::add_lvalue_reference_t, std::addressof, std::is_arithmetic_v,
+      std::is_pointer_v;
 
-  static_assert(sizeof(V) <= SHI_STACK_SIZE);
-
-  T t;
-
-  if constexpr (sizeof(V) <= 4 && (is_arithmetic_v<V> || is_pointer_v<V> ||
-                                   is_reference_wrapper_v<V>))
+  if constexpr (sizeof(T) <= 4 && (is_arithmetic_v<T> || is_pointer_v<T> ||
+                                   is_reference_wrapper_v<T>)) {
+    T t;
     asm volatile("ldr r0, [%1] \n"
                  "ldr %0, [r0, %2, lsl #2] \n"
                  : "=r"(t)
                  : "r"(&shi_context), "r"(offset)
-                 : "cc", "memory", "r0");
-  else if constexpr (sizeof(V) == 8 && is_arithmetic_v<V>)
-    ;
-  else
-    ;
-
-  return t;
+                 : "memory", "r0");
+    return t;
+  } else if constexpr (sizeof(T) == 8 && is_arithmetic_v<T>) {
+    T t;
+    asm volatile("ldr r0, [%0] \n"
+                 "add r0, r0, %2, lsl #2 \n"
+                 "ldrd r1, r2, [r0] \n"
+                 "strd r2, r1, [%1] \n"
+                 :
+                 : "r"(&shi_context), "r"(addressof(t)), "r"(offset)
+                 : "memory", "r0", "r1", "r2");
+    return t;
+  } else {
+    static_assert(sizeof(T) <= SHI_STACK_SIZE);
+    T* t;
+    asm volatile("ldr r0, [%1] \n"
+                 "add %0, r0, %2, lsl #2 \n"
+                 : "=r"(t)
+                 : "r"(&shi_context), "r"(offset)
+                 : "memory", "r0");
+    return add_lvalue_reference_t<T>(*t);
+  }
 }
 
 struct Init {
@@ -1452,11 +1598,13 @@ struct Word {
     if (fp) {
       push(forward<Ts>(ts)...);
 
-      asm volatile("ldmia %0, {r6, r7, r8} \n"
+      asm volatile("ldrd r7, r8, [%0] \n"
+                   "ldr r6, [r7], #4 \n"
                    "push {%0} \n"
                    "blx %1 \n"
                    "pop {%0} \n"
-                   "stmia %0, {r6, r7, r8} \n"
+                   "str r6, [r7, #-4]! \n"
+                   "strd r7, r8, [%0] \n"
                    :
                    : "r"(&shi_context), "r"(fp)
                    : "cc", "memory", "r6", "r7", "r8", "lr");

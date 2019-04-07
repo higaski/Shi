@@ -480,6 +480,7 @@ isSemihosting (ExceptionStackFrame* frame, uint16_t opCode)
   return 0;
 }
 
+__attribute__((__used__))
 void
 HardFault_Handler_C (ExceptionStackFrame* frame __attribute__((unused)),
                      uint32_t lr __attribute__((unused)))
@@ -525,6 +526,7 @@ HardFault_Handler_C (ExceptionStackFrame* frame __attribute__((unused)),
     }
 }
 
+__attribute__((__used__))
 void
 BusFault_Handler_C (ExceptionStackFrame* frame __attribute__((unused)),
                     uint32_t lr __attribute__((unused)))
@@ -546,6 +548,7 @@ BusFault_Handler_C (ExceptionStackFrame* frame __attribute__((unused)),
     }
 }
 
+__attribute__((__used__))
 void
 UsageFault_Handler_C (ExceptionStackFrame* frame __attribute__((unused)),
                       uint32_t lr __attribute__((unused)))

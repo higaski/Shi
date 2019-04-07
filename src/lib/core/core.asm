@@ -2583,7 +2583,7 @@ WORD FLAG_SKIP, "pad"
 @ token-u is its length in characters. If the parse area is empty or contains
 @ only white space, the resulting string has length zero.
 @ ------------------------------------------------------------------------------
-.if ENABLE_PARSE == 1
+.if ENABLE_PARSE_NAME == 1
 WORD FLAG_INTERPRET_COMPILE, "parse-name", parse_name
 @ r0    c-addr + >in advanced   (= current address)
 @ r1    c-addr + u              (= end address)

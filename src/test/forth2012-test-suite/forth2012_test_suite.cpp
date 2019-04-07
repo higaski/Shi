@@ -87,8 +87,8 @@ int forth2012_test_suite() {
   RUN_TEST(corner_cases_case);
   RUN_TEST(corner_cases_while);
 
-  //  RUN_TEST(c_api);
-  //  RUN_TEST(cpp_api);
+  RUN_TEST(c_api);
+  RUN_TEST(cpp_api);
 
   return UNITY_END();
 }

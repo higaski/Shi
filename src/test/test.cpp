@@ -1,10 +1,4 @@
-#include <cassert>
-#include <cinttypes>
-#include <cstdio>
-#include <cstring>
-#include <functional>
-#include <tuple>
-#include <type_traits>
+#include <array>
 #include "bench.h"
 #include "forth2012_test_suite.hpp"
 #include "main.h"
@@ -23,8 +17,6 @@ void stack_dump() {
 alignas(4) std::array<uint8_t, 32 * 1024> shi_ram{};
 
 extern "C" int test() {
-  using std::begin, std::end;
-
   shi::init({.data_begin = reinterpret_cast<uint32_t>(begin(shi_ram)),
              .data_end = reinterpret_cast<uint32_t>(end(shi_ram)),
              .text_begin = FLASH_END - (32 * 1024),
@@ -40,6 +32,5 @@ extern "C" int test() {
 
   // semihosting_example();
 
-  // return forth2012_test_suite();
-  return 0;
+  return forth2012_test_suite();
 }
