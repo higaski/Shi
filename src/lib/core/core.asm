@@ -547,7 +547,7 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, ">", more
 @ ------------------------------------------------------------------------------
 .if ENABLE_TO_BODY == 1
 WORD FLAG_INTERPRET_COMPILE & FOLDS_1, ">body", to_body
-    adds tos, #12                       @ align(xt + 12, 4)
+    adds tos, #14                       @ align(xt + 14, 4)
     P2ALIGN2 align=tos, scratch=r12     @ ( xt -- a-addr )
     bx lr
 .endif
@@ -850,6 +850,10 @@ WORD FLAG_INTERPRET_COMPILE, "create"
 @ Create word
     bl word_comma                       @ ( -- )
 
+@ push {lr}
+    PUSH_INT16 #0xB500                  @ ( -- opcode )
+    bl h_comma                          @ ( opcode -- )
+
 @ str tos, [dsp, #-4]!
     PUSH_TOS
     ldr tos, =0x6D04F847                @ ( -- opcode )
@@ -868,8 +872,8 @@ WORD FLAG_INTERPRET_COMPILE, "create"
     ldr tos, =0x0604F20F                @ ( -- opcode )
     bl comma                            @ ( opcode -- )
 
-@ bx lr
-    PUSH_INT16 #0x4770                  @ ( -- opcode )
+@ pop {pc}
+    PUSH_INT16 #0xBD00                  @ ( -- opcode )
     bl h_comma                          @ ( opcode -- )
 
 @ Allot enough space to allow does> changing bx lr to b
@@ -974,8 +978,9 @@ WORD FLAG_COMPILE, "does>", does
     ldr tos, [tos]
     ldrb r1, [tos, #5]                  @ c-addr
     adds tos, r1
-    adds tos, #4+2+8                    @ align(link + c-addr + 8 + 2, 4)
+    adds tos, #16                       @ align(link + c-addr + 12, 4)
     P2ALIGN2 align=tos, scratch=r12
+    ldrh r0, [tos]
 
 @ Replace bx lr of create with branch to code after does>
 @ tos   bx lr address

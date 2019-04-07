@@ -20,14 +20,14 @@ extern "C" int test() {
              .text_begin = FLASH_END - (32 * 1024),
              .text_end = FLASH_END});
 
-  using namespace shi;
-  printf("%X\n", &shi_ram[0]);
-  ": indexed-array create cells allot does> swap cells + ;"_s;
-  "20 indexed-array fo"_s;
-  stack_dump();
-  shi::push(42, 3);
-  "fo !"_s;
-  stack_dump();
+  //  using namespace shi;
+  //  printf("%X\n", &shi_ram[0]);
+  //  ": indexed-array create cells allot does> swap cells + ;"_s;
+  //  "20 indexed-array fo"_s;
+  //  stack_dump();
+  //  shi::push(42, 3);
+  //  "fo !"_s;
+  //  stack_dump();
 
   //  asm volatile("nop");
   //  ": indexed-array create cells allot does> swap cells + ;"_s;
@@ -39,6 +39,5 @@ extern "C" int test() {
 
   // semihosting_example();
 
-  // return forth2012_test_suite();
-  return 0;
+  return forth2012_test_suite();
 }
