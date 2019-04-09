@@ -1,16 +1,18 @@
 #include <cstdio>
 #include <cstdlib>
 
-void c_bench();
-void lua_bench();
-void mp_bench();
-void shi_bench();
+int c_bench();
+int lua_bench();
+int mp_bench();
+int shi_bench();
 
-void bench() {
+int bench() {
   c_bench();
   lua_bench();
   mp_bench();
   shi_bench();
+
+  return 0;
 }
 
 extern "C" [[noreturn]] void bench_assert_func(char const* file,

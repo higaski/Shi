@@ -1,12 +1,8 @@
 #include <array>
 #include "bench.h"
 #include "forth2012_test_suite.hpp"
-#include "main.h"
-#include "shi.hpp"
 
 void semihosting_example();
-
-alignas(4) std::array<uint8_t, 32 * 1024> shi_ram{};
 
 void stack_dump() {
   printf("stack dump:\n");
@@ -14,12 +10,7 @@ void stack_dump() {
     printf("%d. on stack: %d    %X\n", i, shi::top(i), shi::top(i));
 }
 
-extern "C" int test() {
-  shi::init({.data_begin = reinterpret_cast<uint32_t>(begin(shi_ram)),
-             .data_end = reinterpret_cast<uint32_t>(end(shi_ram)),
-             .text_begin = FLASH_END - (32 * 1024),
-             .text_end = FLASH_END});
-
+extern "C" int app_main() {
   //  using namespace shi;
   //  printf("%X\n", &shi_ram[0]);
   //  ": indexed-array create cells allot does> swap cells + ;"_s;
@@ -35,9 +26,11 @@ extern "C" int test() {
   //  "20 indexed-array foo"_s;
   //  asm volatile("nop");
 
-  // bench();
-
   // semihosting_example();
 
+#if defined(APP_MAIN_TEST)
   return forth2012_test_suite();
+#elif defined(APP_MAIN_BENCH)
+  return bench();
+#endif
 }

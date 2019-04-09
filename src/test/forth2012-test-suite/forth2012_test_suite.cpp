@@ -1,4 +1,5 @@
 #include "forth2012_test_suite.hpp"
+#include "main.h"
 
 // Core
 TEST(basic_assumptions);
@@ -45,7 +46,18 @@ TEST(corner_cases_while);
 TEST(c_api);
 TEST(cpp_api);
 
+namespace {
+
+alignas(4) std::array<uint8_t, 32 * 1024> data{};
+
+}  // namespace
+
 int forth2012_test_suite() {
+  shi::init({.data_begin = reinterpret_cast<uint32_t>(begin(data)),
+             .data_end = reinterpret_cast<uint32_t>(end(data)),
+             .text_begin = FLASH_END - (32 * 1024),
+             .text_end = FLASH_END});
+
   UNITY_BEGIN();
 
   RUN_TEST(basic_assumptions);

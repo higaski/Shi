@@ -2,7 +2,7 @@
 
 #include "dwt_cyccnt.h"
 
-void bench();
+int bench();
 
 #define bench_assert(__e)                                                      \
   ((__e) ? (void)0 : bench_assert_func(__FILE__, __LINE__, __func__, #__e))

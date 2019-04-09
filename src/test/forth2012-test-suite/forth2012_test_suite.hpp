@@ -5,9 +5,11 @@
 #include "shi.hpp"
 #include "unity.h"
 
-#define TEST(name) void name()
+#ifndef __cplusplus
 
-#ifdef __cplusplus
+#  define TEST(name) void name()
+
+#else
 
 #  include <limits>
 

@@ -336,6 +336,10 @@ static inline void shi_pop_struct(void* t, size_t n) {
                : "cc", "memory", "r0", "r1", "r2", "r3");
 }
 
+/// Get number from the stack
+///
+/// \param  offset  Offset in cells
+/// \return Number
 static inline int32_t shi_top_number(size_t offset) {
   int32_t t;
 
@@ -348,6 +352,10 @@ static inline int32_t shi_top_number(size_t offset) {
   return t;
 }
 
+/// Get double-cell number from the stack
+///
+/// \param  offset  Offset in cells
+/// \return Double-cell number
 static inline int64_t shi_top_double(size_t offset) {
   int64_t t;
 
@@ -362,6 +370,10 @@ static inline int64_t shi_top_double(size_t offset) {
   return t;
 }
 
+/// Get user-defined type from the stack
+///
+/// \param  t       Pointer to user-defined type
+/// \param  offset  Offset in cells
 static inline void shi_top_struct(void** t, size_t offset) {
   asm volatile("ldr r0, [%1] \n"
                "add %0, r0, %2, lsl #2 \n"
@@ -394,6 +406,7 @@ static inline size_t shi_size() {
   return shi_depth();
 }
 
+/// Init struct
 typedef struct {
   uint32_t data_begin;
   uint32_t data_end;
@@ -406,19 +419,19 @@ void shi_init_asm(Shi_init*);
 
 /// Initialize
 ///
-/// \param  s   Init structure
+/// \param  s   Init struct
 static inline void shi_init(Shi_init s) {
   shi_init_asm(&s);
 }
 
-/// Call of word evaluate
+/// Evaluate
 ///
 /// \param  str Pointer to the null-terminated byte string
 static inline void shi_evaluate(char const* str) {
   shi_evaluate_asm(str, strlen(str));
 }
 
-/// Call of word evaluate
+/// Evaluate
 ///
 /// \param  str Pointer to the null-terminated byte string
 /// \param  len Length of the null-terminated string
@@ -427,12 +440,12 @@ static inline void shi_evaluate_len(char const* str, size_t len) {
 }
 
 static inline void shi_c_variable(void* adr, char const* str) {
-  push((int32_t)(adr));
+  shi_push_number((int32_t)(adr));
   shi_c_variable_asm(str, strlen(str));
 }
 
 static inline void shi_c_variable_len(void* adr, char const* str, size_t len) {
-  push((int32_t)(adr));
+  shi_push_number((int32_t)(adr));
   shi_c_variable_asm(str, len);
 }
 
@@ -441,20 +454,33 @@ static inline void shi_clear() {
   shi_clear_asm();
 }
 
+/// Word
 typedef struct {
   void_fp fp;
 } Word;
 
+/// Tick
+///
+/// \param  str Pointer to the null-terminated byte string
+/// \return Word
 static inline Word shi_tick(char const* str) {
   Word w = {shi_tick_asm(str, strlen(str))};
   return w;
 }
 
+/// Tick
+///
+/// \param  str Pointer to the null-terminated byte string
+/// \param  len Length of the null-terminated string
+/// \return Word
 static inline Word shi_tick_len(char const* str, size_t len) {
   Word w = {shi_tick_asm(str, len)};
   return w;
 }
 
+/// Call word
+///
+/// \param  w   Word
 static inline void shi_word(Word w) {
   if (w.fp)
     asm volatile("ldrd r7, r8, [%0] \n"
@@ -691,6 +717,7 @@ decltype(auto) top(size_t offset = 0) {
   }
 }
 
+/// Init struct
 struct Init {
   uint32_t data_begin{};
   uint32_t data_end{};
@@ -703,19 +730,19 @@ extern "C" void shi_init_asm(Init&);
 
 /// Initialize
 ///
-/// \param  s   Init structure
+/// \param  s   Init struct
 inline void init(Init s) {
   shi_init_asm(s);
 }
 
-/// Call of word evaluate
+/// Evaluate
 ///
 /// \param  str Pointer to the null-terminated byte string
 inline void evaluate(char const* str) {
   shi_evaluate_asm(str, strlen(str));
 }
 
-/// Call of word evaluate
+/// Evaluate
 ///
 /// \param  str Pointer to the null-terminated byte string
 /// \param  len Length of the null-terminated string
@@ -750,11 +777,16 @@ inline void clear() {
   shi_clear_asm();
 }
 
+/// Word
 struct Word {
   constexpr Word() = default;
   Word(char const* str) : fp{shi_tick_asm(str, strlen(str))} {}
   Word(char const* str, size_t len) : fp{shi_tick_asm(str, len)} {}
 
+  /// Call word
+  ///
+  /// \tparam   Ts  Types of arguments
+  /// \param    ts  Arguments
   template<typename... Ts>
   Word& operator()(Ts&&... ts) {
     using std::forward;
@@ -777,11 +809,13 @@ struct Word {
     return *this;
   }
 
+  /// Implicit conversion return
   template<typename T>
   operator T() {
     return pop<T>();
   }
 
+  /// Implicit conversion multiple returns
   template<typename... Ts>
   operator std::tuple<Ts...>() {
     return pop<Ts...>();
@@ -791,10 +825,19 @@ private:
   void_fp fp{nullptr};
 };
 
+/// User-defined literal evaluate
+///
+/// \param  str Pointer to the null-terminated byte string
+/// \param  len Length of the null-terminated string
 inline void operator"" _s(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
+/// User-defined literal word
+///
+/// \tparam T   Type of character sequence
+/// \tparam Cs  Character sequence
+/// \return Word
 template<typename T, T... Cs>
 Word operator""_w() {
   static constexpr char c[]{Cs...};
