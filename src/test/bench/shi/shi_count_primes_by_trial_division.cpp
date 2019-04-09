@@ -4,7 +4,7 @@
 
 using shi::operator""_s;
 
-void shi_count_primes_by_trial_division() {
+int shi_count_primes_by_trial_division() {
   ": prime? dup dup "
   "1 and 0= swap 2 < or if 2 = "
   "else 3 "
@@ -26,5 +26,5 @@ void shi_count_primes_by_trial_division() {
   auto retval{shi::pop<int32_t>()};
   STOP_CYC_CNT();
 
-  bench_assert(retval == RESULT_PRIMES_TILL);
+  return retval == RESULT_PRIMES_TILL ? 0 : 1;
 }

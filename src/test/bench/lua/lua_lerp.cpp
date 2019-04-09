@@ -10,11 +10,8 @@ extern "C" {
 #include "lua/lualib.h"
 }
 
-void lua_lerp(lua_State* L) {
-  using std::begin;
-  using std::end;
-  using std::equal;
-  using std::vector;
+int lua_lerp(lua_State* L) {
+  using std::equal, std::vector;
 
   constexpr auto n{sizeof(lerp_data.x) / sizeof(lerp_data.x[0])};
 
@@ -39,5 +36,5 @@ void lua_lerp(lua_State* L) {
   }
   STOP_CYC_CNT();
 
-  bench_assert(equal(begin(y), end(y), &lerp_data.y[0]));
+  return equal(begin(y), end(y), &lerp_data.y[0]) ? 0 : 1;
 }

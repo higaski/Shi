@@ -9,7 +9,7 @@ extern "C" {
 #include "lua/lualib.h"
 }
 
-void lua_count_primes_by_trial_division(lua_State* L) {
+int lua_count_primes_by_trial_division(lua_State* L) {
   luaL_dostring(L,
                 "function is_prime(n)"
                 "  if (n%2)==0 or n<=2 then return n==2 end"
@@ -38,5 +38,5 @@ void lua_count_primes_by_trial_division(lua_State* L) {
   lua_pop(L, 1);
   STOP_CYC_CNT();
 
-  bench_assert(retval == RESULT_PRIMES_TILL);
+  return retval == RESULT_PRIMES_TILL ? 0 : 1;
 }

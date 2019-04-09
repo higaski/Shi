@@ -25,7 +25,7 @@ const mp_obj_module_t mp_lerp_module = {
     .globals = (mp_obj_dict_t*)&mp_module_lerp_globals,
 };
 
-void mp_lerp() {
+int mp_lerp() {
   mp_dostring(
       "import lerp_module\n"
       "import uctypes\n"
@@ -67,7 +67,7 @@ void mp_lerp() {
       equal = false;
   }
 
-  bench_assert(equal);
-
   free(y);
+
+  return equal ? 0 : 1;
 }

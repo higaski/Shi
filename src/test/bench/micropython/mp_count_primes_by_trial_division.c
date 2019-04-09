@@ -5,7 +5,7 @@
 #define xstr(s) str(s)
 #define str(s) #s
 
-void mp_count_primes_by_trial_division() {
+int mp_count_primes_by_trial_division() {
   mp_dostring("def is_prime(n):\n"
               "    if (not (n & 1)) or (n < 2):\n"
               "        return n == 2\n"
@@ -33,4 +33,6 @@ void mp_count_primes_by_trial_division() {
   START_CYC_CNT();
   mp_dobytecode(count_primes_by_trial_division_bytecode);
   STOP_CYC_CNT();
+
+  return 0;
 }

@@ -1,8 +1,8 @@
 #include "main.h"
 #include "shi.hpp"
 
-void shi_count_primes_by_trial_division();
-void shi_lerp();
+int shi_count_primes_by_trial_division();
+int shi_lerp();
 
 namespace {
 

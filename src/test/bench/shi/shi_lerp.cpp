@@ -20,8 +20,8 @@ constexpr auto n{sizeof(lerp_data.x) / sizeof(lerp_data.x[0])};
 
 }  // namespace
 
-void shi_lerp_searching_word() {
-  using shi::operator""_s, std::begin, std::end, std::equal, std::vector;
+int shi_lerp_searching_word() {
+  using shi::operator""_s, std::equal, std::vector;
 
   vector<int32_t> y(n);
 
@@ -38,11 +38,11 @@ void shi_lerp_searching_word() {
   }
   STOP_CYC_CNT();
 
-  bench_assert(equal(begin(y), end(y), &lerp_data.y[0]));
+  return equal(begin(y), end(y), &lerp_data.y[0]) ? 0 : 1;
 }
 
-void shi_lerp_storing_word() {
-  using shi::operator""_w, std::begin, std::end, std::equal, std::vector;
+int shi_lerp_storing_word() {
+  using shi::operator""_w, std::equal, std::vector;
 
   vector<int32_t> y(n);
 
@@ -56,7 +56,7 @@ void shi_lerp_storing_word() {
   }
   STOP_CYC_CNT();
 
-  bench_assert(equal(begin(y), end(y), &lerp_data.y[0]));
+  return equal(begin(y), end(y), &lerp_data.y[0]) ? 0 : 1;
 }
 
 void shi_lerp() {

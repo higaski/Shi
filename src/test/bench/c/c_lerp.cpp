@@ -8,8 +8,8 @@
   return y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
 }
 
-void c_lerp() {
-  using std::begin, std::end, std::equal, std::vector;
+int c_lerp() {
+  using std::equal, std::vector;
 
   constexpr auto n{sizeof(lerp_data.x) / sizeof(lerp_data.x[0])};
 
@@ -24,5 +24,5 @@ void c_lerp() {
                 lerp_data.y2[i]);
   STOP_CYC_CNT();
 
-  bench_assert(equal(begin(y), end(y), &lerp_data.y[0]));
+  return equal(begin(y), end(y), &lerp_data.y[0]) ? 0 : 1;
 }
