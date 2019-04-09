@@ -57,7 +57,7 @@ def sets2dict(sets):
 
 python = set(["easy", "embeddable", "modern", "safe"])
 lua = set(["embeddable", "fast", "modern"])
-forth = set(["blazingly fast", "embeddable", "small"])
+forth = set(["blazingly fast", "embeddable", "tiny"])
 sets = [python, lua, forth]
 
 d = sets2dict(sets)
@@ -71,4 +71,4 @@ with plt.xkcd():
             l.set_fontsize(12)
             l.set_text("\n".join(sorted(v)))
 
-plt.show()
+plt.savefig("venn.png", format="png", dpi=120)

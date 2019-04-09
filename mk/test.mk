@@ -34,4 +34,4 @@ test: ldscript $(HEX)
 
 ldscript:
 	$(MKDIR_P) $(TARGET_DIR)
-	cpp $(FILL) -P ./src/ports/stm32f4discovery/STM32F407VGTx_FLASH.ld -o $(TARGET_DIR)/STM32F407VGTx_FLASH.ld
+	$(CPP) $(FILL) -P ./src/ports/stm32f4discovery/STM32F407VGTx_FLASH.ld -o $(TARGET_DIR)/STM32F407VGTx_FLASH.ld

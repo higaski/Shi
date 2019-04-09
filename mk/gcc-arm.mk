@@ -1,8 +1,9 @@
+AR = arm-none-eabi-ar
 AS = arm-none-eabi-gcc
 CC = arm-none-eabi-gcc
 CXX = arm-none-eabi-g++
+CPP = arm-none-eabi-cpp
 LD = arm-none-eabi-g++
-AR = arm-none-eabi-ar
 OBJCOPY = arm-none-eabi-objcopy
 OBJDUMP = arm-none-eabi-objdump
 SIZE = arm-none-eabi-size
