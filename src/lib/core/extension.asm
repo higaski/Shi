@@ -7,31 +7,28 @@
 .section .text
 
 @ ------------------------------------------------------------------------------
-@ c-variable
-@ ( source: "<spaces>name" -- )
-@ (                 a-addr -- )
-@ Skip leading space delimiters. Parse name delimited by a space. Create a
-@ definition for name with the execution semantics defined below.
-@
-@ ( -- a-addr )
-@ a-addr is the address of the referenced C variable
+@ h!
+@ ( h a-addr -- )
+@ Store h at a-addr.
 @ ------------------------------------------------------------------------------
-.if ENABLE_C_VARIABLE == 1
-WORD FLAG_INTERPRET_COMPILE, "c-variable", c_variable
-    push {lr}
+.if ENABLE_H_STORE == 1
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "h!", h_store
+    ldrh r0, [dsp], #4                  @ ( h a-addr -- a-addr )
+    strh r0, [tos]
+    DROP                                @ ( a-addr -- )
+    bx lr
+.endif
 
-@ Create word
-    bl word_comma
-
-@ Write literal with the C variables address
-    bl literal
-
-@ bx lr
-    PUSH_INT16 #0x4770
-    bl h_comma
-
-@ Return
-    pop {pc}
+@ ------------------------------------------------------------------------------
+@ h@
+@ ( a-addr -- h )
+@ Fetch h stored at a-addr. When the cell size is greater than h size, the
+@ unused high-order bits are all zeroes.
+@ ------------------------------------------------------------------------------
+.if ENABLE_H_FETCH == 1
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "h@", h_fetch
+    ldrh tos, [tos]                     @ ( a-addr -- h )
+    bx lr
 .endif
 
 @ ------------------------------------------------------------------------------

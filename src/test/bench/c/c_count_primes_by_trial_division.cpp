@@ -1,7 +1,6 @@
 #include <cstdint>
 #include <cstdio>
 #include "bench.h"
-#include "count_primes_by_trial_division_data.h"
 
 namespace {
 
@@ -29,10 +28,10 @@ namespace {
 }  // namespace
 
 int c_count_primes_by_trial_division() {
-  volatile auto n{COUNT_PRIMES_TILL};
+  volatile auto n{100000};
   START_CYC_CNT();
-  uint32_t retval{count_primes(n)};
+  auto retval{count_primes(n)};
   STOP_CYC_CNT();
 
-  return retval == RESULT_PRIMES_TILL ? 0 : 1;
+  return retval == 9592 ? 0 : 1;
 }

@@ -1,8 +1,8 @@
-import math
 import itertools
 from matplotlib import pyplot as plt
 from matplotlib_venn import venn2, venn3
 import numpy as np
+from resize_canvas import resize_canvas
 
 
 def gen_index(n):
@@ -64,11 +64,18 @@ d = sets2dict(sets)
 
 # Plot it
 with plt.xkcd():
-    h = venn3(sets, ("Python", "Lua", "Forth"))
+    h = venn3(sets, ("MicroPython", "Lua", "Forth"))
+
+    # Manually swap Forth color to same red as in logo
+    h.get_patch_by_id("100").set_color("blue")
+    h.get_patch_by_id("001").set_color("#DD143E")
+    h.get_patch_by_id("001").set_alpha(1.0)
+
     for k, v in d.items():
         l = h.get_label_by_id(k)
         if l:
-            l.set_fontsize(12)
+            l.set_fontsize(11)
             l.set_text("\n".join(sorted(v)))
 
 plt.savefig("venn.png", format="png", dpi=120)
+resize_canvas("venn.png", "venn.png", canvas_width=900)

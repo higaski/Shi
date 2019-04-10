@@ -1,4 +1,4 @@
-ifeq ($(MAKECMDGOALS), test)
+ifeq ($(MAKECMDGOALS), quick_n_dirty)
 
 include mk/gcc-arm.mk
 
@@ -10,7 +10,7 @@ CPPFLAGS += -DOS_USE_SEMIHOSTING
 CPPFLAGS += -DTRACE
 CPPFLAGS += -DOS_USE_TRACE_SEMIHOSTING_STDOUT
 CPPFLAGS += -DUNITY_SUPPORT_64
-CPPFLAGS += -DAPP_MAIN_TEST
+CPPFLAGS += -DAPP_MAIN_QUICK_N_DIRTY
 
 INC_DIRS += ./inc
 INC_DIRS += ./src/lib/core
@@ -23,5 +23,5 @@ LDFLAGS += -T"$(TARGET_DIR)/STM32F407VGTx_FLASH.ld"
 
 endif	
 
-test: ldscript $(HEX)
+quick_n_dirty: ldscript $(HEX)
 	@echo "Build took $$(($$(date +%s)-$(DATE))) seconds"

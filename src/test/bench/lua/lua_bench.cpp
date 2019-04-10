@@ -4,6 +4,7 @@ extern "C" {
 #include "lua/lualib.h"
 }
 
+int lua_acker(lua_State* L);
 int lua_count_primes_by_trial_division(lua_State* L);
 int lua_lerp(lua_State* L);
 
@@ -14,6 +15,8 @@ int lua_bench() {
 
   int retval{};
 
+  asm volatile("nop");
+  retval |= lua_acker(L);
   asm volatile("nop");
   retval |= lua_count_primes_by_trial_division(L);  // 15.96s
   asm volatile("nop");

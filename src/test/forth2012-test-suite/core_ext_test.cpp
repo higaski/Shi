@@ -1,6 +1,6 @@
 #include "forth2012_test_suite.hpp"
 
-using shi::operator""_s;
+using namespace shi::literals;
 
 TEST(ne__u_more) {
   "0 0 <>"_s;

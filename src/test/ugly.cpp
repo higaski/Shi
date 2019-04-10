@@ -27,7 +27,7 @@
 //  ": third 3 ;"_s;
 //  asm volatile("nop");
 
-using shi::operator""_s;
+using namespace shi::literals;
 
 void shi_test();
 void shi_test_compile_to_flash();
@@ -291,7 +291,7 @@ void shi_test() {
   asm volatile("nop");
   volatile uint32_t stars = 42;
   // equal to push(&stars) and evaluate("c-variable stars");
-  shi::c_variable(&stars, "stars");
+  shi::variable(&stars, "stars");
   //  shi::stack_print(printf);
   shi::evaluate("stars @");
   //  shi::stack_print(printf);

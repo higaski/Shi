@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <vector>
 #include "bench.h"
-#include "count_primes_by_trial_division_data.h"
 
 extern "C" {
 #include "lua/lauxlib.h"
@@ -33,11 +32,11 @@ int lua_count_primes_by_trial_division(lua_State* L) {
 
   START_CYC_CNT();
   lua_getglobal(L, "count_primes");
-  lua_pushnumber(L, COUNT_PRIMES_TILL);
+  lua_pushnumber(L, 100000);
   lua_call(L, 1, 1);
   auto retval{lua_tointeger(L, -1)};
   lua_pop(L, 1);
   STOP_CYC_CNT();
 
-  return retval == RESULT_PRIMES_TILL ? 0 : 1;
+  return retval == 9592 ? 0 : 1;
 }

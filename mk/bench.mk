@@ -21,17 +21,7 @@ SRC_DIRS += ./src/test
 
 LDFLAGS += -T"$(TARGET_DIR)/STM32F407VGTx_FLASH.ld"
 
-ifeq ($(FILL_UNUSED_FLASH),1)
-	FILL = -DFILL_UNUSED_FLASH
-else
-	FILL = -DDONT_FILL_UNUSED_FLASH
-endif	
-
 endif	
 
 bench: ldscript $(HEX)
 	@echo "Build took $$(($$(date +%s)-$(DATE))) seconds"
-
-ldscript:
-	$(MKDIR_P) $(TARGET_DIR)
-	$(CPP) $(FILL) -P ./src/ports/stm32f4discovery/STM32F407VGTx_FLASH.ld -o $(TARGET_DIR)/STM32F407VGTx_FLASH.ld

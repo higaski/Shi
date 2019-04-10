@@ -8,7 +8,7 @@
 .thumb
 .arch armv7-m
 
-.global shi_init_asm, shi_evaluate_asm, shi_c_variable_asm, shi_clear_asm, shi_tick_asm
+.global shi_init_asm, shi_evaluate_asm, shi_variable_asm, shi_clear_asm, shi_tick_asm
 
 .section .text
 
@@ -221,7 +221,6 @@ lfp .req r8                             @ Literal-folding pointer
 .equ ENABLE_BRACKET_COMPILE, SHI_ENABLE_BRACKET_COMPILE
 
 @ Shi words
-.equ ENABLE_C_VARIABLE, SHI_ENABLE_C_VARIABLE
 .equ ENABLE_TO_TEXT_Q, SHI_ENABLE_TO_TEXT_Q
 .equ ENABLE_TO_DATA_Q, SHI_ENABLE_TO_DATA_Q
 .equ ENABLE_TO_TEXT, SHI_ENABLE_TO_TEXT
@@ -384,12 +383,12 @@ shi_evaluate_asm:
 6:  pop {tos-lfp, pc}                   @ ( R: tos dsp lfp lr -- )
 
 @ ------------------------------------------------------------------------------
-@ Forth C variable
+@ Forth variable
 @ r0    c-addr  (cstring address)
 @ r1    u       (cstring length)
 @ ------------------------------------------------------------------------------
 .thumb_func
-shi_c_variable_asm:
+shi_variable_asm:
     push {tos-lfp, lr}                  @ ( R: -- tos dsp lfp lr )
 
 @ Enter forth
@@ -405,8 +404,15 @@ shi_c_variable_asm:
 @ Set >IN 0
     SET_IN #0                           @ Set >in zero
 
-@ C variable
-    bl c_variable
+@ Create word
+    bl word_comma
+
+@ Write literal with the C variables address
+    bl literal
+
+@ bx lr
+    PUSH_INT16 #0x4770
+    bl h_comma
 
 @ Leave forth
     EXIT                                @ Store context

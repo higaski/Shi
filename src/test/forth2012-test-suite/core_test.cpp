@@ -1,6 +1,6 @@
 #include "forth2012_test_suite.hpp"
 
-using shi::operator""_s;
+using namespace shi::literals;
 
 TEST(basic_assumptions) {
   // ( TEST IF ANY BITS ARE SET; ANSWER IN BASE 1 )

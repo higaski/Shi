@@ -1,23 +1,32 @@
+#include "kB_literal.hpp"
 #include "main.h"
 #include "shi.hpp"
 
+int shi_acker();
 int shi_count_primes_by_trial_division();
 int shi_lerp();
 
 namespace {
 
-alignas(4) std::array<uint8_t, 32 * 1024> data{};
+alignas(4) std::array<uint8_t, 32_kB> data{};
 
 }  // namespace
 
 int shi_bench() {
   shi::init({.data_begin = reinterpret_cast<uint32_t>(begin(data)),
              .data_end = reinterpret_cast<uint32_t>(end(data)),
-             .text_begin = FLASH_END - (32 * 1024),
+             .text_begin = FLASH_END - 32_kB,
              .text_end = FLASH_END});
 
-  shi_count_primes_by_trial_division();
-  shi_lerp();
+  int retval{};
 
-  return 0;
+  asm volatile("nop");
+  retval |= shi_acker();
+  asm volatile("nop");
+  retval |= shi_count_primes_by_trial_division();
+  asm volatile("nop");
+  retval |= shi_lerp();
+  asm volatile("nop");
+
+  return retval;
 }

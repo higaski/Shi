@@ -1,6 +1,6 @@
 #include "forth2012_test_suite.hpp"
 
-using shi::operator""_s, shi::operator""_w;
+using namespace shi::literals;
 
 TEST(cpp_api) {
   using std::get, std::tuple;

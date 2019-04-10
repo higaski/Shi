@@ -1,14 +1,6 @@
-#include <array>
 #include "bench.h"
 #include "forth2012_test_suite.hpp"
-
-void semihosting_example();
-
-void stack_dump() {
-  printf("stack dump:\n");
-  for (auto i{0u}; i < shi::size(); ++i)
-    printf("%d. on stack: %d    %X\n", i, shi::top(i), shi::top(i));
-}
+#include "quick_n_dirty.hpp"
 
 extern "C" int app_main() {
   //  using namespace shi;
@@ -32,5 +24,7 @@ extern "C" int app_main() {
   return forth2012_test_suite();
 #elif defined(APP_MAIN_BENCH)
   return bench();
+#elif defined(APP_MAIN_QUICK_N_DIRTY)
+  return (quick_n_dirty(), 0);
 #endif
 }

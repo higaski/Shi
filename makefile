@@ -33,8 +33,20 @@ include mk/warnings.mk
 
 # Targets
 include mk/bench.mk
+include mk/quick_n_dirty.mk
 include mk/shi.mk
 include mk/test.mk
 
 # Generic build rules
 include mk/build.mk
+
+# QEMU doesn't null flash memory, so fill with the linker script
+ifeq ($(FILL_UNUSED_FLASH),1)
+	FILL = -DFILL_UNUSED_FLASH
+else
+	FILL = -DDONT_FILL_UNUSED_FLASH
+endif	
+
+ldscript:
+	$(MKDIR_P) $(TARGET_DIR)
+	$(CPP) $(FILL) -P ./src/ports/stm32f4discovery/STM32F407VGTx_FLASH.ld -o $(TARGET_DIR)/STM32F407VGTx_FLASH.ld

@@ -4,11 +4,11 @@
 #include "lerp_data.h"
 #include "shi.hpp"
 
+using namespace shi::literals;
+
 namespace {
 
 void shi_lerp_define() {
-  using shi::operator""_s;
-
   // lerp ( x x1 x2 y1 y2 -- y )
   ": lerp over - 4 roll 4 pick - * 2swap swap - / + ;"_s;
 
@@ -18,10 +18,8 @@ void shi_lerp_define() {
 
 constexpr auto n{sizeof(lerp_data.x) / sizeof(lerp_data.x[0])};
 
-}  // namespace
-
 int shi_lerp_searching_word() {
-  using shi::operator""_s, std::equal, std::vector;
+  using std::equal, std::vector;
 
   vector<int32_t> y(n);
 
@@ -42,7 +40,7 @@ int shi_lerp_searching_word() {
 }
 
 int shi_lerp_storing_word() {
-  using shi::operator""_w, std::equal, std::vector;
+  using std::equal, std::vector;
 
   vector<int32_t> y(n);
 
@@ -59,8 +57,14 @@ int shi_lerp_storing_word() {
   return equal(begin(y), end(y), &lerp_data.y[0]) ? 0 : 1;
 }
 
-void shi_lerp() {
+}  // namespace
+
+int shi_lerp() {
+  int retval{};
+
   shi_lerp_define();
-  shi_lerp_searching_word();
-  shi_lerp_storing_word();
+  retval |= shi_lerp_searching_word();
+  retval |= shi_lerp_storing_word();
+
+  return retval;
 }

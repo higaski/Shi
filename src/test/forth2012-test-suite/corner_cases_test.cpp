@@ -1,6 +1,6 @@
 #include "forth2012_test_suite.hpp"
 
-using shi::operator""_s;
+using namespace shi::literals;
 
 TEST(corner_cases_loop) {
   ": GD7 do i 2 = if 2 leave then i -2 = if -2 leave then loop ;"_s;

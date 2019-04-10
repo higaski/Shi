@@ -16,6 +16,7 @@ endif
 
 ifeq ($(LTO),1)
 	OPTFLAGS+= -flto
+	OPTFLAGS+= -ffat-lto-objects
 endif
 
 OPTFLAGS += -ffunction-sections

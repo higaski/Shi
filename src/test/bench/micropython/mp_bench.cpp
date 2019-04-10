@@ -1,5 +1,6 @@
 #include "mpapi.h"
 
+extern "C" int mp_acker();
 extern "C" int mp_count_primes_by_trial_division();
 extern "C" int mp_lerp();
 
@@ -8,6 +9,8 @@ int mp_bench() {
 
   int retval{};
 
+  asm volatile("nop");
+  retval |= mp_acker();
   asm volatile("nop");
   retval |= mp_count_primes_by_trial_division();
   asm volatile("nop");

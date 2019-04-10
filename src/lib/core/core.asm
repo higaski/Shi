@@ -720,7 +720,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "begin"
 @ number of low-order bits corresponding to character size are transferred.
 @ ------------------------------------------------------------------------------
 .if ENABLE_C_STORE == 1
-WORD FLAG_INTERPRET_COMPILE, "c!", c_store
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "c!", c_store
     ldrb r0, [dsp], #4                  @ ( char c-addr -- c-addr )
     strb r0, [tos]
     DROP                                @ ( c-addr -- )
@@ -753,8 +753,8 @@ WORD FLAG_INTERPRET_COMPILE, "c,", c_comma
 @ character size, the unused high-order bits are all zeroes.
 @ ------------------------------------------------------------------------------
 .if ENABLE_C_FETCH == 1
-WORD FLAG_INTERPRET_COMPILE, "c@", c_fetch
-    ldrb tos, [tos]
+WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "c@", c_fetch
+    ldrb tos, [tos]                     @ ( c-addr -- char )
     bx lr
 .endif
 

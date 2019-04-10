@@ -35,7 +35,7 @@ int mp_lerp() {
       "\"y1\": 12 | uctypes.INT32,"
       "\"y2\": 16| uctypes.INT32,"
       "\"y\": 20 | uctypes.INT32}\n"
-      "s = uctypes.struct(lerp_module.lerp_get_struct(), S, uctypes.NATIVE)\n",
+      "s = uctypes.struct(lerp_module.lerp_get_struct(), S, uctypes.NATIVE)",
       MP_PARSE_FILE_INPUT);
 
   mp_dostring(

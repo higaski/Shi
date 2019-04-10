@@ -7,5 +7,10 @@ int mp_bench();
 int shi_bench();
 
 int bench() {
-  return c_bench() | lua_bench() | mp_bench() | shi_bench();
+  int retval{c_bench() | lua_bench() | mp_bench() | shi_bench()};
+
+  if (retval)
+    printf("some error during benching...\n");
+
+  return retval;
 }
