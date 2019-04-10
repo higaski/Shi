@@ -31,4 +31,7 @@
   it2 = DWT_CYCCNT_GET() - it1;                                                \
   DWT_CYCCNT_DIS();                                                            \
   __enable_irq();                                                              \
-  printf("%s took %u cyc\n", __PRETTY_FUNCTION__, it2);\
+  {                                                                            \
+    uint32_t us = it2 / (HAL_RCC_GetSysClockFreq() / 1000000);                 \
+    printf("%s took %u us\n", __PRETTY_FUNCTION__, us);                        \
+  }

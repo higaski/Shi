@@ -15,7 +15,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(lerp_get_struct_obj, lerp_get_struct);
 
 STATIC const mp_map_elem_t lerp_globals_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(MP_QSTR_lerp_module)},
-    {MP_OBJ_NEW_QSTR(MP_QSTR_get_struct), (mp_obj_t)&lerp_get_struct_obj},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_lerp_get_struct), (mp_obj_t)&lerp_get_struct_obj},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_lerp_globals, lerp_globals_table);
@@ -35,7 +35,7 @@ int mp_lerp() {
       "\"y1\": 12 | uctypes.INT32,"
       "\"y2\": 16| uctypes.INT32,"
       "\"y\": 20 | uctypes.INT32}\n"
-      "s = uctypes.struct(lerp_module.get_struct(), S, uctypes.NATIVE)\n",
+      "s = uctypes.struct(lerp_module.lerp_get_struct(), S, uctypes.NATIVE)\n",
       MP_PARSE_FILE_INPUT);
 
   mp_dostring(
@@ -62,10 +62,9 @@ int mp_lerp() {
   STOP_CYC_CNT();
 
   bool equal = true;
-  for (size_t i = 0; i < n; ++i) {
+  for (size_t i = 0; i < n; ++i)
     if (y[i] != lerp_data.y[i])
       equal = false;
-  }
 
   free(y);
 

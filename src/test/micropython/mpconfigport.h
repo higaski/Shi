@@ -70,6 +70,8 @@ typedef long mp_off_t;
 #include <alloca.h>
 
 extern const struct _mp_obj_module_t mp_lerp_module;
+extern const struct _mp_obj_module_t mp_primes_module;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lerp_module), (mp_obj_t)&mp_lerp_module }
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lerp_module), (mp_obj_t)&mp_lerp_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_primes_module), (mp_obj_t)&mp_primes_module }

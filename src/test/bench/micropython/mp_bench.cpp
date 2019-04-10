@@ -6,10 +6,15 @@ extern "C" int mp_lerp();
 int mp_bench() {
   mp_init();
 
-  mp_count_primes_by_trial_division();
-  mp_lerp();
+  int retval{};
+
+  asm volatile("nop");
+  retval |= mp_count_primes_by_trial_division();
+  asm volatile("nop");
+  retval |= mp_lerp();
+  asm volatile("nop");
 
   mp_deinit();
 
-  return 0;
+  return retval;
 }

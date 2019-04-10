@@ -65,14 +65,14 @@ typedef struct _mp_obj_base_t mp_obj_base_t;
 // For debugging purposes they are all different.  For non-debug mode, we alias
 // as many as we can to MP_OBJ_NULL because it's cheaper to load/compare 0.
 
-#ifdef NDEBUG
-#define MP_OBJ_NULL             (MP_OBJ_FROM_PTR((void*)0))
-#define MP_OBJ_STOP_ITERATION   (MP_OBJ_FROM_PTR((void*)0))
-#define MP_OBJ_SENTINEL         (MP_OBJ_FROM_PTR((void*)4))
-#else
+#if MICROPY_DEBUG_MP_OBJ_SENTINELS
 #define MP_OBJ_NULL             (MP_OBJ_FROM_PTR((void*)0))
 #define MP_OBJ_STOP_ITERATION   (MP_OBJ_FROM_PTR((void*)4))
 #define MP_OBJ_SENTINEL         (MP_OBJ_FROM_PTR((void*)8))
+#else
+#define MP_OBJ_NULL             (MP_OBJ_FROM_PTR((void*)0))
+#define MP_OBJ_STOP_ITERATION   (MP_OBJ_FROM_PTR((void*)0))
+#define MP_OBJ_SENTINEL         (MP_OBJ_FROM_PTR((void*)4))
 #endif
 
 // These macros/inline functions operate on objects and depend on the
@@ -325,6 +325,13 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 
 #define MP_DEFINE_CONST_STATICMETHOD_OBJ(obj_name, fun_name) const mp_rom_obj_static_class_method_t obj_name = {{&mp_type_staticmethod}, fun_name}
 #define MP_DEFINE_CONST_CLASSMETHOD_OBJ(obj_name, fun_name) const mp_rom_obj_static_class_method_t obj_name = {{&mp_type_classmethod}, fun_name}
+
+// Declare a module as a builtin, processed by makemoduledefs.py
+// param module_name: MP_QSTR_<module name>
+// param obj_module: mp_obj_module_t instance
+// prarm enabled_define: used as `#if (enabled_define) around entry`
+
+#define MP_REGISTER_MODULE(module_name, obj_module, enabled_define)
 
 // Underlying map/hash table implementation (not dict object or map function)
 
@@ -649,8 +656,7 @@ mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table);
-mp_obj_t mp_obj_new_fun_viper(size_t n_args, void *fun_data, mp_uint_t type_sig);
-mp_obj_t mp_obj_new_fun_asm(size_t n_args, void *fun_data, mp_uint_t type_sig);
+mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig);
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed, const mp_obj_t *closed);
 mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items);
