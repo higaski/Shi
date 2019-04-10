@@ -3,7 +3,9 @@
 #include "bench.h"
 #include "count_primes_by_trial_division_data.h"
 
-bool is_prime(uint32_t n) {
+namespace {
+
+[[gnu::noinline]] bool is_prime(uint32_t n) {
   if (!(n & 1) || n < 2)
     return n == 2;
 
@@ -14,7 +16,7 @@ bool is_prime(uint32_t n) {
   return true;
 }
 
-uint32_t count_primes(uint32_t n) {
+[[gnu::noinline]] uint32_t count_primes(uint32_t n) {
   uint32_t retval{0};
 
   for (uint32_t i = 0; i <= n; ++i)
@@ -23,6 +25,8 @@ uint32_t count_primes(uint32_t n) {
 
   return retval;
 }
+
+}  // namespace
 
 int c_count_primes_by_trial_division() {
   volatile auto n{COUNT_PRIMES_TILL};

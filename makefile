@@ -15,6 +15,7 @@ LST = $(TARGET_DIR)/$(TARGET_NAME).lst
 MAP = $(TARGET_DIR)/$(TARGET_NAME).map
 
 all:
+	$(MAKE) bench
 	$(MAKE) shi
 	$(MAKE) test
 	
@@ -31,6 +32,7 @@ include mk/verbose.mk
 include mk/warnings.mk
 
 # Targets
+include mk/bench.mk
 include mk/shi.mk
 include mk/test.mk
 

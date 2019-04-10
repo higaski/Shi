@@ -1,4 +1,4 @@
-ifeq ($(MAKECMDGOALS), test)
+ifeq ($(MAKECMDGOALS), bench)
 
 include mk/gcc-arm.mk
 
@@ -10,7 +10,7 @@ CPPFLAGS += -DOS_USE_SEMIHOSTING
 CPPFLAGS += -DTRACE
 CPPFLAGS += -DOS_USE_TRACE_SEMIHOSTING_STDOUT
 CPPFLAGS += -DUNITY_SUPPORT_64
-CPPFLAGS += -DAPP_MAIN_TEST
+CPPFLAGS += -DAPP_MAIN_BENCH
 
 INC_DIRS += ./inc
 INC_DIRS += ./src/lib/core
@@ -29,7 +29,7 @@ endif
 
 endif	
 
-test: ldscript $(HEX)
+bench: ldscript $(HEX)
 	@echo "Build took $$(($$(date +%s)-$(DATE))) seconds"
 
 ldscript:

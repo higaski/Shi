@@ -7,10 +7,5 @@ int mp_bench();
 int shi_bench();
 
 int bench() {
-  c_bench();
-  lua_bench();
-  mp_bench();
-  shi_bench();
-
-  return 0;
+  return c_bench() | lua_bench() | mp_bench() | shi_bench();
 }
