@@ -1,3 +1,4 @@
 /.vscode/ipch
-/build/
-/doc/html/
+/build/bench
+/build/quick_n_dirty
+/build/test

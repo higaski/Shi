@@ -98,8 +98,9 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "*/", times_div
     bx lr
 .endif
 
+// TODO
 .if ENABLE_TIMES_DIV_MOD == 1
-WORD FLAG_SKIP, "*/mod", times_div_mod  @ TBD
+WORD FLAG_SKIP, "*/mod", times_div_mod
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -266,8 +267,9 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "/", div
     bx lr
 .endif
 
+// TODO
 .if ENABLE_DIV_MOD == 1
-WORD FLAG_SKIP, "/mod", div_mod         @ TBD
+WORD FLAG_SKIP, "/mod", div_mod
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -597,10 +599,6 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_1, "?dup", q_dup
 WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "@", fetch
     ldr tos, [tos]
     bx lr
-.endif
-
-.if ENABLE_ABORT == 1
-WORD FLAG_SKIP, "abort"                 @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1145,8 +1143,9 @@ WORD FLAG_INTERPRET_COMPILE, "find"
     bx lr
 .endif
 
+// TODO
 .if ENABLE_FM_DIV_MOD == 1
-WORD FLAG_SKIP, "fm/mod", fm_div_mod    @ TBD
+WORD FLAG_SKIP, "fm/mod", fm_div_mod
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1225,8 +1224,9 @@ WORD FLAG_COMPILE_IMMEDIATE, "if"
 .ltorg
 .endif
 
+// TODO
 .if ENABLE_IMMEDIATE == 1
-WORD FLAG_SKIP, "immediate"             @ TBD
+WORD FLAG_SKIP, "immediate"
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1582,8 +1582,9 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "lshift"
     bx lr
 .endif
 
+// TODO
 .if ENABLE_M_TIMES == 1
-WORD FLAG_SKIP, "m*", m_times           @ TBD
+WORD FLAG_SKIP, "m*", m_times
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1630,8 +1631,9 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "mod"
     bx lr
 .endif
 
+// TODO
 .if ENABLE_MOVE == 1
-WORD FLAG_SKIP, "move"                  @ TBD
+WORD FLAG_SKIP, "move"
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1681,10 +1683,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "postpone"
     bl tick
     bl compile_comma
     pop {pc}
-.endif
-
-.if ENABLE_QUIT == 1
-WORD FLAG_SKIP, "quit"                  @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1795,16 +1793,19 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "rshift"
     bx lr
 .endif
 
+// TODO
 .if ENABLE_S_TO_D == 1
-WORD FLAG_SKIP, "s>d", s_to_d           @ TBD
+WORD FLAG_SKIP, "s>d", s_to_d
 .endif
 
+// TODO
 .if ENABLE_SIGN == 1
-WORD FLAG_SKIP, "sign"                  @ TBD
+WORD FLAG_SKIP, "sign"
 .endif
 
+// TODO
 .if ENABLE_SM_DIV_REM == 1
-WORD FLAG_SKIP, "sm/rem", sm_div_rem    @ TBD
+WORD FLAG_SKIP, "sm/rem", sm_div_rem
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1895,12 +1896,14 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u<", u_less
     bx lr
 .endif
 
+// TODO
 .if ENABLE_UM_TIMES == 1
-WORD FLAG_SKIP, "um*", um_times         @ TBD
+WORD FLAG_SKIP, "um*", um_times
 .endif
 
+// TODO
 .if ENABLE_UM_DIV_MOD == 1
-WORD FLAG_SKIP, "um/mod", um_div_mod    @ TBD
+WORD FLAG_SKIP, "um/mod", um_div_mod
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -2180,12 +2183,14 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<>", ne
     bx lr
 .endif
 
+// TODO
 .if ENABLE_Q_DO == 1
-WORD FLAG_SKIP, "?do", q_do             @ TBD
+WORD FLAG_SKIP, "?do", q_do
 .endif
 
+// TODO
 .if ENABLE_ACTION_OF == 1
-WORD FLAG_SKIP, "action-of", action_of  @ TBD
+WORD FLAG_SKIP, "action-of", action_of
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -2211,8 +2216,9 @@ WORD FLAG_COMPILE_IMMEDIATE, "again"
     pop {pc}
 .endif
 
+// TODO
 .if ENABLE_BUFFER_COLON == 1
-WORD FLAG_SKIP, "buffer:", buffer_colon @ TBD
+WORD FLAG_SKIP, "buffer:", buffer_colon
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -2467,8 +2473,9 @@ WORD FLAG_COMPILE_IMMEDIATE, "endof"
     pop {pc}
 .endif
 
+// TODO
 .if ENABLE_ERASE == 1
-WORD FLAG_SKIP, "erase"                 @ TBD
+WORD FLAG_SKIP, "erase"
 .endif
 
 @ ------------------------------------------------------------------------------

@@ -68,6 +68,7 @@ interpret_state:
 interpret_execute:
     ands tos, #~FLAG_INTERPRET
     beq 1f                              @ Goto execute
+        TWO_DROP                        @ ( xt flags -- )
         PRINT "interpreting compile-only word"
         b interpret_return              @ Goto return
 
@@ -81,6 +82,7 @@ interpret_execute:
 interpret_compile:
     ands r0, tos, #~FLAG_COMPILE
     beq 1f                              @ Goto continue
+        TWO_DROP                        @ ( xt flags -- )
         PRINT "compiling interpret-only word"
         b interpret_return              @ Goto return
 

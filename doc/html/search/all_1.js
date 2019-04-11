@@ -1,0 +1,5 @@
+var searchData=
+[
+  ['clear',['clear',['../namespaceshi.html#ac8ed24fa837cfd85d9975067f2966bba',1,'shi']]],
+  ['control_20structures',['Control structures',['../page_control_structures.html',1,'page_implementation']]]
+];

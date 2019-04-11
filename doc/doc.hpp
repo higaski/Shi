@@ -79,10 +79,11 @@
 /// | \subpage page_variables           | Internally used variables                         |
 /// | \subpage page_dictionary          | Layout of words, core- and user dictionary        |
 /// | \subpage page_control_structures  | Control structures                                |
+/// | \subpage page_extensions          | Extensions                                        |
 /// | \subpage page_wordlist            | Wordlist                                          |
 /// | \subpage page_ambiguous_condition | Ambiguous conditions                              |
 /// | \subpage page_interpret           | Interpretation loop in detail                     |
-/// | \subpage page_todo                | d                                                 |
+/// | \subpage page_todo                | TODO list                                         |
 // clang-format on
 ///
 ///
@@ -526,65 +527,11 @@
 ///
 ///
 /// \page page_control_structures Control structures
-/// \dot
-/// digraph G {
-///
-///   if[shape=diamond]
-///   else[shape=diamond]
-///   then
-///
-///   if->then[label="true"];
-///   if->else[label="false"];
-///   else->then;
-///
-/// }
-/// \enddot
-///
-/// if...else...then
-///
-/// case...of...endof...endcase
-///
-/// begin...until
-/// begin...while...repeat
-///
-/// do...loop/+loop
-/// do...if...leave then...loop/+loop
-///
-/// if -> ( -- orig1 )
-/// else -> ( orig1 -- orig2 )
-/// then -> ( orig1 | orig2 -- )
-///
-/// begin -> ( -- dest )
-/// until -> ( dest -- )
-///
-/// begin -> ( -- dest )
-/// while -> ( dest -- orig dest )
-/// repeat -> ( orig dest -- )
+/// TODO
 ///
 ///
-/// Sonderwürschtl:<br>
-/// - else setzt das unterste bit von orig damit then unterscheiden kann obs an
-///   conditional oder unconditional branch auflösen muss
-/// - leave und endof haben zählvariablen für ihr "lvl", des is notwendig damit
-///   die csp, routine nur die sprünge schreibt die fürs aktuelle nest-lvl
-///   notwendig sind. Das heißt von jetzt an kann ma leave und endof beliebig
-///   nesten... (zumindest bis 128 lvls tief :D )
-///
-///
-/// Ausserdem dass es nur mehr 1x conditional branch funktion gibt und das
-/// "template" fürn OPCODE vorher am stack landet
-///
-///
-// clang-format off
-/// \page page_control_structures Control structures
-/// also sowas geht nicht<br>
-/// : do ... if ... leave ... then ... do ... loop ... loop ;<br>
-/// weil das 1.loop leave auflösen würde und ned des 2.
-///
-/// und sowas auch nicht<br>
-/// : case ... of ... endof ... of ... case ... of ... endof ... endcase ... endof ... endcase ;<br>
-/// weil des 1.endcase des allererste endof auflösen würde
-// clang-format on
+/// \page page_extensions Extensions
+/// TODO
 ///
 ///
 // clang-format off
@@ -633,7 +580,7 @@
 /// | [&gt;r](https://forth-standard.org/standard/core/toR)                   | exactly ANS                                         |
 /// | [?dup](https://forth-standard.org/standard/core/qDUP)                   | exactly ANS                                         |
 /// | [@@](https://forth-standard.org/standard/core/Fetch)                    | exactly ANS                                         |
-/// | [abort](https://forth-standard.org/standard/core/ABORT)                 | TBD                                                 |
+/// | [abort](https://forth-standard.org/standard/core/ABORT)                 | unimplemented                                       |
 /// | [abort&quot;](https://forth-standard.org/standard/core/ABORTq)          | unimplemented                                       |
 /// | [abs](https://forth-standard.org/standard/core/ABS)                     | exactly ANS                                         |
 /// | [accept](https://forth-standard.org/standard/core/ACCEPT)               | unimplemented                                       |
@@ -692,7 +639,7 @@
 /// | [or](https://forth-standard.org/standard/core/OR)                       | exactly ANS                                         |
 /// | [over](https://forth-standard.org/standard/core/OVER)                   | exactly ANS                                         |
 /// | [postpone](https://forth-standard.org/standard/core/POSTPONE)           | exactly ANS                                         |
-/// | [quit](https://forth-standard.org/standard/core/QUIT)                   | TBD                                                 |
+/// | [quit](https://forth-standard.org/standard/core/QUIT)                   | unimplemented                                       |
 /// | [r&gt;](https://forth-standard.org/standard/core/Rfrom)                 | exactly ANS                                         |
 /// | [r@@](https://forth-standard.org/standard/core/RFetch)                  | exactly ANS                                         |
 /// | [recurse](https://forth-standard.org/standard/core/RECURSE)             | exactly ANS                                         |
@@ -800,3 +747,10 @@
 /// >
 /// > The response to a particular ambiguous condition need not be the same
 /// > under all circumstances.
+///
+/// Shi takes approach #1+2 and generally tries to ignore ambiguous
+/// conditions as much as possible. There is the \ref SHI_ENABLE_PRINT macro
+/// which gives you an error message in case you implemented \ref shi_printf but
+/// other than that all definitions try to stick to their stack effect. This
+/// produces garbage in case a word can can't fulfill its semantics but at least
+/// it doesn't corrupt the return-stack.

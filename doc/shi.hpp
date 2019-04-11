@@ -8,25 +8,19 @@
 
 // clang-format off
 /// Data-stack size (must be a multiple of 4 bytes)
-#define SHI_STACK_SIZE 256
+#define SHI_STACK_SIZE           256
 
 /// Most flash types are 0xFF erased
-#define SHI_ERASED_WORD 0xFFFFFFFF
+#define SHI_ERASED_WORD          0xFFFFFFFF
 
-/// If defined enables the prefixes $, # and % for numbers
+/// Enables the prefixes $, # and % for numbers
 #define SHI_ENABLE_NUMBER_PREFIX 1
 
-/// If defined, printing messages is enabled and used for errors
-#define SHI_ENABLE_PRINT 1
+/// Enables printing messages for errors
+#define SHI_ENABLE_PRINT         1
 
-///
-#define SHI_ENABLE_ZERO_LENGTH_STRING_ERROR     1
-#define SHI_ENABLE_STACKOVERFLOW_ERROR          1
-#define SHI_ENABLE_UNDEFINED_WORD_ERROR         1
-#define SHI_ENABLE_REDEFINED_WORD_ERROR         1
-#define SHI_ENABLE_INTERPRET_COMPILE_ONLY_ERROR 1
-#define SHI_ENABLE_COMPILE_INTERPRET_ONLY_ERROR 1
-#define SHI_ENABLE_BRANCH_OFFSET_ERROR          1
+/// Enables redefining words
+#define SHI_ENABLE_REDEFINITION  0
 
 // Enable words individually
 // Core words
@@ -64,8 +58,6 @@
 #define SHI_ENABLE_TO_R          1
 #define SHI_ENABLE_Q_DUP         1
 #define SHI_ENABLE_FETCH         1
-#define SHI_ENABLE_ABORT         1
-#define SHI_ENABLE_ABORT_Q       1
 #define SHI_ENABLE_ABS           1
 #define SHI_ENABLE_ALIGN         1
 #define SHI_ENABLE_ALIGNED       1
@@ -113,7 +105,6 @@
 #define SHI_ENABLE_OR            1
 #define SHI_ENABLE_OVER          1
 #define SHI_ENABLE_POSTPONE      1
-#define SHI_ENABLE_QUIT          1
 #define SHI_ENABLE_R_FROM        1
 #define SHI_ENABLE_R_FETCH       1
 #define SHI_ENABLE_RECURSE       1
@@ -143,7 +134,6 @@
 #define SHI_ENABLE_TWO_TO_R      1
 #define SHI_ENABLE_TWO_R_FROM    1
 #define SHI_ENABLE_TWO_R_FETCH   1
-#define SHI_ENABLE_COLON_NONAME  1
 #define SHI_ENABLE_NE            1
 #define SHI_ENABLE_Q_DO          1
 #define SHI_ENABLE_ACTION_OF     1
@@ -151,19 +141,13 @@
 #define SHI_ENABLE_BUFFER_COLON  1
 #define SHI_ENABLE_CASE          1
 #define SHI_ENABLE_COMPILE_COMMA 1
-#define SHI_ENABLE_DEFER         1
-#define SHI_ENABLE_DEFER_STORE   1
-#define SHI_ENABLE_DEFER_FETCH   1
 #define SHI_ENABLE_ENDCASE       1
 #define SHI_ENABLE_ENDOF         1
 #define SHI_ENABLE_ERASE         1
 #define SHI_ENABLE_FALSE         1
 #define SHI_ENABLE_HEX           1
-#define SHI_ENABLE_IS            1
-#define SHI_ENABLE_MARKER        1
 #define SHI_ENABLE_NIP           1
 #define SHI_ENABLE_OF            1
-#define SHI_ENABLE_PAD           1
 #define SHI_ENABLE_PARSE_NAME    1
 #define SHI_ENABLE_PICK          1
 #define SHI_ENABLE_ROLL          1
@@ -175,6 +159,8 @@
 #define SHI_ENABLE_WITHIN        1
 
 // Shi words
+#define SHI_ENABLE_H_STORE       1
+#define SHI_ENABLE_H_FETCH       1
 #define SHI_ENABLE_TO_TEXT_Q     1
 #define SHI_ENABLE_TO_DATA_Q     1
 #define SHI_ENABLE_TO_TEXT       1

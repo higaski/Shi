@@ -121,28 +121,64 @@
 ///   bl_comma->check_done;
 /// }
 /// \enddot
+///
+///
+/// \dot
+/// digraph G {
+///
+///   if[shape=diamond]
+///   else[shape=diamond]
+///   then
+///
+///   if->then[label="true"];
+///   if->else[label="false"];
+///   else->then;
+///
+/// }
+/// \enddot
+///
+/// if...else...then
+///
+/// case...of...endof...endcase
+///
+/// begin...until
+/// begin...while...repeat
+///
+/// do...loop/+loop
+/// do...if...leave then...loop/+loop
+///
+/// if -> ( -- orig1 )
+/// else -> ( orig1 -- orig2 )
+/// then -> ( orig1 | orig2 -- )
+///
+/// begin -> ( -- dest )
+/// until -> ( dest -- )
+///
+/// begin -> ( -- dest )
+/// while -> ( dest -- orig dest )
+/// repeat -> ( orig dest -- )
+///
+///
+/// Sonderwürschtl:<br>
+/// - else setzt das unterste bit von orig damit then unterscheiden kann obs an
+///   conditional oder unconditional branch auflösen muss
+/// - leave und endof haben zählvariablen für ihr "lvl", des is notwendig damit
+///   die csp, routine nur die sprünge schreibt die fürs aktuelle nest-lvl
+///   notwendig sind. Das heißt von jetzt an kann ma leave und endof beliebig
+///   nesten... (zumindest bis 128 lvls tief :D )
+///
+///
+/// Ausserdem dass es nur mehr 1x conditional branch funktion gibt und das
+/// "template" fürn OPCODE vorher am stack landet
+///
+///
+// clang-format off
+/// also sowas geht nicht<br>
+/// : do ... if ... leave ... then ... do ... loop ... loop ;<br>
+/// weil das 1.loop leave auflösen würde und ned des 2.
+///
+/// und sowas auch nicht<br>
+/// : case ... of ... endof ... of ... case ... of ... endof ... endcase ... endof ... endcase ;<br>
+/// weil des 1.endcase des allererste endof auflösen würde
+// clang-format on
 
-//*/mod
-/// mod
-// abort
-// fill
-// fm/mod
-// immediate
-// m*
-// move
-// quit
-// s>d
-// sign
-// sm/rem
-// um*
-// um/mod
-//
-//:noname weils wohl auch ohne defer nutzbar is?
-//?do
-// action_of...? wtf macht des
-// buffer: super wichtig!!!
-// erase
-// is ... ?
-// marker (klingt mega hart)
-// value
-// within

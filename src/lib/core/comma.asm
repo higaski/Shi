@@ -346,6 +346,7 @@ word_comma:
         b 6f                            @ Goto return
 
 @ Find
+.if ENABLE_REDEFINITION == 0
 1:  TWO_DUP                             @ ( -- token-addr token-u token-addr token-u )
     bl find                             @ ( -- token-addr 0 | xt flags )
     // TODO maybe write a "create" which doesn't check for redefinition?
@@ -354,18 +355,16 @@ word_comma:
         TWO_DROP                        @ ( xt flags -- )
         TWO_DROP                        @ ( token-addr token-u -- )
         PRINT "word_comma redefined word"
-        // TODO What should we do in case a word gets redefined?
-        // Maybe src should be dropped, so that when we leave create we also
-        // leave evaluate?
         b 6f                            @ Goto return
+1:  TWO_DROP                            @ ( token-addr 0 -- )
+.endif
 
 @ Write link
 @ r0    data_begin address
 @ r1    data_begin
 @ r2    link address
 @ r3    link
-1:  TWO_DROP                            @ ( token-addr 0 -- )
-    ldr r0, =data_begin
+1:  ldr r0, =data_begin
     ldr r1, [r0]
     ldr r2, =link
     ldr r3, [r2]
