@@ -189,7 +189,7 @@ void_fp shi_tick_asm(char const* str, size_t len);
 
 /// Add number to the top of the stack
 ///
-/// \param  t   Number to push
+/// \param  t Number to push
 static inline void shi_push_number(int32_t t) {
   asm volatile("ldr r0, [%0] \n"
                "str %1, [r0, #-4]! \n"
@@ -201,7 +201,7 @@ static inline void shi_push_number(int32_t t) {
 
 /// Add double-cell number to the top of the stack
 ///
-/// \param  t   Double-cell number to push
+/// \param  t Double-cell number to push
 static inline void shi_push_double(int64_t t) {
   asm volatile("ldr r0, [%0] \n"
                "ldrd r1, r2, [%1] \n"
@@ -214,8 +214,8 @@ static inline void shi_push_double(int64_t t) {
 
 /// Add user-defined type to the top of the stack
 ///
-/// \param  t   Pointer to user-defined type
-/// \param  n   Size of user-defined type
+/// \param  t Pointer to user-defined type
+/// \param  n Size of user-defined type
 static inline void shi_push_struct(void* t, size_t n) {
   asm volatile("ldr r0, [%0] \n"
 
@@ -276,8 +276,8 @@ static inline int64_t shi_pop_double() {
 
 /// Remove user-defined type from the top of the stack
 ///
-/// \param  t   Pointer to user-defined type
-/// \param  n   Size of user-defined type
+/// \param  t Pointer to user-defined type
+/// \param  n Size of user-defined type
 static inline void shi_pop_struct(void* t, size_t n) {
   asm volatile("ldr r0, [%0] \n"
 
@@ -383,7 +383,7 @@ void shi_init_asm(Shi_init*);
 
 /// Initialize
 ///
-/// \param  s   Init struct
+/// \param  s Init struct
 static inline void shi_init(Shi_init s) {
   shi_init_asm(&s);
 }
@@ -453,7 +453,7 @@ static inline Word shi_tick_len(char const* str, size_t len) {
 
 /// Call word
 ///
-/// \param  w   Word
+/// \param  w Word
 static inline void shi_word(Word w) {
   if (w.fp)
     asm volatile("ldrd r7, r8, [%0] \n"
@@ -520,8 +520,8 @@ inline size_t size() {
 
 /// Add element to the top of the stack
 ///
-/// \tparam T   Type of element to push
-/// \param  t   Value to push
+/// \tparam T Type of element to push
+/// \param  t Value to push
 template<typename T>
 void push(T&& t) {
   using std::addressof, std::is_arithmetic_v, std::is_pointer_v;
@@ -585,7 +585,7 @@ void push(Ts&&... ts) {
 
 /// Remove element from the top of the stack
 ///
-/// \tparam T   Type of element to pop
+/// \tparam T Type of element to pop
 /// \return Value
 template<typename T = int32_t>
 T pop() {
@@ -769,8 +769,8 @@ struct Word {
 
   /// Call word
   ///
-  /// \tparam   Ts  Types of arguments
-  /// \param    ts  Arguments
+  /// \tparam Ts  Types of arguments
+  /// \param  ts  Arguments
   template<typename... Ts>
   Word& operator()(Ts&&... ts) {
     using std::forward;

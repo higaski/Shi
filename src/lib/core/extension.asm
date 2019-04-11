@@ -32,6 +32,20 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "h@", h_fetch
 .endif
 
 @ ------------------------------------------------------------------------------
+@ inline
+@ ( -- )
+@ Make the most recent definition an inline word.
+@ ------------------------------------------------------------------------------
+.if ENABLE_INLINE == 1
+WORD FLAG_INTERPRET_COMPILE, "inline"
+    ldr r0, =link
+    ldr r0, [r0]
+    ldrb r1, [r0, #4]
+    ands r1, #FLAG_INLINE
+    strb r1, [r0, #4]
+.endif
+
+@ ------------------------------------------------------------------------------
 @ >text?
 @ ( -- true | false )
 @ Return true if compiler is currently compiling to text. Return false if
@@ -66,7 +80,7 @@ WORD FLAG_INTERPRET, ">data?", to_data_q
 @ ------------------------------------------------------------------------------
 @ >text
 @ ( -- )
-@
+@ Compile to text.
 @ ------------------------------------------------------------------------------
 .if ENABLE_TO_TEXT == 1
 WORD FLAG_INTERPRET, ">text", to_text
@@ -83,7 +97,7 @@ WORD FLAG_INTERPRET, ">text", to_text
 @ ------------------------------------------------------------------------------
 @ >data
 @ ( -- )
-@
+@ Compile to data.
 @ ------------------------------------------------------------------------------
 .if ENABLE_TO_DATA == 1
 WORD FLAG_INTERPRET, ">data", to_data
@@ -98,17 +112,17 @@ WORD FLAG_INTERPRET, ">data", to_data
     ldr r0, [r0]
     cmp r0, #0
     beq 6f                              @ Goto return
-    ldr r1, =shi_dict_begin
-    ldr r2, =link
-    movs r3, #0
-1:  ldr r2, [r2]
-    cmp r2, r0
-    blo 1f
-        cmp r2, r1
-        beq 1f
-            push {r2}
-            adds r3, #1
-            b 1b
+        ldr r1, =shi_dict_begin
+        ldr r2, =link
+        movs r3, #0
+1:      ldr r2, [r2]
+        cmp r2, r0
+        blo 1f
+            cmp r2, r1
+            beq 1f
+                push {r2}
+                adds r3, #1
+                b 1b
 
 @ Return if no links were found
 1:  cmp r3, #0

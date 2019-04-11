@@ -104,7 +104,8 @@ $(document).ready(function(){initNavTree('page_stacks.html','');});
 <p><b>Control-flow-stack</b><br />
  Usually control-flow words have a 1:1 relation between the word that creates a branch and the word that has to resolve it. <a href="https://forth-standard.org/">forth-standard.org</a> offers a very nice visual representation of control-flow words <a href="https://forth-standard.org/standard/rationale">here</a>. The problem is that there are two exceptions from this 1:1 relation which are <a href="https://forth-standard.org/standard/core/ENDOF">endof</a> and <a href="https://forth-standard.org/standard/core/LEAVE">leave</a>. Those words can nest an arbitrary number of times and even mix with other control-flow words. To avoid any clashes <a href="https://forth-standard.org/standard/core/ENDOF">endof</a> and <a href="https://forth-standard.org/standard/core/LEAVE">leave</a> push their control-flow values by using the control-stack-pointer. <em>csp</em> touches the same physical memory as <em>dsp</em> but pushes from stack begin towards the end. Since <em>csp</em> is less commonly used it's only stored as variable.</p>
 <p><b>Return-stack</b><br />
- The return-stack is implicit and shared with the main application. This means that the return-stack is basically whatever the stack-pointer of the ARMv7-M architecture points to. Use of return-stack is generally discouraged as incautious use can not only crash Shi but the entire system. </p>
+ The return-stack is implicit and shared with the main application. This means that the return-stack is basically whatever the stack-pointer of the ARMv7-M architecture points to. Use of return-stack is generally discouraged as incautious use can not only crash Shi but the entire system.</p>
+<dl class="section note"><dt>Note</dt><dd>All stacks are 32bit wide which is the native word size on ARMv7-M. </dd></dl>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->

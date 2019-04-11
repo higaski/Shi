@@ -1224,9 +1224,20 @@ WORD FLAG_COMPILE_IMMEDIATE, "if"
 .ltorg
 .endif
 
-// TODO
+@ ------------------------------------------------------------------------------
+@ immediate
+@ ( -- )
+@ Make the most recent definition an immediate word. An ambiguous condition
+@ exists if the most recent definition does not have a name or if it was defined
+@ as a synonym.
+@ ------------------------------------------------------------------------------
 .if ENABLE_IMMEDIATE == 1
-WORD FLAG_SKIP, "immediate"
+WORD FLAG_INTERPRET_COMPILE, "immediate"
+    ldr r0, =link
+    ldr r0, [r0]
+    ldrb r1, [r0, #4]
+    ands r1, #FLAG_IMMEDIATE
+    strb r1, [r0, #4]
 .endif
 
 @ ------------------------------------------------------------------------------

@@ -89,8 +89,13 @@ $(document).ready(function(){initNavTree('page_extensions.html','');});
 <div class="title">Extensions </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>TODO </p>
-</div></div><!-- PageDoc -->
+<div class="textblock"><p>Shi adds a couple of non-ANS words to Forth.</p>
+<p><b>h!</b><br />
+ Like <a href="https://forth-standard.org/standard/core/Store">!</a> but stores a halfword (16bit value). </p><div class="fragment"><div class="line"><span class="stringliteral">&quot;42 var h!&quot;</span>_s;</div></div><!-- fragment --><p><b>h@</b><br />
+ Like <a href="https://forth-standard.org/standard/core/Fetch">@</a> but fetches a halfword (16bit value). </p><div class="fragment"><div class="line"><span class="stringliteral">&quot;var h@&quot;</span>_s;</div></div><!-- fragment --><p><b>inline</b><br />
+ Make the most recent definition an inline word. </p><div class="fragment"><div class="line"><span class="stringliteral">&quot;: add + inline ;&quot;</span>_s;</div></div><!-- fragment --><p><b>&gt;text?, &gt;data?</b><br />
+ </p><div class="fragment"><div class="line"><span class="comment">//</span></div></div><!-- fragment --><p><b>&gt;text, &gt;data</b><br />
+ </p><div class="fragment"><div class="line"><span class="comment">//</span></div></div><!-- fragment --> </div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

@@ -1,15 +1,16 @@
 # ![](doc/img/logo.png)
 Shi is a fast and tiny **embeddable** [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) implementation written for the [Thumb-2 ISA](https://infocenter.arm.com/help/topic/com.arm.doc.qrc0001m/QRC0001_UAL.pdf) (ARMv7-M and newer). It currently fits into less than **7kB** of flash and **320B** of ram. Some of it's features are
-* Single header interface to C/C++
+* Static library with single header interface to C/C++
 * Compilation to flash
 * Optimizations such as inlining and constant folding
 
 # Quick'n'dirty
+Here is a sneak peak into some of Shi's features. For details on how the extensions work and some insights on Shi's iternals please refer to the [docs](http://www.higaski.at/projects/Shi/doc/html/index.html).
 
 ### C++
-```c++
+```cpp
 #define FLASH_END 0x080FFFFFUL
-alignas(4) std::array<uint8_t, 16 * 1024> data{};
+alignas(4) std::array<uint8_t, 16 * 1024> data;
 
 void quick_n_dirty() {
   using namespace shi::literals;

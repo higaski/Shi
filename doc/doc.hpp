@@ -78,11 +78,11 @@
 /// | \subpage page_stacks              | Handling of data-, control-flow- and return-stack |
 /// | \subpage page_variables           | Internally used variables                         |
 /// | \subpage page_dictionary          | Layout of words, core- and user dictionary        |
-/// | \subpage page_control_structures  | Control structures                                |
 /// | \subpage page_extensions          | Extensions                                        |
 /// | \subpage page_wordlist            | Wordlist                                          |
 /// | \subpage page_ambiguous_condition | Ambiguous conditions                              |
 /// | \subpage page_interpret           | Interpretation loop in detail                     |
+/// | \subpage page_control_structures  | Control structures                                |
 /// | \subpage page_todo                | TODO list                                         |
 // clang-format on
 ///
@@ -157,6 +157,8 @@
 /// means that the return-stack is basically whatever the stack-pointer of the
 /// ARMv7-M architecture points to. Use of return-stack is generally discouraged
 /// as incautious use can not only crash Shi but the entire system.
+///
+/// \note All stacks are 32bit wide which is the native word size on ARMv7-M.
 ///
 ///
 /// \page page_variables Variables
@@ -531,204 +533,235 @@
 ///
 ///
 /// \page page_extensions Extensions
-/// TODO
+/// Shi adds a couple of non-ANS words to Forth.
+///
+/// **h!**<br>
+/// Like [!](https://forth-standard.org/standard/core/Store) but stores a
+/// halfword (16bit value).
+/// ```cpp
+/// "42 var h!"_s;
+/// ```
+///
+/// <b>h@@</b><br>
+/// Like [@@](https://forth-standard.org/standard/core/Fetch) but fetches a
+/// halfword (16bit value).
+/// ```cpp
+/// "var h@"_s;
+/// ```
+///
+/// **inline**<br>
+/// Make the most recent definition an inline word.
+/// ```cpp
+/// ": add + inline ;"_s;
+/// ```
+///
+/// <b>>text?, >data?</b><br>
+/// ```cpp
+/// //
+/// ```
+///
+/// <b>>text, >data</b><br>
+/// ```cpp
+/// //
+/// ```
 ///
 ///
 // clang-format off
 /// \page page_wordlist Wordlist
-/// | Core word set | Description |
-/// | ------------- | ------------- |
-/// | [!](https://forth-standard.org/standard/core/Store)                     | exactly ANS                                         |
-/// | [#](https://forth-standard.org/standard/core/num)                       | unimplemented                                       |
-/// | [#&gt;](https://forth-standard.org/standard/core/num-end)               | unimplemented                                       |
-/// | [#s](https://forth-standard.org/standard/core/numS)                     | unimplemented                                       |
-/// | ['](https://forth-standard.org/standard/core/Tick)                      | exactly ANS                                         |
-/// | [(](https://forth-standard.org/standard/core/p)                         | unimplemented                                       |
-/// | [*](https://forth-standard.org/standard/core/Times)                     | exactly ANS                                         |
-/// | [*&frasl;](https://forth-standard.org/standard/core/TimesDiv)           | exactly ANS                                         |
-/// | [*&frasl;mod](https://forth-standard.org/standard/core/TimesDivMOD)     | TBD                                                 |
-/// | [+](https://forth-standard.org/standard/core/Plus)                      | exactly ANS                                         |
-/// | [+!](https://forth-standard.org/standard/core/PlusStore)                | exactly ANS                                         |
-/// | [+loop](https://forth-standard.org/standard/core/PlusLOOP)              | exactly ANS                                         |
-/// | [,](https://forth-standard.org/standard/core/Comma)                     | exactly ANS                                         |
-/// | [-](https://forth-standard.org/standard/core/Minus)                     | exactly ANS                                         |
-/// | [.](https://forth-standard.org/standard/core/d)                         | unimplemented                                       |
-/// | [.&quot;](https://forth-standard.org/standard/core/Dotq)                | unimplemented                                       |
-/// | [&frasl;](https://forth-standard.org/standard/core/Div)                 | exactly ANS                                         |
-/// | [&frasl;mod](https://forth-standard.org/standard/core/DivMOD)           | TBD                                                 |
-/// | [0&lt;](https://forth-standard.org/standard/core/Zeroless)              | exactly ANS                                         |
-/// | [0=](https://forth-standard.org/standard/core/ZeroEqual)                | exactly ANS                                         |
-/// | [1+](https://forth-standard.org/standard/core/OnePlus)                  | exactly ANS                                         |
-/// | [1-](https://forth-standard.org/standard/core/OneMinus)                 | exactly ANS                                         |
-/// | [2!](https://forth-standard.org/standard/core/TwoStore)                 | exactly ANS                                         |
-/// | [2*](https://forth-standard.org/standard/core/TwoTimes)                 | exactly ANS                                         |
-/// | [2&frasl;](https://forth-standard.org/standard/core/TwoDiv)             | exactly ANS                                         |
-/// | [2@@](https://forth-standard.org/standard/core/TwoFetch)                | exactly ANS                                         |
-/// | [2drop](https://forth-standard.org/standard/core/TwoDROP)               | exactly ANS                                         |
-/// | [2dup](https://forth-standard.org/standard/core/TwoDUP)                 | exactly ANS                                         |
-/// | [2over](https://forth-standard.org/standard/core/TwoOVER)               | exactly ANS                                         |
-/// | [2swap](https://forth-standard.org/standard/core/TwoSWAP)               | exactly ANS                                         |
-/// | [:](https://forth-standard.org/standard/core/Colon)                     | exactly ANS                                         |
-/// | [;](https://forth-standard.org/standard/core/Semi)                      | exactly ANS                                         |
-/// | [&lt;](https://forth-standard.org/standard/core/less)                   | exactly ANS                                         |
-/// | [&lt;#](https://forth-standard.org/standard/core/num-start)             | unimplemented                                       |
-/// | [=](https://forth-standard.org/standard/core/Equal)                     | exactly ANS                                         |
-/// | [&gt;](https://forth-standard.org/standard/core/more)                   | exactly ANS                                         |
-/// | [&gt;body](https://forth-standard.org/standard/core/toBODY)             | exactly ANS                                         |
-/// | [&gt;in](https://forth-standard.org/standard/core/toIN)                 | exactly ANS                                         |
-/// | [&gt;number](https://forth-standard.org/standard/core/toNUMBER)         | unimplemented                                       |
-/// | [&gt;r](https://forth-standard.org/standard/core/toR)                   | exactly ANS                                         |
-/// | [?dup](https://forth-standard.org/standard/core/qDUP)                   | exactly ANS                                         |
-/// | [@@](https://forth-standard.org/standard/core/Fetch)                    | exactly ANS                                         |
-/// | [abort](https://forth-standard.org/standard/core/ABORT)                 | unimplemented                                       |
-/// | [abort&quot;](https://forth-standard.org/standard/core/ABORTq)          | unimplemented                                       |
-/// | [abs](https://forth-standard.org/standard/core/ABS)                     | exactly ANS                                         |
-/// | [accept](https://forth-standard.org/standard/core/ACCEPT)               | unimplemented                                       |
-/// | [align](https://forth-standard.org/standard/core/ALIGN)                 | exactly ANS                                         |
-/// | [aligned](https://forth-standard.org/standard/core/ALIGNED)             | exactly ANS                                         |
-/// | [allot](https://forth-standard.org/standard/core/ALLOT)                 | exactly ANS                                         |
-/// | [and](https://forth-standard.org/standard/core/AND)                     | exactly ANS                                         |
-/// | [base](https://forth-standard.org/standard/core/BASE)                   | exactly ANS                                         |
-/// | [begin](https://forth-standard.org/standard/core/BEGIN)                 | exactly ANS                                         |
-/// | [bl](https://forth-standard.org/standard/core/BL)                       | unimplemented                                       |
-/// | [c!](https://forth-standard.org/standard/core/CStore)                   | exactly ANS                                         |
-/// | [c,](https://forth-standard.org/standard/core/CComma)                   | exactly ANS                                         |
-/// | [c@@](https://forth-standard.org/standard/core/CFetch)                  | exactly ANS                                         |
-/// | [cell+](https://forth-standard.org/standard/core/CELLPlus)              | exactly ANS                                         |
-/// | [cells](https://forth-standard.org/standard/core/CELLS)                 | exactly ANS                                         |
-/// | [char](https://forth-standard.org/standard/core/CHAR)                   | unimplemented                                       |
-/// | [char+](https://forth-standard.org/standard/core/CHARPlus)              | exactly ANS                                         |
-/// | [chars](https://forth-standard.org/standard/core/CHARS)                 | exactly ANS                                         |
-/// | [constant](https://forth-standard.org/standard/core/CONSTANT)           | exactly ANS                                         |
-/// | [count](https://forth-standard.org/standard/core/COUNT)                 | unimplemented                                       |
-/// | [cr](https://forth-standard.org/standard/core/CR)                       | unimplemented                                       |
-/// | [create](https://forth-standard.org/standard/core/CREATE)               | exactly ANS                                         |
-/// | [decimal](https://forth-standard.org/standard/core/DECIMAL)             | exactly ANS                                         |
-/// | [depth](https://forth-standard.org/standard/core/DEPTH)                 | exactly ANS                                         |
-/// | [do](https://forth-standard.org/standard/core/DO)                       | exactly ANS                                         |
-/// | [does&gt;](https://forth-standard.org/standard/core/DOES)               | exactly ANS                                         |
-/// | [drop](https://forth-standard.org/standard/core/DROP)                   | exactly ANS                                         |
-/// | [dup](https://forth-standard.org/standard/core/DUP)                     | exactly ANS                                         |
-/// | [else](https://forth-standard.org/standard/core/ELSE)                   | exactly ANS                                         |
-/// | [emit](https://forth-standard.org/standard/core/EMIT)                   | unimplemented                                       |
-/// | [environment?](https://forth-standard.org/standard/core/ENVIRONMENTq)   | unimplemented                                       |
-/// | [evaluate](https://forth-standard.org/standard/core/EVALUATE)           | unimplemented                                       |
-/// | [execute](https://forth-standard.org/standard/core/EXECUTE)             | exactly ANS                                         |
-/// | [exit](https://forth-standard.org/standard/core/EXIT)                   | exactly ANS                                         |
-/// | [fill](https://forth-standard.org/standard/core/FILL)                   | unimplemented                                       |
-/// | [find](https://forth-standard.org/standard/core/FIND)                   | not ANS (returns xt flags instead of xt 1 or xt -1) |
-/// | [fm&frasl;mod](https://forth-standard.org/standard/core/FMDivMOD)       | TBD                                                 |
-/// | [here](https://forth-standard.org/standard/core/HERE)                   | exactly ANS                                         |
-/// | [hold](https://forth-standard.org/standard/core/HOLD)                   | unimplemented                                       |
-/// | [i](https://forth-standard.org/standard/core/I)                         | exactly ANS                                         |
-/// | [if](https://forth-standard.org/standard/core/IF)                       | exactly ANS                                         |
-/// | [immediate](https://forth-standard.org/standard/core/IMMEDIATE)         | TBD                                                 |
-/// | [invert](https://forth-standard.org/standard/core/INVERT)               | exactly ANS                                         |
-/// | [j](https://forth-standard.org/standard/core/J)                         | exactly ANS                                         |
-/// | [key](https://forth-standard.org/standard/core/KEY)                     | unimplemented                                       |
-/// | [leave](https://forth-standard.org/standard/core/LEAVE)                 | exactly ANS                                         |
-/// | [literal](https://forth-standard.org/standard/core/LITERAL)             | exactly ANS                                         |
-/// | [loop](https://forth-standard.org/standard/core/LOOP)                   | exactly ANS                                         |
-/// | [lshift](https://forth-standard.org/standard/core/LSHIFT)               | exactly ANS                                         |
-/// | [m*](https://forth-standard.org/standard/core/MTimes)                   | TBD                                                 |
-/// | [max](https://forth-standard.org/standard/core/MAX)                     | exactly ANS                                         |
-/// | [min](https://forth-standard.org/standard/core/MIN)                     | exactly ANS                                         |
-/// | [mod](https://forth-standard.org/standard/core/MOD)                     | exactly ANS                                         |
-/// | [move](https://forth-standard.org/standard/core/MOVE)                   | TBD                                                 |
-/// | [negate](https://forth-standard.org/standard/core/NEGATE)               | exactly ANS                                         |
-/// | [or](https://forth-standard.org/standard/core/OR)                       | exactly ANS                                         |
-/// | [over](https://forth-standard.org/standard/core/OVER)                   | exactly ANS                                         |
-/// | [postpone](https://forth-standard.org/standard/core/POSTPONE)           | exactly ANS                                         |
-/// | [quit](https://forth-standard.org/standard/core/QUIT)                   | unimplemented                                       |
-/// | [r&gt;](https://forth-standard.org/standard/core/Rfrom)                 | exactly ANS                                         |
-/// | [r@@](https://forth-standard.org/standard/core/RFetch)                  | exactly ANS                                         |
-/// | [recurse](https://forth-standard.org/standard/core/RECURSE)             | exactly ANS                                         |
-/// | [repeat](https://forth-standard.org/standard/core/REPEAT)               | exactly ANS                                         |
-/// | [rot](https://forth-standard.org/standard/core/ROT)                     | exactly ANS                                         |
-/// | [rshift](https://forth-standard.org/standard/core/RSHIFT)               | exactly ANS                                         |
-/// | [s&quot;](https://forth-standard.org/standard/core/Sq)                  | unimplemented                                       |
-/// | [s&gt;d](https://forth-standard.org/standard/core/StoD)                 | TBD                                                 |
-/// | [sign](https://forth-standard.org/standard/core/SIGN)                   | TBD                                                 |
-/// | [sm&frasl;rem](https://forth-standard.org/standard/core/SMDivREM)       | TBD                                                 |
-/// | [source](https://forth-standard.org/standard/core/SOURCE)               | exactly ANS                                         |
-/// | [space](https://forth-standard.org/standard/core/SPACE)                 | unimplemented                                       |
-/// | [spaces](https://forth-standard.org/standard/core/SPACES)               | unimplemented                                       |
-/// | [state](https://forth-standard.org/standard/core/STATE)                 | exactly ANS                                         |
-/// | [swap](https://forth-standard.org/standard/core/SWAP)                   | exactly ANS                                         |
-/// | [then](https://forth-standard.org/standard/core/THEN)                   | exactly ANS                                         |
-/// | [type](https://forth-standard.org/standard/core/TYPE)                   | unimplemented                                       |
-/// | [u.](https://forth-standard.org/standard/core/Ud)                       | unimplemented                                       |
-/// | [u&lt;](https://forth-standard.org/standard/core/Uless)                 | exactly ANS                                         |
-/// | [um*](https://forth-standard.org/standard/core/UMTimes)                 | TBD                                                 |
-/// | [um&frasl;mod](https://forth-standard.org/standard/core/UMDivMOD)       | TBD                                                 |
-/// | [unloop](https://forth-standard.org/standard/core/UNLOOP)               | exactly ANS                                         |
-/// | [until](https://forth-standard.org/standard/core/UNTIL)                 | exactly ANS                                         |
-/// | [variable](https://forth-standard.org/standard/core/VARIABLE)           | exactly ANS                                         |
-/// | [while](https://forth-standard.org/standard/core/WHILE)                 | exactly ANS                                         |
-/// | [word](https://forth-standard.org/standard/core/WORD)                   | obsolete                                            |
-/// | [xor](https://forth-standard.org/standard/core/XOR)                     | exactly ANS                                         |
-/// | [\[](https://forth-standard.org/standard/core/Bracket)                  | exactly ANS                                         |
-/// | [\['\]](https://forth-standard.org/standard/core/BracketTick)           | exactly ANS                                         |
-/// | [\[char\]](https://forth-standard.org/standard/core/BracketCHAR)        | unimplemented                                       |
-/// | [\]](https://forth-standard.org/standard/core/right-bracket)            | exactly ANS                                         |
-/// | [.(](https://forth-standard.org/standard/core/Dotp)                     | unimplemented                                       |
-/// | [.r](https://forth-standard.org/standard/core/DotR)                     | unimplemented                                       |
-/// | [0&lt;&gt;](https://forth-standard.org/standard/core/Zerone)            | exactly ANS                                         |
-/// | [0&gt;](https://forth-standard.org/standard/core/Zeromore)              | exactly ANS                                         |
-/// | [2&gt;r](https://forth-standard.org/standard/core/TwotoR)               | exactly ANS                                         |
-/// | [2r&gt;](https://forth-standard.org/standard/core/TwoRfrom)             | exactly ANS                                         |
-/// | [2r@@](https://forth-standard.org/standard/core/TwoRFetch)              | exactly ANS                                         |
-/// | [:noname](https://forth-standard.org/standard/core/ColonNONAME)         | unimplemented                                       |
-/// | [&lt;&gt;](https://forth-standard.org/standard/core/ne)                 | exactly ANS                                         |
-/// | [?do](https://forth-standard.org/standard/core/qDO)                     | TBD                                                 |
-/// | [action-of](https://forth-standard.org/standard/core/ACTION-OF)         | TBD                                                 |
-/// | [again](https://forth-standard.org/standard/core/AGAIN)                 | exactly ANS                                         |
-/// | [buffer:](https://forth-standard.org/standard/core/BUFFERColon)         | TBD                                                 |
-/// | [c&quot;](https://forth-standard.org/standard/core/Cq)                  | unimplemented                                       |
-/// | [case](https://forth-standard.org/standard/core/CASE)                   | exactly ANS                                         |
-/// | [compile,](https://forth-standard.org/standard/core/COMPILEComma)       | exactly ANS                                         |
-/// | [defer](https://forth-standard.org/standard/core/DEFER)                 | unimplemented                                       |
-/// | [defer!](https://forth-standard.org/standard/core/DEFERStore)           | unimplemented                                       |
-/// | [defer@@](https://forth-standard.org/standard/core/DEFERFetch)          | unimplemented                                       |
-/// | [endcase](https://forth-standard.org/standard/core/ENDCASE)             | exactly ANS                                         |
-/// | [endof](https://forth-standard.org/standard/core/ENDOF)                 | exactly ANS                                         |
-/// | [erase](https://forth-standard.org/standard/core/ERASE)                 | TBD                                                 |
-/// | [false](https://forth-standard.org/standard/core/FALSE)                 | exactly ANS                                         |
-/// | [hex](https://forth-standard.org/standard/core/HEX)                     | exactly ANS                                         |
-/// | [holds](https://forth-standard.org/standard/core/HOLDS)                 | unimplemented                                       |
-/// | [is](https://forth-standard.org/standard/core/IS)                       | unimplemented                                       |
-/// | [marker](https://forth-standard.org/standard/core/MARKER)               | unimplemented                                       |
-/// | [nip](https://forth-standard.org/standard/core/NIP)                     | exactly ANS                                         |
-/// | [of](https://forth-standard.org/standard/core/OF)                       | exactly ANS                                         |
-/// | [pad](https://forth-standard.org/standard/core/PAD)                     | unimplemented                                       |
-/// | [parse](https://forth-standard.org/standard/core/PARSE)                 | obsolete                                            |
-/// | [parse-name](https://forth-standard.org/standard/core/PARSE-NAME)       | exactly ANS                                         |
-/// | [pick](https://forth-standard.org/standard/core/PICK)                   | exactly ANS                                         |
-/// | [refill](https://forth-standard.org/standard/core/REFILL)               | unimplemented                                       |
-/// | [restore-input](https://forth-standard.org/standard/core/RESTORE-INPUT) | unimplemented                                       |
-/// | [roll](https://forth-standard.org/standard/core/ROLL)                   | exactly ANS                                         |
-/// | [s\&quot;](https://forth-standard.org/standard/core/Seq)                | unimplemented                                       |
-/// | [save-input](https://forth-standard.org/standard/core/SAVE-INPUT)       | unimplemented                                       |
-/// | [source-id](https://forth-standard.org/standard/core/SOURCE-ID)         | unimplemented                                       |
-/// | [to](https://forth-standard.org/standard/core/TO)                       | unimplemented                                       |
-/// | [true](https://forth-standard.org/standard/core/TRUE)                   | exactly ANS                                         |
-/// | [tuck](https://forth-standard.org/standard/core/TUCK)                   | exactly ANS                                         |
-/// | [u.r](https://forth-standard.org/standard/core/UDotR)                   | unimplemented                                       |
-/// | [u&gt;](https://forth-standard.org/standard/core/Umore)                 | exactly ANS                                         |
-/// | [unused](https://forth-standard.org/standard/core/UNUSED)               | exactly ANS                                         |
-/// | [value](https://forth-standard.org/standard/core/VALUE)                 | TBD                                                 |
-/// | [within](https://forth-standard.org/standard/core/WITHIN)               | TBD                                                 |
-/// | [\[compile\]](https://forth-standard.org/standard/core/BracketCOMPILE)  | obsolete                                            |
-/// | <a href="https://forth-standard.org/standard/core/bs"> \ </a>           | unimplemented                                       |
+/// | Core word set                                                           | Description                                           |
+/// | ----------------------------------------------------------------------- | ----------------------------------------------------- |
+/// | [!](https://forth-standard.org/standard/core/Store)                     | exactly ANS                                           |
+/// | [#](https://forth-standard.org/standard/core/num)                       | unimplemented                                         |
+/// | [#&gt;](https://forth-standard.org/standard/core/num-end)               | unimplemented                                         |
+/// | [#s](https://forth-standard.org/standard/core/numS)                     | unimplemented                                         |
+/// | ['](https://forth-standard.org/standard/core/Tick)                      | exactly ANS                                           |
+/// | [(](https://forth-standard.org/standard/core/p)                         | unimplemented                                         |
+/// | [*](https://forth-standard.org/standard/core/Times)                     | exactly ANS                                           |
+/// | [*&frasl;](https://forth-standard.org/standard/core/TimesDiv)           | exactly ANS                                           |
+/// | [*&frasl;mod](https://forth-standard.org/standard/core/TimesDivMOD)     | TBD                                                   |
+/// | [+](https://forth-standard.org/standard/core/Plus)                      | exactly ANS                                           |
+/// | [+!](https://forth-standard.org/standard/core/PlusStore)                | exactly ANS                                           |
+/// | [+loop](https://forth-standard.org/standard/core/PlusLOOP)              | exactly ANS                                           |
+/// | [,](https://forth-standard.org/standard/core/Comma)                     | exactly ANS                                           |
+/// | [-](https://forth-standard.org/standard/core/Minus)                     | exactly ANS                                           |
+/// | [.](https://forth-standard.org/standard/core/d)                         | unimplemented                                         |
+/// | [.&quot;](https://forth-standard.org/standard/core/Dotq)                | unimplemented                                         |
+/// | [&frasl;](https://forth-standard.org/standard/core/Div)                 | exactly ANS                                           |
+/// | [&frasl;mod](https://forth-standard.org/standard/core/DivMOD)           | TBD                                                   |
+/// | [0&lt;](https://forth-standard.org/standard/core/Zeroless)              | exactly ANS                                           |
+/// | [0=](https://forth-standard.org/standard/core/ZeroEqual)                | exactly ANS                                           |
+/// | [1+](https://forth-standard.org/standard/core/OnePlus)                  | exactly ANS                                           |
+/// | [1-](https://forth-standard.org/standard/core/OneMinus)                 | exactly ANS                                           |
+/// | [2!](https://forth-standard.org/standard/core/TwoStore)                 | exactly ANS                                           |
+/// | [2*](https://forth-standard.org/standard/core/TwoTimes)                 | exactly ANS                                           |
+/// | [2&frasl;](https://forth-standard.org/standard/core/TwoDiv)             | exactly ANS                                           |
+/// | [2@@](https://forth-standard.org/standard/core/TwoFetch)                | exactly ANS                                           |
+/// | [2drop](https://forth-standard.org/standard/core/TwoDROP)               | exactly ANS                                           |
+/// | [2dup](https://forth-standard.org/standard/core/TwoDUP)                 | exactly ANS                                           |
+/// | [2over](https://forth-standard.org/standard/core/TwoOVER)               | exactly ANS                                           |
+/// | [2swap](https://forth-standard.org/standard/core/TwoSWAP)               | exactly ANS                                           |
+/// | [:](https://forth-standard.org/standard/core/Colon)                     | exactly ANS                                           |
+/// | [;](https://forth-standard.org/standard/core/Semi)                      | exactly ANS                                           |
+/// | [&lt;](https://forth-standard.org/standard/core/less)                   | exactly ANS                                           |
+/// | [&lt;#](https://forth-standard.org/standard/core/num-start)             | unimplemented                                         |
+/// | [=](https://forth-standard.org/standard/core/Equal)                     | exactly ANS                                           |
+/// | [&gt;](https://forth-standard.org/standard/core/more)                   | exactly ANS                                           |
+/// | [&gt;body](https://forth-standard.org/standard/core/toBODY)             | exactly ANS                                           |
+/// | [&gt;in](https://forth-standard.org/standard/core/toIN)                 | exactly ANS                                           |
+/// | [&gt;number](https://forth-standard.org/standard/core/toNUMBER)         | unimplemented                                         |
+/// | [&gt;r](https://forth-standard.org/standard/core/toR)                   | exactly ANS                                           |
+/// | [?dup](https://forth-standard.org/standard/core/qDUP)                   | exactly ANS                                           |
+/// | [@@](https://forth-standard.org/standard/core/Fetch)                    | exactly ANS                                           |
+/// | [abort](https://forth-standard.org/standard/core/ABORT)                 | unimplemented                                         |
+/// | [abort&quot;](https://forth-standard.org/standard/core/ABORTq)          | unimplemented                                         |
+/// | [abs](https://forth-standard.org/standard/core/ABS)                     | exactly ANS                                           |
+/// | [accept](https://forth-standard.org/standard/core/ACCEPT)               | unimplemented                                         |
+/// | [align](https://forth-standard.org/standard/core/ALIGN)                 | exactly ANS                                           |
+/// | [aligned](https://forth-standard.org/standard/core/ALIGNED)             | exactly ANS                                           |
+/// | [allot](https://forth-standard.org/standard/core/ALLOT)                 | exactly ANS                                           |
+/// | [and](https://forth-standard.org/standard/core/AND)                     | exactly ANS                                           |
+/// | [base](https://forth-standard.org/standard/core/BASE)                   | exactly ANS                                           |
+/// | [begin](https://forth-standard.org/standard/core/BEGIN)                 | exactly ANS                                           |
+/// | [bl](https://forth-standard.org/standard/core/BL)                       | unimplemented                                         |
+/// | [c!](https://forth-standard.org/standard/core/CStore)                   | exactly ANS                                           |
+/// | [c,](https://forth-standard.org/standard/core/CComma)                   | exactly ANS                                           |
+/// | [c@@](https://forth-standard.org/standard/core/CFetch)                  | exactly ANS                                           |
+/// | [cell+](https://forth-standard.org/standard/core/CELLPlus)              | exactly ANS                                           |
+/// | [cells](https://forth-standard.org/standard/core/CELLS)                 | exactly ANS                                           |
+/// | [char](https://forth-standard.org/standard/core/CHAR)                   | unimplemented                                         |
+/// | [char+](https://forth-standard.org/standard/core/CHARPlus)              | exactly ANS                                           |
+/// | [chars](https://forth-standard.org/standard/core/CHARS)                 | exactly ANS                                           |
+/// | [constant](https://forth-standard.org/standard/core/CONSTANT)           | exactly ANS                                           |
+/// | [count](https://forth-standard.org/standard/core/COUNT)                 | unimplemented                                         |
+/// | [cr](https://forth-standard.org/standard/core/CR)                       | unimplemented                                         |
+/// | [create](https://forth-standard.org/standard/core/CREATE)               | exactly ANS                                           |
+/// | [decimal](https://forth-standard.org/standard/core/DECIMAL)             | exactly ANS                                           |
+/// | [depth](https://forth-standard.org/standard/core/DEPTH)                 | exactly ANS                                           |
+/// | [do](https://forth-standard.org/standard/core/DO)                       | exactly ANS                                           |
+/// | [does&gt;](https://forth-standard.org/standard/core/DOES)               | exactly ANS                                           |
+/// | [drop](https://forth-standard.org/standard/core/DROP)                   | exactly ANS                                           |
+/// | [dup](https://forth-standard.org/standard/core/DUP)                     | exactly ANS                                           |
+/// | [else](https://forth-standard.org/standard/core/ELSE)                   | exactly ANS                                           |
+/// | [emit](https://forth-standard.org/standard/core/EMIT)                   | unimplemented                                         |
+/// | [environment?](https://forth-standard.org/standard/core/ENVIRONMENTq)   | unimplemented                                         |
+/// | [evaluate](https://forth-standard.org/standard/core/EVALUATE)           | unimplemented                                         |
+/// | [execute](https://forth-standard.org/standard/core/EXECUTE)             | exactly ANS                                           |
+/// | [exit](https://forth-standard.org/standard/core/EXIT)                   | exactly ANS                                           |
+/// | [fill](https://forth-standard.org/standard/core/FILL)                   | unimplemented                                         |
+/// | [find](https://forth-standard.org/standard/core/FIND)                   | not ANS ( c-addr -- c-addr 0 \| xt flags )            |
+/// | [fm&frasl;mod](https://forth-standard.org/standard/core/FMDivMOD)       | TBD                                                   |
+/// | [here](https://forth-standard.org/standard/core/HERE)                   | exactly ANS                                           |
+/// | [hold](https://forth-standard.org/standard/core/HOLD)                   | unimplemented                                         |
+/// | [i](https://forth-standard.org/standard/core/I)                         | exactly ANS                                           |
+/// | [if](https://forth-standard.org/standard/core/IF)                       | exactly ANS                                           |
+/// | [immediate](https://forth-standard.org/standard/core/IMMEDIATE)         | exactly ANS                                           |
+/// | [invert](https://forth-standard.org/standard/core/INVERT)               | exactly ANS                                           |
+/// | [j](https://forth-standard.org/standard/core/J)                         | exactly ANS                                           |
+/// | [key](https://forth-standard.org/standard/core/KEY)                     | unimplemented                                         |
+/// | [leave](https://forth-standard.org/standard/core/LEAVE)                 | exactly ANS                                           |
+/// | [literal](https://forth-standard.org/standard/core/LITERAL)             | exactly ANS                                           |
+/// | [loop](https://forth-standard.org/standard/core/LOOP)                   | exactly ANS                                           |
+/// | [lshift](https://forth-standard.org/standard/core/LSHIFT)               | exactly ANS                                           |
+/// | [m*](https://forth-standard.org/standard/core/MTimes)                   | TBD                                                   |
+/// | [max](https://forth-standard.org/standard/core/MAX)                     | exactly ANS                                           |
+/// | [min](https://forth-standard.org/standard/core/MIN)                     | exactly ANS                                           |
+/// | [mod](https://forth-standard.org/standard/core/MOD)                     | exactly ANS                                           |
+/// | [move](https://forth-standard.org/standard/core/MOVE)                   | TBD                                                   |
+/// | [negate](https://forth-standard.org/standard/core/NEGATE)               | exactly ANS                                           |
+/// | [or](https://forth-standard.org/standard/core/OR)                       | exactly ANS                                           |
+/// | [over](https://forth-standard.org/standard/core/OVER)                   | exactly ANS                                           |
+/// | [postpone](https://forth-standard.org/standard/core/POSTPONE)           | exactly ANS                                           |
+/// | [quit](https://forth-standard.org/standard/core/QUIT)                   | unimplemented                                         |
+/// | [r&gt;](https://forth-standard.org/standard/core/Rfrom)                 | exactly ANS                                           |
+/// | [r@@](https://forth-standard.org/standard/core/RFetch)                  | exactly ANS                                           |
+/// | [recurse](https://forth-standard.org/standard/core/RECURSE)             | exactly ANS                                           |
+/// | [repeat](https://forth-standard.org/standard/core/REPEAT)               | exactly ANS                                           |
+/// | [rot](https://forth-standard.org/standard/core/ROT)                     | exactly ANS                                           |
+/// | [rshift](https://forth-standard.org/standard/core/RSHIFT)               | exactly ANS                                           |
+/// | [s&quot;](https://forth-standard.org/standard/core/Sq)                  | unimplemented                                         |
+/// | [s&gt;d](https://forth-standard.org/standard/core/StoD)                 | TBD                                                   |
+/// | [sign](https://forth-standard.org/standard/core/SIGN)                   | TBD                                                   |
+/// | [sm&frasl;rem](https://forth-standard.org/standard/core/SMDivREM)       | TBD                                                   |
+/// | [source](https://forth-standard.org/standard/core/SOURCE)               | exactly ANS                                           |
+/// | [space](https://forth-standard.org/standard/core/SPACE)                 | unimplemented                                         |
+/// | [spaces](https://forth-standard.org/standard/core/SPACES)               | unimplemented                                         |
+/// | [state](https://forth-standard.org/standard/core/STATE)                 | exactly ANS                                           |
+/// | [swap](https://forth-standard.org/standard/core/SWAP)                   | exactly ANS                                           |
+/// | [then](https://forth-standard.org/standard/core/THEN)                   | exactly ANS                                           |
+/// | [type](https://forth-standard.org/standard/core/TYPE)                   | unimplemented                                         |
+/// | [u.](https://forth-standard.org/standard/core/Ud)                       | unimplemented                                         |
+/// | [u&lt;](https://forth-standard.org/standard/core/Uless)                 | exactly ANS                                           |
+/// | [um*](https://forth-standard.org/standard/core/UMTimes)                 | TBD                                                   |
+/// | [um&frasl;mod](https://forth-standard.org/standard/core/UMDivMOD)       | TBD                                                   |
+/// | [unloop](https://forth-standard.org/standard/core/UNLOOP)               | exactly ANS                                           |
+/// | [until](https://forth-standard.org/standard/core/UNTIL)                 | exactly ANS                                           |
+/// | [variable](https://forth-standard.org/standard/core/VARIABLE)           | exactly ANS                                           |
+/// | [while](https://forth-standard.org/standard/core/WHILE)                 | exactly ANS                                           |
+/// | [word](https://forth-standard.org/standard/core/WORD)                   | obsolete                                              |
+/// | [xor](https://forth-standard.org/standard/core/XOR)                     | exactly ANS                                           |
+/// | [\[](https://forth-standard.org/standard/core/Bracket)                  | exactly ANS                                           |
+/// | [\['\]](https://forth-standard.org/standard/core/BracketTick)           | exactly ANS                                           |
+/// | [\[char\]](https://forth-standard.org/standard/core/BracketCHAR)        | unimplemented                                         |
+/// | [\]](https://forth-standard.org/standard/core/right-bracket)            | exactly ANS                                           |
+/// | [.(](https://forth-standard.org/standard/core/Dotp)                     | unimplemented                                         |
+/// | [.r](https://forth-standard.org/standard/core/DotR)                     | unimplemented                                         |
+/// | [0&lt;&gt;](https://forth-standard.org/standard/core/Zerone)            | exactly ANS                                           |
+/// | [0&gt;](https://forth-standard.org/standard/core/Zeromore)              | exactly ANS                                           |
+/// | [2&gt;r](https://forth-standard.org/standard/core/TwotoR)               | exactly ANS                                           |
+/// | [2r&gt;](https://forth-standard.org/standard/core/TwoRfrom)             | exactly ANS                                           |
+/// | [2r@@](https://forth-standard.org/standard/core/TwoRFetch)              | exactly ANS                                           |
+/// | [:noname](https://forth-standard.org/standard/core/ColonNONAME)         | unimplemented                                         |
+/// | [&lt;&gt;](https://forth-standard.org/standard/core/ne)                 | exactly ANS                                           |
+/// | [?do](https://forth-standard.org/standard/core/qDO)                     | TBD                                                   |
+/// | [action-of](https://forth-standard.org/standard/core/ACTION-OF)         | TBD                                                   |
+/// | [again](https://forth-standard.org/standard/core/AGAIN)                 | exactly ANS                                           |
+/// | [buffer:](https://forth-standard.org/standard/core/BUFFERColon)         | TBD                                                   |
+/// | [c&quot;](https://forth-standard.org/standard/core/Cq)                  | unimplemented                                         |
+/// | [case](https://forth-standard.org/standard/core/CASE)                   | exactly ANS                                           |
+/// | [compile,](https://forth-standard.org/standard/core/COMPILEComma)       | exactly ANS                                           |
+/// | [defer](https://forth-standard.org/standard/core/DEFER)                 | unimplemented                                         |
+/// | [defer!](https://forth-standard.org/standard/core/DEFERStore)           | unimplemented                                         |
+/// | [defer@@](https://forth-standard.org/standard/core/DEFERFetch)          | unimplemented                                         |
+/// | [endcase](https://forth-standard.org/standard/core/ENDCASE)             | exactly ANS                                           |
+/// | [endof](https://forth-standard.org/standard/core/ENDOF)                 | exactly ANS                                           |
+/// | [erase](https://forth-standard.org/standard/core/ERASE)                 | TBD                                                   |
+/// | [false](https://forth-standard.org/standard/core/FALSE)                 | exactly ANS                                           |
+/// | [hex](https://forth-standard.org/standard/core/HEX)                     | exactly ANS                                           |
+/// | [holds](https://forth-standard.org/standard/core/HOLDS)                 | unimplemented                                         |
+/// | [is](https://forth-standard.org/standard/core/IS)                       | unimplemented                                         |
+/// | [marker](https://forth-standard.org/standard/core/MARKER)               | unimplemented                                         |
+/// | [nip](https://forth-standard.org/standard/core/NIP)                     | exactly ANS                                           |
+/// | [of](https://forth-standard.org/standard/core/OF)                       | exactly ANS                                           |
+/// | [pad](https://forth-standard.org/standard/core/PAD)                     | unimplemented                                         |
+/// | [parse](https://forth-standard.org/standard/core/PARSE)                 | obsolete                                              |
+/// | [parse-name](https://forth-standard.org/standard/core/PARSE-NAME)       | exactly ANS                                           |
+/// | [pick](https://forth-standard.org/standard/core/PICK)                   | exactly ANS                                           |
+/// | [refill](https://forth-standard.org/standard/core/REFILL)               | unimplemented                                         |
+/// | [restore-input](https://forth-standard.org/standard/core/RESTORE-INPUT) | unimplemented                                         |
+/// | [roll](https://forth-standard.org/standard/core/ROLL)                   | exactly ANS                                           |
+/// | [s\&quot;](https://forth-standard.org/standard/core/Seq)                | unimplemented                                         |
+/// | [save-input](https://forth-standard.org/standard/core/SAVE-INPUT)       | unimplemented                                         |
+/// | [source-id](https://forth-standard.org/standard/core/SOURCE-ID)         | unimplemented                                         |
+/// | [to](https://forth-standard.org/standard/core/TO)                       | unimplemented                                         |
+/// | [true](https://forth-standard.org/standard/core/TRUE)                   | exactly ANS                                           |
+/// | [tuck](https://forth-standard.org/standard/core/TUCK)                   | exactly ANS                                           |
+/// | [u.r](https://forth-standard.org/standard/core/UDotR)                   | unimplemented                                         |
+/// | [u&gt;](https://forth-standard.org/standard/core/Umore)                 | exactly ANS                                           |
+/// | [unused](https://forth-standard.org/standard/core/UNUSED)               | exactly ANS                                           |
+/// | [value](https://forth-standard.org/standard/core/VALUE)                 | TBD                                                   |
+/// | [within](https://forth-standard.org/standard/core/WITHIN)               | TBD                                                   |
+/// | [\[compile\]](https://forth-standard.org/standard/core/BracketCOMPILE)  | obsolete                                              |
+/// | <a href="https://forth-standard.org/standard/core/bs"> \ </a>           | unimplemented                                         |
 ///
-/// | Shi word set | unimplemented |
-/// | ------------ | ------------- |
-/// | h!           | unimplemented |
-/// | h@           | unimplemented |
-/// | >text?       | unimplemented |
-/// | >data?       | unimplemented |
-/// | >text        | unimplemented |
-/// | >data        | unimplemented |
+/// | Shi word set | Description                                                                                                      |
+/// | ------------ | ---------------------------------------------------------------------------------------------------------------- |
+/// | h!           | Store 16bit value.                                                                                               |
+/// | h@           | Fetch 16bit value.                                                                                               |
+/// | inline       | Make the most recent definition an inline word.                                                                  |
+/// | >text?       | Return true if compiler is currently compiling to text. Return false if compiler is currently compiling to data. |
+/// | >data?       | Return true if compiler is currently compiling to data. Return false if compiler is currently compiling to text. |
+/// | >text        | Compile to text.                                                                                                 |
+/// | >data        | Compile to data.                                                                                                 |
 // clang-format on
 ///
 ///
