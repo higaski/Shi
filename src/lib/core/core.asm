@@ -99,7 +99,7 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_3, "*/", times_div
 .endif
 
 .if ENABLE_TIMES_DIV_MOD == 1
-WORD FLAG_SKIP, "*/mod", times_div_mod
+WORD FLAG_SKIP, "*/mod", times_div_mod  @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -267,7 +267,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "/", div
 .endif
 
 .if ENABLE_DIV_MOD == 1
-WORD FLAG_SKIP, "/mod", div_mod
+WORD FLAG_SKIP, "/mod", div_mod         @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -600,11 +600,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "@", fetch
 .endif
 
 .if ENABLE_ABORT == 1
-WORD FLAG_SKIP, "abort"
-.endif
-
-.if ENABLE_ABORT_Q == 1
-WORD FLAG_SKIP, "abort\"", abort_q
+WORD FLAG_SKIP, "abort"                 @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1150,7 +1146,7 @@ WORD FLAG_INTERPRET_COMPILE, "find"
 .endif
 
 .if ENABLE_FM_DIV_MOD == 1
-WORD FLAG_SKIP, "fm/mod", fm_div_mod
+WORD FLAG_SKIP, "fm/mod", fm_div_mod    @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1230,7 +1226,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "if"
 .endif
 
 .if ENABLE_IMMEDIATE == 1
-WORD FLAG_SKIP, "immediate"
+WORD FLAG_SKIP, "immediate"             @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1587,7 +1583,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "lshift"
 .endif
 
 .if ENABLE_M_TIMES == 1
-WORD FLAG_SKIP, "m*", m_times
+WORD FLAG_SKIP, "m*", m_times           @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1635,7 +1631,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "mod"
 .endif
 
 .if ENABLE_MOVE == 1
-WORD FLAG_SKIP, "move"
+WORD FLAG_SKIP, "move"                  @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1688,7 +1684,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "postpone"
 .endif
 
 .if ENABLE_QUIT == 1
-WORD FLAG_SKIP, "quit"
+WORD FLAG_SKIP, "quit"                  @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1800,15 +1796,15 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "rshift"
 .endif
 
 .if ENABLE_S_TO_D == 1
-WORD FLAG_SKIP, "s>d", s_to_d
+WORD FLAG_SKIP, "s>d", s_to_d           @ TBD
 .endif
 
 .if ENABLE_SIGN == 1
-WORD FLAG_SKIP, "sign"
+WORD FLAG_SKIP, "sign"                  @ TBD
 .endif
 
 .if ENABLE_SM_DIV_REM == 1
-WORD FLAG_SKIP, "sm/rem", sm_div_rem
+WORD FLAG_SKIP, "sm/rem", sm_div_rem    @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1900,11 +1896,11 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "u<", u_less
 .endif
 
 .if ENABLE_UM_TIMES == 1
-WORD FLAG_SKIP, "um*", um_times
+WORD FLAG_SKIP, "um*", um_times         @ TBD
 .endif
 
 .if ENABLE_UM_DIV_MOD == 1
-WORD FLAG_SKIP, "um/mod", um_div_mod
+WORD FLAG_SKIP, "um/mod", um_div_mod    @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -2169,10 +2165,6 @@ WORD FLAG_COMPILE & FLAG_INLINE, "2r@", two_r_fetch
     bx lr
 .endif
 
-.if ENABLE_COLON_NONAME == 1
-WORD FLAG_SKIP, ":noname", colon_noname
-.endif
-
 @ ------------------------------------------------------------------------------
 @ <>
 @ ( x1 x2 -- flag )
@@ -2189,11 +2181,11 @@ WORD FLAG_INTERPRET_COMPILE & FOLDS_2, "<>", ne
 .endif
 
 .if ENABLE_Q_DO == 1
-WORD FLAG_SKIP, "?do", q_do
+WORD FLAG_SKIP, "?do", q_do             @ TBD
 .endif
 
 .if ENABLE_ACTION_OF == 1
-WORD FLAG_SKIP, "action-of", action_of
+WORD FLAG_SKIP, "action-of", action_of  @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -2220,7 +2212,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "again"
 .endif
 
 .if ENABLE_BUFFER_COLON == 1
-WORD FLAG_SKIP, "buffer:", buffer_colon
+WORD FLAG_SKIP, "buffer:", buffer_colon @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -2395,18 +2387,6 @@ WORD FLAG_COMPILE, "compile,", compile_comma
 6:  pop {pc}
 .endif
 
-.if ENABLE_DEFER == 1
-WORD FLAG_SKIP, "defer"
-.endif
-
-.if ENABLE_DEFER_STORE == 1
-WORD FLAG_SKIP, "defer!", defer_store
-.endif
-
-.if ENABLE_DEFER_FETCH == 1
-WORD FLAG_SKIP, "defer@", defer_fetch
-.endif
-
 @ ------------------------------------------------------------------------------
 @ endcase
 @ ( C: case-sys -- )
@@ -2488,7 +2468,7 @@ WORD FLAG_COMPILE_IMMEDIATE, "endof"
 .endif
 
 .if ENABLE_ERASE == 1
-WORD FLAG_SKIP, "erase"
+WORD FLAG_SKIP, "erase"                 @ TBD
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -2514,14 +2494,6 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "hex"
     movs r1, #16
     str r1, [r0]
     bx lr
-.endif
-
-.if ENABLE_IS == 1
-WORD FLAG_SKIP, "is"
-.endif
-
-.if ENABLE_MARKER == 1
-WORD FLAG_SKIP, "marker"
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -2573,10 +2545,6 @@ WORD FLAG_COMPILE_IMMEDIATE, "of"
 
 @ Return
     pop {pc}
-.endif
-
-.if ENABLE_PAD == 1
-WORD FLAG_SKIP, "pad"
 .endif
 
 @ ------------------------------------------------------------------------------

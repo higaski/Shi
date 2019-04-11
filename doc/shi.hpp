@@ -2,7 +2,7 @@
 ///
 /// \file   shi.hpp
 /// \author Vincent Hamp
-/// \date   27/07/2016
+/// \date   11/04/2019
 
 #pragma once
 
@@ -21,23 +21,11 @@
 
 ///
 #define SHI_ENABLE_ZERO_LENGTH_STRING_ERROR     1
-
-///
 #define SHI_ENABLE_STACKOVERFLOW_ERROR          1
-
-///
 #define SHI_ENABLE_UNDEFINED_WORD_ERROR         1
-
-///
 #define SHI_ENABLE_REDEFINED_WORD_ERROR         1
-
-///
 #define SHI_ENABLE_INTERPRET_COMPILE_ONLY_ERROR 1
-
-///
 #define SHI_ENABLE_COMPILE_INTERPRET_ONLY_ERROR 1
-
-///
 #define SHI_ENABLE_BRANCH_OFFSET_ERROR          1
 
 // Enable words individually
@@ -187,7 +175,6 @@
 #define SHI_ENABLE_WITHIN        1
 
 // Shi words
-#define SHI_ENABLE_C_VARIABLE    1
 #define SHI_ENABLE_TO_TEXT_Q     1
 #define SHI_ENABLE_TO_DATA_Q     1
 #define SHI_ENABLE_TO_TEXT       1
@@ -206,7 +193,7 @@ typedef void (*void_fp)();
 extern uint32_t shi_context;
 
 void shi_evaluate_asm(char const* str, size_t len);
-void shi_c_variable_asm(char const* name, size_t len);
+void shi_variable_asm(char const* name, size_t len);
 void shi_clear_asm();
 void_fp shi_tick_asm(char const* str, size_t len);
 
@@ -327,6 +314,10 @@ static inline void shi_pop_struct(void* t, size_t n) {
                : "cc", "memory", "r0", "r1", "r2", "r3");
 }
 
+/// Get number from the stack
+///
+/// \param  offset  Offset in cells
+/// \return Number
 static inline int32_t shi_top_number(size_t offset) {
   int32_t t;
 
@@ -339,6 +330,10 @@ static inline int32_t shi_top_number(size_t offset) {
   return t;
 }
 
+/// Get double-cell number from the stack
+///
+/// \param  offset  Offset in cells
+/// \return Double-cell number
 static inline int64_t shi_top_double(size_t offset) {
   int64_t t;
 
@@ -353,6 +348,10 @@ static inline int64_t shi_top_double(size_t offset) {
   return t;
 }
 
+/// Get user-defined type from the stack
+///
+/// \param  t       Pointer to user-defined type
+/// \param  offset  Offset in cells
 static inline void shi_top_struct(void** t, size_t offset) {
   asm volatile("ldr r0, [%1] \n"
                "add %0, r0, %2, lsl #2 \n"
@@ -385,6 +384,7 @@ static inline size_t shi_size() {
   return shi_depth();
 }
 
+/// Init struct
 typedef struct {
   uint32_t data_begin;
   uint32_t data_end;
@@ -397,19 +397,19 @@ void shi_init_asm(Shi_init*);
 
 /// Initialize
 ///
-/// \param  s   Init structure
+/// \param  s   Init struct
 static inline void shi_init(Shi_init s) {
   shi_init_asm(&s);
 }
 
-/// Call of word evaluate
+/// Evaluate
 ///
 /// \param  str Pointer to the null-terminated byte string
 static inline void shi_evaluate(char const* str) {
   shi_evaluate_asm(str, strlen(str));
 }
 
-/// Call of word evaluate
+/// Evaluate
 ///
 /// \param  str Pointer to the null-terminated byte string
 /// \param  len Length of the null-terminated string
@@ -417,14 +417,23 @@ static inline void shi_evaluate_len(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
-static inline void shi_c_variable(void* adr, char const* str) {
-  push((int32_t)(adr));
-  shi_c_variable_asm(str, strlen(str));
+/// Create reference to C variable
+///
+/// \param  adr Address of variable
+/// \param  str Pointer to the null-terminated byte string
+static inline void shi_variable(void* adr, char const* str) {
+  shi_push_number((int32_t)(adr));
+  shi_variable_asm(str, strlen(str));
 }
 
-static inline void shi_c_variable_len(void* adr, char const* str, size_t len) {
-  push((int32_t)(adr));
-  shi_c_variable_asm(str, len);
+/// Create reference to C variable
+///
+/// \param  adr Address of variable
+/// \param  str Pointer to the null-terminated byte string
+/// \param  len Length of the null-terminated string
+static inline void shi_variable_len(void* adr, char const* str, size_t len) {
+  shi_push_number((int32_t)(adr));
+  shi_variable_asm(str, len);
 }
 
 /// Clear stack
@@ -432,20 +441,33 @@ static inline void shi_clear() {
   shi_clear_asm();
 }
 
+/// Word
 typedef struct {
   void_fp fp;
 } Word;
 
+/// Tick
+///
+/// \param  str Pointer to the null-terminated byte string
+/// \return Word
 static inline Word shi_tick(char const* str) {
   Word w = {shi_tick_asm(str, strlen(str))};
   return w;
 }
 
+/// Tick
+///
+/// \param  str Pointer to the null-terminated byte string
+/// \param  len Length of the null-terminated string
+/// \return Word
 static inline Word shi_tick_len(char const* str, size_t len) {
   Word w = {shi_tick_asm(str, len)};
   return w;
 }
 
+/// Call word
+///
+/// \param  w   Word
 static inline void shi_word(Word w) {
   if (w.fp)
     asm volatile("ldrd r7, r8, [%0] \n"
@@ -464,6 +486,7 @@ static inline void shi_word(Word w) {
 
 #    include <tuple>
 #    include <type_traits>
+#    include <functional>
 
 namespace shi {
 
@@ -681,6 +704,7 @@ decltype(auto) top(size_t offset = 0) {
   }
 }
 
+/// Init struct
 struct Init {
   uint32_t data_begin{};
   uint32_t data_end{};
@@ -693,19 +717,19 @@ extern "C" void shi_init_asm(Init&);
 
 /// Initialize
 ///
-/// \param  s   Init structure
+/// \param  s   Init struct
 inline void init(Init s) {
   shi_init_asm(s);
 }
 
-/// Call of word evaluate
+/// Evaluate
 ///
 /// \param  str Pointer to the null-terminated byte string
 inline void evaluate(char const* str) {
   shi_evaluate_asm(str, strlen(str));
 }
 
-/// Call of word evaluate
+/// Evaluate
 ///
 /// \param  str Pointer to the null-terminated byte string
 /// \param  len Length of the null-terminated string
@@ -713,26 +737,37 @@ inline void evaluate(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
+/// Create reference to C variable
+///
+/// \tparam T   Type of address
+/// \param  adr Address of variable
+/// \param  str Pointer to the null-terminated byte string
 template<typename T>
-void c_variable(T adr, char const* str) {
+void variable(T adr, char const* str) {
   using std::is_pointer_v;
 
   static_assert(sizeof(T) == 4 &&
                 (is_pointer_v<T> || is_reference_wrapper_v<T>));
 
   push(adr);
-  shi_c_variable_asm(str, strlen(str));
+  shi_variable_asm(str, strlen(str));
 }
 
+/// Create reference to C variable
+///
+/// \tparam T   Type of address
+/// \param  adr Address of variable
+/// \param  str Pointer to the null-terminated byte string
+/// \param  len Length of the null-terminated string
 template<typename T>
-void c_variable(T adr, char const* str, size_t len) {
+void variable(T adr, char const* str, size_t len) {
   using std::is_pointer_v;
 
   static_assert(sizeof(T) == 4 &&
                 (is_pointer_v<T> || is_reference_wrapper_v<T>));
 
   push(adr);
-  shi_c_variable_asm(str, len);
+  shi_variable_asm(str, len);
 }
 
 /// Clear stack
@@ -740,11 +775,16 @@ inline void clear() {
   shi_clear_asm();
 }
 
+/// Word
 struct Word {
   constexpr Word() = default;
   Word(char const* str) : fp{shi_tick_asm(str, strlen(str))} {}
   Word(char const* str, size_t len) : fp{shi_tick_asm(str, len)} {}
 
+  /// Call word
+  ///
+  /// \tparam   Ts  Types of arguments
+  /// \param    ts  Arguments
   template<typename... Ts>
   Word& operator()(Ts&&... ts) {
     using std::forward;
@@ -767,11 +807,13 @@ struct Word {
     return *this;
   }
 
+  /// Implicit conversion return
   template<typename T>
   operator T() {
     return pop<T>();
   }
 
+  /// Implicit conversion multiple returns
   template<typename... Ts>
   operator std::tuple<Ts...>() {
     return pop<Ts...>();
@@ -781,16 +823,46 @@ private:
   void_fp fp{nullptr};
 };
 
+namespace literals {
+
+/// Literal evaluate
+///
+/// \param  str Pointer to the null-terminated byte string
+/// \param  len Length of the null-terminated string
 inline void operator"" _s(char const* str, size_t len) {
   shi_evaluate_asm(str, len);
 }
 
+/// Literal variable
+///
+/// \param  str Pointer to the null-terminated byte string
+/// \param  len Length of the null-terminated string
+/// \return Callable to be invoked with address
+inline auto operator""_v(char const* str, size_t len) {
+  return [=](auto adr) {
+    using std::is_pointer_v;
+
+    static_assert(sizeof(adr) == 4 && (is_pointer_v<decltype(adr)> ||
+                                       is_reference_wrapper_v<decltype(adr)>));
+
+    push(adr);
+    shi_variable_asm(str, len);
+  };
+}
+
+/// Literal word
+///
+/// \tparam T   Type of character sequence
+/// \tparam Cs  Character sequence
+/// \return Word
 template<typename T, T... Cs>
 Word operator""_w() {
   static constexpr char c[]{Cs...};
-  static auto literal_word{Word(c, sizeof...(Cs))};
-  return literal_word;
+  static Word word{c, sizeof...(Cs)};
+  return word;
 }
+
+}  // namespace literals
 
 }  // namespace shi
 
