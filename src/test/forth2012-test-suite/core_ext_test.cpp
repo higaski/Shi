@@ -313,13 +313,20 @@ TEST(within) {
 }
 
 TEST(unused) {
-  //  VARIABLE UNUSED0
-  //  T{ UNUSED DROP -> }T
-  //  T{ ALIGN UNUSED UNUSED0 ! 0 , UNUSED CELL+ UNUSED0 @ = -> TRUE }T
-  //  T{ UNUSED UNUSED0 ! 0 C, UNUSED CHAR+ UNUSED0 @ =
-  //           -> TRUE }T  \ aligned -> unaligned
-  //  T{ UNUSED UNUSED0 ! 0 C, UNUSED CHAR+ UNUSED0 @ = -> TRUE }T \ unaligned
-  //  -> ?
+  "variable UNUSED0"_s;
+  "unused drop"_s;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "align unused UNUSED0 ! 0 , unused cell+ UNUSED0 @ ="_s;
+  TEST_ASSERT_EQUAL(1, shi::size());
+  TEST_ASSERT_EQUAL(TRUE, shi::top());
+  "unused UNUSED0 ! 0 c, unused char+ UNUSED0 @ ="_s;
+  TEST_ASSERT_EQUAL(2, shi::size());
+  TEST_ASSERT_EQUAL(TRUE, shi::top());
+  "unused UNUSED0 ! 0 c, unused char+ UNUSED0 @ ="_s;
+  TEST_ASSERT_EQUAL(3, shi::size());
+  TEST_ASSERT_EQUAL(TRUE, shi::top());
+
+  shi::clear();
 }
 
 TEST(again) {

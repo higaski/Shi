@@ -592,6 +592,18 @@
 /// the ./src/test folder. After the call to \ref shi_write_text data gets
 /// cleared till the beginning of the current block.
 ///
+/// \warning Make sure you passed the right text-alignment during
+/// initialization. E.g., flash memory on the STM32 F4-Discovery board can only
+/// be written in double-words, so the init call must adjust .text_p2align like
+/// this:
+/// ```cpp
+/// shi::init({.data_begin = (uint32_t)(begin(data)),
+///            .data_end = (uint32_t)(end(data)),
+///            .text_begin = FLASH_END - 32 * 1024,
+///            .text_end = FLASH_END,
+///            .text_p2align = 3});
+/// ```
+///
 ///
 // clang-format off
 /// \page page_wordlist Wordlist

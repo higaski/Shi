@@ -123,20 +123,6 @@
 /// \enddot
 ///
 ///
-/// \dot
-/// digraph G {
-///
-///   if[shape=diamond]
-///   else[shape=diamond]
-///   then
-///
-///   if->then[label="true"];
-///   if->else[label="false"];
-///   else->then;
-///
-/// }
-/// \enddot
-///
 /// if...else...then
 ///
 /// case...of...endof...endcase

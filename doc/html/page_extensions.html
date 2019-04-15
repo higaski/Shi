@@ -105,7 +105,8 @@ $(document).ready(function(){initNavTree('page_extensions.html','');});
 <li>End of block to write</li>
 <li>Begin of text area to write to</li>
 </ol>
-<p>A reference implementation for the STM32 F4-Discovery board can be found in the ./src/test folder. After the call to <a class="el" href="shi__write__text_8c.html#a79e1c7c56309f5db3925c432c0f2328e">shi_write_text</a> data gets cleared till the beginning of the current block. </p>
+<p>A reference implementation for the STM32 F4-Discovery board can be found in the ./src/test folder. After the call to <a class="el" href="shi__write__text_8c.html#a79e1c7c56309f5db3925c432c0f2328e">shi_write_text</a> data gets cleared till the beginning of the current block.</p>
+<dl class="section warning"><dt>Warning</dt><dd>Make sure you passed the right text-alignment during initialization. E.g., flash memory on the STM32 F4-Discovery board can only be written in double-words, so the init call must adjust .text_p2align like this: <div class="fragment"><div class="line"><a class="code" href="namespaceshi.html#a596c0c0a3ebcd71138218adf2c039f4e">shi::init</a>({.data_begin = (uint32_t)(begin(data)),</div><div class="line">           .data_end = (uint32_t)(end(data)),</div><div class="line">           .text_begin = FLASH_END - 32 * 1024,</div><div class="line">           .text_end = FLASH_END,</div><div class="line">           .text_p2align = 3});</div></div><!-- fragment --> </dd></dl>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->

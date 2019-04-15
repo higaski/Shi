@@ -918,30 +918,56 @@ TEST(
 
 TEST(
     tick__bracket_tick__find__execute__immediate__count__literal__postpone__state) {
-  //  T{ : GT1 123 ; -> }T
-  //  T{ ' GT1 EXECUTE -> 123 }T
-  //  T{ : GT2 ['] GT1 ; IMMEDIATE -> }T
-  //  T{ GT2 EXECUTE -> 123 }T
+  ": GT1 123 ;"_s;
+  TEST_ASSERT_EQUAL(0, shi::size());
+  "' GT1 execute"_s;
+  TEST_ASSERT_EQUAL(1, shi::size());
+  TEST_ASSERT_EQUAL(123, shi::top());
+  ": GT2 ['] GT1 ; immediate"_s;
+  TEST_ASSERT_EQUAL(1, shi::size());
+  "GT2 execute"_s;
+  TEST_ASSERT_EQUAL(2, shi::size());
+  TEST_ASSERT_EQUAL(123, shi::top());
   //  HERE 3 C, CHAR G C, CHAR T C, CHAR 1 C, CONSTANT GT1STRING
   //  HERE 3 C, CHAR G C, CHAR T C, CHAR 2 C, CONSTANT GT2STRING
-  //  T{ GT1STRING FIND -> ' GT1 -1 }T
-  //  T{ GT2STRING FIND -> ' GT2 1 }T
+  //  "GT1STRING find"_s;// -> ' GT1 -1 }T
+  //  "GT2STRING find"_s;// -> ' GT2 1 }T
   //  ( HOW TO SEARCH FOR NON-EXISTENT WORD? )
   //  T{ : GT3 GT2 LITERAL ; -> }T
   //  T{ GT3 -> ' GT1 }T
   //  T{ GT1STRING COUNT -> GT1STRING CHAR+ 3 }T
-  //
-  //  T{ : GT4 POSTPONE GT1 ; IMMEDIATE -> }T
-  //  T{ : GT5 GT4 ; -> }T
-  //  T{ GT5 -> 123 }T
-  //  T{ : GT6 345 ; IMMEDIATE -> }T
-  //  T{ : GT7 POSTPONE GT6 ; -> }T
-  //  T{ GT7 -> 345 }T
-  //
-  //  T{ : GT8 STATE @ ; IMMEDIATE -> }T
-  //  T{ GT8 -> 0 }T
-  //  T{ : GT9 GT8 LITERAL ; -> }T
-  //  T{ GT9 0= -> <FALSE> }T
+
+  // hmm schaß wieso geht des ned?
+  // ok postpone is bissi komplexer...
+  // siehe -> https://stackoverflow.com/questions/31636929/forth-postpone-how-does-it-work
+  // postpone muss nachschaun ob des wort immediate oder ned is
+  // wenn immediate -> compile call to word
+  // wenn nicht immediate -> compile code der call compiliert... (-.-)
+  // das heißt im klartext xt als literal pushn und a call zu compile, ???
+
+  ": GT4 postpone GT1 ; immediate"_s;// }T
+  TEST_ASSERT_EQUAL(2, shi::size());
+  ": GT5 GT4 ;"_s;// }T
+  TEST_ASSERT_EQUAL(2, shi::size());
+  "GT5"_s;// 123 }T
+  TEST_ASSERT_EQUAL(3, shi::size());
+  ": GT6 345 ; immediate"_s;// }T
+  TEST_ASSERT_EQUAL(3, shi::size());
+  ": GT7 postpone GT6 ;"_s;// }T
+  TEST_ASSERT_EQUAL(3, shi::size());
+  "GT7"_s;// 345 }T
+  TEST_ASSERT_EQUAL(4, shi::size());
+
+  ": GT8 state @ ; immediate"_s;// }T
+  TEST_ASSERT_EQUAL(4, shi::size());
+  "GT8"_s;// 0 }T
+  TEST_ASSERT_EQUAL(5, shi::size());
+  ": GT9 GT8 literal ;"_s;// }T
+  TEST_ASSERT_EQUAL(5, shi::size());
+  "GT9 0="_s;// <FALSE> }T
+  TEST_ASSERT_EQUAL(6, shi::size());
+
+  shi::clear();
 }
 
 TEST(if__else__then__begin__while__repeat__until__recurse) {
