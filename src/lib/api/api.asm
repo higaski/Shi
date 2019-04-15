@@ -173,6 +173,7 @@ lfp .req r8                             @ Literal-folding pointer
 @ Extension words
 .equ ENABLE_H_STORE, SHI_ENABLE_H_STORE
 .equ ENABLE_H_FETCH, SHI_ENABLE_H_FETCH
+.equ ENABLE_INLINE, SHI_ENABLE_INLINE
 .equ ENABLE_TO_TEXT_Q, SHI_ENABLE_TO_TEXT_Q
 .equ ENABLE_TO_DATA_Q, SHI_ENABLE_TO_DATA_Q
 .equ ENABLE_TO_TEXT, SHI_ENABLE_TO_TEXT
@@ -413,8 +414,11 @@ shi_tick_asm:
 @ Find
     PUSH_REGS top=r1, from=r0           @ ( -- c-addr u )
     bl find                             @ ( -- token-addr false | xt flags )
-    ldr r0, [dsp]
-    orrs r0, #1                         @ xt + 1
+    cmp tos, #0
+    itee eq
+    moveq r0, #0
+    ldrne r0, [dsp]
+    orrne r0, #1                        @ xt + 1
     TWO_DROP                            @ ( -- )
 
 @ Leave forth

@@ -43,6 +43,7 @@ WORD FLAG_INTERPRET_COMPILE, "inline"
     ldrb r1, [r0, #4]
     ands r1, #FLAG_INLINE
     strb r1, [r0, #4]
+    bx lr
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -87,10 +88,10 @@ WORD FLAG_INTERPRET, ">text", to_text
     ldr r0, =to_text_begin
     ldr r1, [r0]
     cmp r1, #0
-    ittt ne
-    ldrne r1, =data_begin
-    ldrne r1, [r1]
-    strne r1, [r0]
+    ittt eq
+    ldreq r1, =data_begin
+    ldreq r1, [r1]
+    streq r1, [r0]
     bx lr
 .endif
 

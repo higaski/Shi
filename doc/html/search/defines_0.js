@@ -53,6 +53,7 @@ var searchData=
   ['shi_5fenable_5fi',['SHI_ENABLE_I',['../shi_8hpp.html#ac263359a60a7bfa141a99dfe2d8d93d0',1,'shi.hpp']]],
   ['shi_5fenable_5fif',['SHI_ENABLE_IF',['../shi_8hpp.html#ade7a444d81e62904302a2036292c8d51',1,'shi.hpp']]],
   ['shi_5fenable_5fimmediate',['SHI_ENABLE_IMMEDIATE',['../shi_8hpp.html#acc01fbe166b8221bf7a9bbbe04adbd31',1,'shi.hpp']]],
+  ['shi_5fenable_5finline',['SHI_ENABLE_INLINE',['../shi_8hpp.html#ac11ab1a9b8dec1b384997e3fc04af517',1,'shi.hpp']]],
   ['shi_5fenable_5finvert',['SHI_ENABLE_INVERT',['../shi_8hpp.html#ac61d5c3f868cea1a6db4de2808fb61c1',1,'shi.hpp']]],
   ['shi_5fenable_5fj',['SHI_ENABLE_J',['../shi_8hpp.html#a66e959109161589e9ce9ae7dfba3e4e2',1,'shi.hpp']]],
   ['shi_5fenable_5fleave',['SHI_ENABLE_LEAVE',['../shi_8hpp.html#ae424ebf7857aac5a063bd0df070f45df',1,'shi.hpp']]],

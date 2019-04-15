@@ -16,11 +16,10 @@ alignas(4) std::array<uint8_t, 32_kB> data{};
 void quick_n_dirty() {
   shi::init({.data_begin = (uint32_t)(begin(data)),
              .data_end = (uint32_t)(end(data)),
-             .text_begin = FLASH_END - 32_kB,
+             .text_begin = align(8, FLASH_END - 32_kB),
              .text_end = FLASH_END});
 
   c_quick_n_dirty();
   shi::clear();
   cpp_quick_n_dirty();
 }
-

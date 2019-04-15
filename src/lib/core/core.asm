@@ -487,7 +487,8 @@ WORD FLAG_COMPILE_IMMEDIATE, ";", semi
 @ r1    flags
     ldr r0, =link
     ldr r0, [r0]
-    movs r1, #FLAG_INTERPRET_COMPILE
+    ldrb r1, [r0, #4]
+    ands r1, #FLAG_INTERPRET_COMPILE
     strb r1, [r0, #4]
 
 @ Enter interpretation state
@@ -1238,6 +1239,7 @@ WORD FLAG_INTERPRET_COMPILE, "immediate"
     ldrb r1, [r0, #4]
     ands r1, #FLAG_IMMEDIATE
     strb r1, [r0, #4]
+    bx lr
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -2283,14 +2285,19 @@ WORD FLAG_COMPILE, "compile,", compile_comma
 
 @ compile, text
 @ r0    pc-relative address
-@ r2    xt
+@ r1    to_text_begin
+@ r2    data_begin
 @ tos   xt
 2:  DROP                                @ ( true -- )
     ldr r0, =to_text_begin
     ldmia r0, {r1, r2}
-    subs r2, r1                         @ Length of current >text block
     ldr r0, =text_begin
     ldr r0, [r0]
+    cmp r1, tos                         @ to_text_begin - xt
+    itt lo                              @ In case xt is inside >text block, then
+    sublo tos, r1                       @ xt = text_begin + (xt - to_text_begin)
+    addlo tos, r0, tos
+    subs r2, r1                         @ Length of current >text block
     adds r0, r2                         @ Address current definition would have in text so far
     subs r0, tos, r0                    @ pc-relative address
     subs r0, #4                         @ pc is 4 bytes ahead in thumb/thumb2!

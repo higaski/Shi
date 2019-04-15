@@ -38,6 +38,10 @@ TEST(buffer);
 TEST(value__to);
 TEST(case__of__endof__endcase);
 
+// Extension
+TEST(to_text_q__to_data_q);
+TEST(to_text__to_data);
+
 //
 TEST(corner_cases_loop);
 TEST(corner_cases_case);
@@ -54,10 +58,13 @@ alignas(4) std::array<uint8_t, 32_kB> data{};
 }  // namespace
 
 int forth2012_test_suite() {
+  printf("%X\n", &data[0]);
+
   shi::init({.data_begin = reinterpret_cast<uint32_t>(begin(data)),
              .data_end = reinterpret_cast<uint32_t>(end(data)),
-             .text_begin = FLASH_END - 32_kB,
-             .text_end = FLASH_END});
+             .text_begin = align(8, FLASH_END - 32_kB),
+             .text_end = FLASH_END,
+             .text_p2align = 3});
 
   UNITY_BEGIN();
 
@@ -95,6 +102,9 @@ int forth2012_test_suite() {
   RUN_TEST(buffer);
   RUN_TEST(value__to);
   RUN_TEST(case__of__endof__endcase);
+
+  RUN_TEST(to_text_q__to_data_q);
+  RUN_TEST(to_text__to_data);
 
   RUN_TEST(corner_cases_loop);
   RUN_TEST(corner_cases_case);

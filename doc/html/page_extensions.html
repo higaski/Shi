@@ -91,11 +91,22 @@ $(document).ready(function(){initNavTree('page_extensions.html','');});
 <div class="contents">
 <div class="textblock"><p>Shi adds a couple of non-ANS words to Forth.</p>
 <p><b>h!</b><br />
- Like <a href="https://forth-standard.org/standard/core/Store">!</a> but stores a halfword (16bit value). </p><div class="fragment"><div class="line"><span class="stringliteral">&quot;42 var h!&quot;</span>_s;</div></div><!-- fragment --><p><b>h@</b><br />
- Like <a href="https://forth-standard.org/standard/core/Fetch">@</a> but fetches a halfword (16bit value). </p><div class="fragment"><div class="line"><span class="stringliteral">&quot;var h@&quot;</span>_s;</div></div><!-- fragment --><p><b>inline</b><br />
- Make the most recent definition an inline word. </p><div class="fragment"><div class="line"><span class="stringliteral">&quot;: add + inline ;&quot;</span>_s;</div></div><!-- fragment --><p><b>&gt;text?, &gt;data?</b><br />
- </p><div class="fragment"><div class="line"><span class="comment">//</span></div></div><!-- fragment --><p><b>&gt;text, &gt;data</b><br />
- </p><div class="fragment"><div class="line"><span class="comment">//</span></div></div><!-- fragment --> </div></div><!-- PageDoc -->
+ Like <a href="https://forth-standard.org/standard/core/Store">!</a> but stores a halfword (16bit value).</p>
+<div class="fragment"><div class="line"><span class="stringliteral">&quot;42 var h!&quot;</span>_s;</div></div><!-- fragment --><p><b>h@</b><br />
+ Like <a href="https://forth-standard.org/standard/core/Fetch">@</a> but fetches a halfword (16bit value).</p>
+<div class="fragment"><div class="line"><span class="stringliteral">&quot;var h@&quot;</span>_s;</div></div><!-- fragment --><p><b>inline</b><br />
+ Make the most recent definition an inline word.</p>
+<div class="fragment"><div class="line"><span class="stringliteral">&quot;: add + ; inline&quot;</span>_s;</div></div><!-- fragment --><p><b>&gt;text?, &gt;data?</b><br />
+ text? and data? can be used to check if Shi is currently compiling to ram or flash memory.</p>
+<div class="fragment"><div class="line"><span class="stringliteral">&quot;data?&quot;</span>_s;  <span class="comment">// ( -- true | false )</span></div><div class="line"><span class="stringliteral">&quot;text?&quot;</span>_s;  <span class="comment">// ( -- true | false )</span></div></div><!-- fragment --><p><b>&gt;text, &gt;data</b><br />
+ By default (and after initialization) Shi compiles to ram (data). It is possible to compile definitions to flash (text) by wrapping them in a &gt;text ... &gt;data block.</p>
+<div class="fragment"><div class="line"><span class="comment">// All following definitions get compiled to text</span></div><div class="line"><span class="stringliteral">&quot;&gt;text&quot;</span>_s;</div><div class="line"><span class="stringliteral">&quot;: six 6 ;&quot;</span>_s;</div><div class="line"><span class="stringliteral">&quot;: seven six 1+ ;&quot;</span>_s;</div><div class="line"><span class="stringliteral">&quot;&gt;data&quot;</span>_s;</div></div><!-- fragment --><p>The actual flash write takes place once the block ends with &gt;data. Until then everything between &gt;text and &gt;data is stored in data. Implementing the flash write is the users responsibility. Shi anticipates a callback with the symbol <a class="el" href="shi__write__text_8c.html#a79e1c7c56309f5db3925c432c0f2328e">shi_write_text</a> which takes 3 arguments:</p><ol type="1">
+<li>Begin of block to write</li>
+<li>End of block to write</li>
+<li>Begin of text area to write to</li>
+</ol>
+<p>A reference implementation for the STM32 F4-Discovery board can be found in the ./src/test folder. After the call to <a class="el" href="shi__write__text_8c.html#a79e1c7c56309f5db3925c432c0f2328e">shi_write_text</a> data gets cleared till the beginning of the current block. </p>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

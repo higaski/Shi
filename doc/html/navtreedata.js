@@ -61,7 +61,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"structshi_1_1Word.html#a497adf807443e63bf910921dfaa60e40"
+"structshi_1_1Word.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -164,6 +164,7 @@
 // Shi words
 #define SHI_ENABLE_H_STORE       1
 #define SHI_ENABLE_H_FETCH       1
+#define SHI_ENABLE_INLINE        1
 #define SHI_ENABLE_TO_TEXT_Q     1
 #define SHI_ENABLE_TO_DATA_Q     1
 #define SHI_ENABLE_TO_TEXT       1
@@ -771,11 +772,29 @@ inline void clear() {
   shi_clear_asm();
 }
 
+/// Tick
+///
+/// \param  str Pointer to the null-terminated byte string
+/// \return Function pointer
+inline void_fp tick(char const* str) {
+  return shi_tick_asm(str, strlen(str));
+}
+
+/// Tick
+///
+/// \param  str Pointer to the null-terminated byte string
+/// \param  len Length of the null-terminated string
+/// \return Function pointer
+inline void_fp tick(char const* str, size_t len) {
+  return shi_tick_asm(str, len);
+}
+
 /// Word
 struct Word {
   constexpr Word() = default;
   Word(char const* str) : fp{shi_tick_asm(str, strlen(str))} {}
   Word(char const* str, size_t len) : fp{shi_tick_asm(str, len)} {}
+  Word(void_fp fp) : fp{fp} {}
 
   /// Call word
   ///

@@ -1,6 +1,6 @@
 /// Doc
 ///
-/// \file   doc
+/// \file   doc.hpp
 /// \author Vincent Hamp
 /// \date   09/04/2019
 
@@ -538,6 +538,7 @@
 /// **h!**<br>
 /// Like [!](https://forth-standard.org/standard/core/Store) but stores a
 /// halfword (16bit value).
+///
 /// ```cpp
 /// "42 var h!"_s;
 /// ```
@@ -545,25 +546,51 @@
 /// <b>h@@</b><br>
 /// Like [@@](https://forth-standard.org/standard/core/Fetch) but fetches a
 /// halfword (16bit value).
+///
 /// ```cpp
 /// "var h@"_s;
 /// ```
 ///
 /// **inline**<br>
 /// Make the most recent definition an inline word.
+///
 /// ```cpp
-/// ": add + inline ;"_s;
+/// ": add + ; inline"_s;
 /// ```
 ///
 /// <b>>text?, >data?</b><br>
+/// text? and data? can be used to check if Shi is currently compiling to ram or
+/// flash memory.
+///
 /// ```cpp
-/// //
+/// "data?"_s;  // ( -- true | false )
+/// "text?"_s;  // ( -- true | false )
 /// ```
 ///
 /// <b>>text, >data</b><br>
+/// By default (and after initialization) Shi compiles to ram (data). It is
+/// possible to compile definitions to flash (text) by wrapping them in a
+/// >text ... >data block.
+///
 /// ```cpp
-/// //
+/// // All following definitions get compiled to text
+/// ">text"_s;
+/// ": six 6 ;"_s;
+/// ": seven six 1+ ;"_s;
+/// ">data"_s;
 /// ```
+///
+/// The actual flash write takes place once the block ends with >data. Until
+/// then everything between >text and >data is stored in data. Implementing the
+/// flash write is the users responsibility. Shi anticipates a callback with the
+/// symbol \ref shi_write_text which takes 3 arguments:
+/// -# Begin of block to write
+/// -# End of block to write
+/// -# Begin of text area to write to
+///
+/// A reference implementation for the STM32 F4-Discovery board can be found in
+/// the ./src/test folder. After the call to \ref shi_write_text data gets
+/// cleared till the beginning of the current block.
 ///
 ///
 // clang-format off
@@ -755,8 +782,8 @@
 ///
 /// | Shi word set | Description                                                                                                      |
 /// | ------------ | ---------------------------------------------------------------------------------------------------------------- |
-/// | h!           | Store 16bit value.                                                                                               |
-/// | h@           | Fetch 16bit value.                                                                                               |
+/// | h!           | Store halfword (16bit value).                                                                                    |
+/// | h@           | Fetch halfword (16bit value).                                                                                    |
 /// | inline       | Make the most recent definition an inline word.                                                                  |
 /// | >text?       | Return true if compiler is currently compiling to text. Return false if compiler is currently compiling to data. |
 /// | >data?       | Return true if compiler is currently compiling to data. Return false if compiler is currently compiling to text. |

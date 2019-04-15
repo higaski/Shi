@@ -62,6 +62,7 @@ var searchData=
   ['shi_5fenable_5fi',['SHI_ENABLE_I',['../shi_8hpp.html#ac263359a60a7bfa141a99dfe2d8d93d0',1,'shi.hpp']]],
   ['shi_5fenable_5fif',['SHI_ENABLE_IF',['../shi_8hpp.html#ade7a444d81e62904302a2036292c8d51',1,'shi.hpp']]],
   ['shi_5fenable_5fimmediate',['SHI_ENABLE_IMMEDIATE',['../shi_8hpp.html#acc01fbe166b8221bf7a9bbbe04adbd31',1,'shi.hpp']]],
+  ['shi_5fenable_5finline',['SHI_ENABLE_INLINE',['../shi_8hpp.html#ac11ab1a9b8dec1b384997e3fc04af517',1,'shi.hpp']]],
   ['shi_5fenable_5finvert',['SHI_ENABLE_INVERT',['../shi_8hpp.html#ac61d5c3f868cea1a6db4de2808fb61c1',1,'shi.hpp']]],
   ['shi_5fenable_5fj',['SHI_ENABLE_J',['../shi_8hpp.html#a66e959109161589e9ce9ae7dfba3e4e2',1,'shi.hpp']]],
   ['shi_5fenable_5fleave',['SHI_ENABLE_LEAVE',['../shi_8hpp.html#ae424ebf7857aac5a063bd0df070f45df',1,'shi.hpp']]],
@@ -160,8 +161,8 @@ var searchData=
   ['shi_5fpop_5fdouble',['shi_pop_double',['../shi_8hpp.html#ac3b8c18efbd48c0880b6aa96471f7bbe',1,'shi.hpp']]],
   ['shi_5fpop_5fnumber',['shi_pop_number',['../shi_8hpp.html#af0f56f7d9ab4d7698b4ec51acc3fb859',1,'shi.hpp']]],
   ['shi_5fpop_5fstruct',['shi_pop_struct',['../shi_8hpp.html#a44383f2fe7dbb1a7a6e9cc415f076a69',1,'shi.hpp']]],
-  ['shi_5fprintf',['shi_printf',['../shi__printf_8cpp.html#a3f424c16236b96ed2a9c1b44a4da0364',1,'shi_printf.cpp']]],
-  ['shi_5fprintf_2ecpp',['shi_printf.cpp',['../shi__printf_8cpp.html',1,'']]],
+  ['shi_5fprintf',['shi_printf',['../shi__printf_8c.html#a3f424c16236b96ed2a9c1b44a4da0364',1,'shi_printf.c']]],
+  ['shi_5fprintf_2ec',['shi_printf.c',['../shi__printf_8c.html',1,'']]],
   ['shi_5fpush_5fdouble',['shi_push_double',['../shi_8hpp.html#a1132c13e83b5a7f6be84d0d9ee33aed5',1,'shi.hpp']]],
   ['shi_5fpush_5fnumber',['shi_push_number',['../shi_8hpp.html#abf1da5edbbf75276dee38bf8aa8ef72b',1,'shi.hpp']]],
   ['shi_5fpush_5fstruct',['shi_push_struct',['../shi_8hpp.html#ae35087a9993e0f3f906188993ecfec54',1,'shi.hpp']]],
@@ -177,7 +178,7 @@ var searchData=
   ['shi_5fvariable_5fasm',['shi_variable_asm',['../shi_8hpp.html#a40b06b42d960d8f5295b2945f977ec5e',1,'shi.hpp']]],
   ['shi_5fvariable_5flen',['shi_variable_len',['../shi_8hpp.html#a9f5c37b86ee67f1a900f5ab93d78b1e7',1,'shi.hpp']]],
   ['shi_5fword',['shi_word',['../shi_8hpp.html#a7a3c591e430eb38b62fcb874b6f410fb',1,'shi.hpp']]],
-  ['shi_5fwrite_5ftext',['shi_write_text',['../shi__write__text_8cpp.html#a79e1c7c56309f5db3925c432c0f2328e',1,'shi_write_text.cpp']]],
-  ['shi_5fwrite_5ftext_2ecpp',['shi_write_text.cpp',['../shi__write__text_8cpp.html',1,'']]],
+  ['shi_5fwrite_5ftext',['shi_write_text',['../shi__write__text_8c.html#a79e1c7c56309f5db3925c432c0f2328e',1,'shi_write_text.c']]],
+  ['shi_5fwrite_5ftext_2ec',['shi_write_text.c',['../shi__write__text_8c.html',1,'']]],
   ['size',['size',['../namespaceshi.html#a843f1bb70adc5691eacbaffbb00c7020',1,'shi']]]
 ];

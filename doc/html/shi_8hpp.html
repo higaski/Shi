@@ -434,6 +434,8 @@ Macros</h2></td></tr>
 <tr class="separator:a09a9dac87ab8186b241dbada3fa6b16c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0f5cf7cb8e566c253923a8ed7d8337fa"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="shi_8hpp.html#a0f5cf7cb8e566c253923a8ed7d8337fa">SHI_ENABLE_H_FETCH</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:a0f5cf7cb8e566c253923a8ed7d8337fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac11ab1a9b8dec1b384997e3fc04af517"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="shi_8hpp.html#ac11ab1a9b8dec1b384997e3fc04af517">SHI_ENABLE_INLINE</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:ac11ab1a9b8dec1b384997e3fc04af517"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8e2e607d3ec22d6d353145e366a73f3e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="shi_8hpp.html#a8e2e607d3ec22d6d353145e366a73f3e">SHI_ENABLE_TO_TEXT_Q</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:a8e2e607d3ec22d6d353145e366a73f3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2f274c5a86ff9543ccccf900e510ccf"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="shi_8hpp.html#ac2f274c5a86ff9543ccccf900e510ccf">SHI_ENABLE_TO_DATA_Q</a>&#160;&#160;&#160;1</td></tr>
@@ -540,6 +542,10 @@ Functions</h2></td></tr>
 <tr class="memitem:ac8ed24fa837cfd85d9975067f2966bba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshi.html#ac8ed24fa837cfd85d9975067f2966bba">shi::clear</a> ()</td></tr>
 <tr class="memdesc:ac8ed24fa837cfd85d9975067f2966bba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear stack.  <a href="namespaceshi.html#ac8ed24fa837cfd85d9975067f2966bba">More...</a><br /></td></tr>
 <tr class="separator:ac8ed24fa837cfd85d9975067f2966bba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea4ef6bbdc956033df6ebc6e80ae755b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="shi_8hpp.html#a4260c9e4d038b974f6cc1e5a3610e1c8">void_fp</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshi.html#aea4ef6bbdc956033df6ebc6e80ae755b">shi::tick</a> (char const *str)</td></tr>
+<tr class="separator:aea4ef6bbdc956033df6ebc6e80ae755b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4a5bbd8d6e21974db873e00de61ef71"><td class="memItemLeft" align="right" valign="top"><a class="el" href="shi_8hpp.html#a4260c9e4d038b974f6cc1e5a3610e1c8">void_fp</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshi.html#ab4a5bbd8d6e21974db873e00de61ef71">shi::tick</a> (char const *str, size_t len)</td></tr>
+<tr class="separator:ab4a5bbd8d6e21974db873e00de61ef71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afb89fe486978de1f22e94a99008ee09c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshi_1_1literals.html#afb89fe486978de1f22e94a99008ee09c">shi::literals::operator&quot;&quot;_s</a> (char const *str, size_t len)</td></tr>
 <tr class="separator:afb89fe486978de1f22e94a99008ee09c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e39937f422eb7544c710b442a2b8d3d"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceshi_1_1literals.html#a0e39937f422eb7544c710b442a2b8d3d">shi::literals::operator&quot;&quot;_v</a> (char const *str, size_t len)</td></tr>
@@ -1297,6 +1303,20 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">#define SHI_ENABLE_IMMEDIATE&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac11ab1a9b8dec1b384997e3fc04af517"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac11ab1a9b8dec1b384997e3fc04af517">&#9670;&nbsp;</a></span>SHI_ENABLE_INLINE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SHI_ENABLE_INLINE&#160;&#160;&#160;1</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -3245,10 +3265,11 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="shi_8hpp_a0b2b6e8d6cf141f8fb1183aa7369ce11_icgraph.png" border="0" usemap="#shi_8hpp_a0b2b6e8d6cf141f8fb1183aa7369ce11_icgraph" alt=""/></div>
 <map name="shi_8hpp_a0b2b6e8d6cf141f8fb1183aa7369ce11_icgraph" id="shi_8hpp_a0b2b6e8d6cf141f8fb1183aa7369ce11_icgraph">
-<area shape="rect"  title=" " alt="" coords="179,56,285,83"/>
+<area shape="rect"  title=" " alt="" coords="179,81,285,108"/>
 <area shape="rect"  href="shi_8hpp.html#a9fa54e9d1b1c3053ef2dbfb4c3c29119" title=" " alt="" coords="32,5,104,32"/>
 <area shape="rect"  href="shi_8hpp.html#ad0afaf1453d7eaf36cd67732cd69d950" title=" " alt="" coords="19,56,117,83"/>
-<area shape="rect"  href="structshi_1_1Word.html#a497adf807443e63bf910921dfaa60e40" title=" " alt="" coords="5,107,131,133"/>
+<area shape="rect"  href="namespaceshi.html#aea4ef6bbdc956033df6ebc6e80ae755b" title=" " alt="" coords="31,107,105,133"/>
+<area shape="rect"  href="structshi_1_1Word.html#a497adf807443e63bf910921dfaa60e40" title=" " alt="" coords="5,157,131,184"/>
 </map>
 </div>
 

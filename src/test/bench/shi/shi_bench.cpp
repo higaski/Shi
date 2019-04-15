@@ -14,9 +14,7 @@ alignas(4) std::array<uint8_t, 32_kB> data{};
 
 int shi_bench() {
   shi::init({.data_begin = reinterpret_cast<uint32_t>(begin(data)),
-             .data_end = reinterpret_cast<uint32_t>(end(data)),
-             .text_begin = FLASH_END - 32_kB,
-             .text_end = FLASH_END});
+             .data_end = reinterpret_cast<uint32_t>(end(data))});
 
   int retval{};
 
