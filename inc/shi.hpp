@@ -583,8 +583,8 @@ void push(T&& t) {
 
 /// Add elements to the top of the stack
 ///
-/// \tparam Ts  Types of elements to push
-/// \param  ts  Values to push
+/// \tparam Ts... Types of elements to push
+/// \param  ts... Values to push
 template<typename... Ts>
 void push(Ts&&... ts) {
   using std::forward;
@@ -648,7 +648,7 @@ T pop() {
 
 /// Remove elements from the top of the stack
 ///
-/// \tparam Ts  Types of element to pop
+/// \tparam Ts... Types of element to pop
 /// \return Values
 template<typename... Ts, typename = std::enable_if_t<(sizeof...(Ts) > 1)>>
 std::tuple<Ts...> pop() {
@@ -798,8 +798,8 @@ struct Word {
 
   /// Call word
   ///
-  /// \tparam Ts  Types of arguments
-  /// \param  ts  Arguments
+  /// \tparam Ts... Types of arguments
+  /// \param  ts... Arguments
   template<typename... Ts>
   Word& operator()(Ts&&... ts) {
     using std::forward;

@@ -127,7 +127,7 @@ interpret_compile:
 @ Immediate?
 @ r1    flags
 2:  ands r2, r1, #~FLAG_IMMEDIATE
-    bne 4f                              @ Goto call, or inline,?
+    bne 4f                              @ Goto compile, or inline,?
 
 @ Execute (either we got literals and we are foldable, or we are immediate)
 @ r0    xt

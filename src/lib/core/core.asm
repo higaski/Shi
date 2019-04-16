@@ -682,7 +682,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "and"
 @ {{2...36}}.
 @ ------------------------------------------------------------------------------
 .if ENABLE_BASE == 1
-WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "base"
+WORD FLAG_INTERPRET_COMPILE, "base"
     PUSH_TOS
     ldr tos, =radix                     @ ( -- a-addr )
     bx lr
@@ -1693,9 +1693,39 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE & FOLDS_2, "over"
 .if ENABLE_POSTPONE == 1
 WORD FLAG_COMPILE_IMMEDIATE, "postpone"
     push {lr}
-    bl tick
+
+@ Parse
+    bl source                           @ ( -- c-addr u )
+    bl parse_name                       @ ( c-addr u -- token-addr token-u )
+    cmp tos, #0                         @ token-u - 0
+    bne 1f                              @ Goto find
+        TWO_DROP                        @ ( token-addr token-u -- )
+        PRINT "postpone zero-length string as a name"
+        b 6f                            @ Goto return
+
+@ Find
+1:  bl find                             @ ( token-addr token-u -- token-addr false | xt flags )
+    cmp tos, #0                         @ flags - 0
+    bne 1f
+        TWO_DROP                        @ ( token-addr false -- )
+        PRINT "postpone undefined word"
+        b 6f                            @ Goto return
+
+@ Immediate
+1:  ands tos, #~FLAG_IMMEDIATE
+    DROP                                @ ( xt flags -- xt )
+    bne 1f
+        bl compile_comma                @ ( xt -- )
+        b 6f                            @ Goto return
+
+@ Not immediate
+1:  bl literal                          @ ( xt -- )
+    PUSH_TOS
+    ldr tos, =compile_comma
     bl compile_comma
-    pop {pc}
+
+@ Return
+6:  pop {pc}
 .endif
 
 @ ------------------------------------------------------------------------------
@@ -1845,7 +1875,7 @@ WORD FLAG_INTERPRET_COMPILE, "source"
 @ :noname, [ (left-bracket), ] (right-bracket).
 @ ------------------------------------------------------------------------------
 .if ENABLE_STATE == 1
-WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "state"
+WORD FLAG_INTERPRET_COMPILE, "state"
     PUSH_TOS
     ldr tos, =status
     bx lr
@@ -2361,7 +2391,7 @@ WORD FLAG_COMPILE, "compile,", compile_comma
 @ r1    intermediate
 @ r2    xt + 1
 @ tos   opcode
-3:  adds r2, #1                         @ Make xt odd (thumb)
+3:  orrs r2, #1                         @ Make xt odd (thumb)
 
 @ movw
     ldr tos, =0xF2400000                @ Opcode template
@@ -2514,7 +2544,7 @@ WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "false"
 @ Set contents of radix to sixteen.
 @ ------------------------------------------------------------------------------
 .if ENABLE_HEX == 1
-WORD FLAG_INTERPRET_COMPILE & FLAG_INLINE, "hex"
+WORD FLAG_INTERPRET_COMPILE, "hex"
     ldr r0, =radix
     movs r1, #16
     str r1, [r0]

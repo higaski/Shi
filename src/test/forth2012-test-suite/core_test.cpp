@@ -937,35 +937,31 @@ TEST(
   //  T{ GT3 -> ' GT1 }T
   //  T{ GT1STRING COUNT -> GT1STRING CHAR+ 3 }T
 
-  // hmm schaß wieso geht des ned?
-  // ok postpone is bissi komplexer...
-  // siehe -> https://stackoverflow.com/questions/31636929/forth-postpone-how-does-it-work
-  // postpone muss nachschaun ob des wort immediate oder ned is
-  // wenn immediate -> compile call to word
-  // wenn nicht immediate -> compile code der call compiliert... (-.-)
-  // das heißt im klartext xt als literal pushn und a call zu compile, ???
-
-  ": GT4 postpone GT1 ; immediate"_s;// }T
+  ": GT4 postpone GT1 ; immediate"_s;
   TEST_ASSERT_EQUAL(2, shi::size());
-  ": GT5 GT4 ;"_s;// }T
+  ": GT5 GT4 ;"_s;
   TEST_ASSERT_EQUAL(2, shi::size());
-  "GT5"_s;// 123 }T
+  "GT5"_s;
   TEST_ASSERT_EQUAL(3, shi::size());
-  ": GT6 345 ; immediate"_s;// }T
+  TEST_ASSERT_EQUAL(123, shi::top());
+  ": GT6 345 ; immediate"_s;
   TEST_ASSERT_EQUAL(3, shi::size());
-  ": GT7 postpone GT6 ;"_s;// }T
+  ": GT7 postpone GT6 ;"_s;
   TEST_ASSERT_EQUAL(3, shi::size());
-  "GT7"_s;// 345 }T
+  "GT7"_s;
   TEST_ASSERT_EQUAL(4, shi::size());
+  TEST_ASSERT_EQUAL(345, shi::top());
 
-  ": GT8 state @ ; immediate"_s;// }T
+  ": GT8 state @ ; immediate"_s;
   TEST_ASSERT_EQUAL(4, shi::size());
-  "GT8"_s;// 0 }T
+  "GT8"_s;
   TEST_ASSERT_EQUAL(5, shi::size());
-  ": GT9 GT8 literal ;"_s;// }T
+  TEST_ASSERT_EQUAL(0, shi::top());
+  ": GT9 GT8 literal ;"_s;
   TEST_ASSERT_EQUAL(5, shi::size());
-  "GT9 0="_s;// <FALSE> }T
+  "GT9 0="_s;
   TEST_ASSERT_EQUAL(6, shi::size());
+  TEST_ASSERT_EQUAL(FALSE, shi::top());
 
   shi::clear();
 }
