@@ -5,7 +5,7 @@ Shi is a fast and tiny **embeddable** [Forth](https://en.wikipedia.org/wiki/Fort
 * Optimizations such as inlining and constant folding
 
 # Quick'n'dirty
-Here is a sneak peak into some of Shi's features. For details on how the extensions work and some insights on Shi's iternals please refer to the [docs](http://www.higaski.at/projects/Shi/doc/html/index.html).
+Here is a sneak peak into some of Shi's features. For details on how the extensions work and some insights on Shi's internals please refer to the [docs](https://higaski.github.io/Shi/).
 
 ### C++
 ```cpp
@@ -226,9 +226,9 @@ In Forth the same function could be written as
 ;
 ```
 
-This is inarguably harder to read and shifts responsibility from the interpreter/compiler to the programmer but it has one major advantage. It allows for handling everything in a single pass. Every single *word* from the input stream can be interpreted or compiled without any prior or subsequent knowledge. New *words* such as *lerp* simply use calls (or inlined copies of the assembly) to other fine grained *words* such as *over* or *-* to achieve a very high level of reusability. A Forth parser basically degenerates to a linked list look-up which easily fits into a few kB of memory.
+This is inarguable harder to read and shifts responsibility from the interpreter/compiler to the programmer but it has one major advantage. It allows for handling everything in a single pass. Every single *word* from the input stream can be interpreted or compiled without any prior or subsequent knowledge. New *words* such as *lerp* simply use calls (or inlined copies of the assembly) to other fine grained *words* such as *over* or *-* to achieve a very high level of reusability. A Forth parser basically degenerates to a linked list look-up which easily fits into a few kB of memory.
 
-If you don't immediately understand the *words* between the actual operators don't worry. These are sometimes refered to as "stack jugglers" and simply put stack arguments in the right order. The right order can be found by converting the original algorithm from infix to postfix notation using the [shunting-yard algorithm](https://en.wikipedia.org/wiki/Shunting-yard_algorithm).
+If you don't immediately understand the *words* between the actual operators don't worry. These are sometimes referred to as "stack jugglers" and simply put stack arguments in the right order. The right order can be found by converting the original algorithm from infix to postfix notation using the [shunting-yard algorithm](https://en.wikipedia.org/wiki/Shunting-yard_algorithm).
 
 ```c
 // Infix notation

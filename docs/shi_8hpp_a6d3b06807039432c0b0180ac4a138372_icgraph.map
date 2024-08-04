@@ -1,0 +1,13 @@
+<map id="shi_evaluate_asm" name="shi_evaluate_asm">
+<area shape="rect" id="Node000001" title=" " alt="" coords="236,109,375,137"/>
+<area shape="rect" id="Node000002" href="$namespaceshi.html#a0b2cb254d47308babcda9b1640e0737a" title=" " alt="" coords="44,5,149,33"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="272,102,233,74,187,48,149,34,151,29,189,43,235,70,275,97"/>
+<area shape="rect" id="Node000003" href="$namespaceshi.html#ab925c40d53e32edfe354d8ba12c592c0" title=" " alt="" coords="44,57,149,85"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="231,108,149,87,150,82,233,102"/>
+<area shape="rect" id="Node000004" href="$namespaceshi_1_1literals.html#afb89fe486978de1f22e94a99008ee09c" title=" " alt="" coords="5,109,188,137"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="220,126,188,126,188,120,220,120"/>
+<area shape="rect" id="Node000005" href="$shi_8hpp.html#a1fe153fbd64a6f83d7034f43afc17e67" title=" " alt="" coords="44,161,149,189"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="232,144,150,165,149,160,231,139"/>
+<area shape="rect" id="Node000006" href="$shi_8hpp.html#a8d2c375e6d8a5bb949f417340e589310" title=" " alt="" coords="31,213,162,241"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="275,149,235,177,189,203,157,215,155,210,187,198,233,172,272,145"/>
+</map>
